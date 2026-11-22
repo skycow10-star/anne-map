@@ -8,16 +8,16 @@ const PORTRAIT = matchMedia("(orientation:portrait) and (max-width:1000px)");
 
 /* ---------- 장소 (지도 그림 img/map_spring.webp 위 좌표, 1600×900 기준) ---------- */
 const P = {
-  station:{name:"브라이트 리버 역", x:255, y:700, bg:"ch1", bgW:"ch6_snow", from:1, say:["기차역이야. 여기서 매슈 아저씨를 처음 만났지."]},
-  avenue:{name:"꽃이 핀 가로수길", x:395, y:560, bg:"ch1_avenue", bgW:"ch6_snow", from:1, say:["'{avenue}'. 언제 와도 마음이 하얘져.", "꽃잎 터널 아래를 걸으면 공주가 된 기분이야."]},
-  pond:{name:"배리 씨네 연못", x:515, y:430, bg:"ch1_pond", bgW:"ch6_snow", from:1, say:["'{pond}'. 물결이 오늘도 반짝반짝해."]},
-  home:{name:"초록 지붕 집", x:405, y:300, bg:"ch1_home", bgS:{summer:"ch8_porch", autumn:"ch10_home", winter:"home_winter"}, from:1, say:["초록 지붕 집. 이제 진짜 내 집이야.", "다락방 창문에서 벚나무가 손을 흔들어."]},
+  station:{name:"브라이트 리버 역", x:255, y:700, bg:"ch1", bgW:"ch6_morning", from:1, say:["기차역이야. 여기서 매슈 아저씨를 처음 만났지."]},
+  avenue:{name:"꽃이 핀 가로수길", x:395, y:560, bg:"ch1_avenue", bgW:"ch6_morning", from:1, say:["'{avenue}'. 언제 와도 마음이 하얘져.", "꽃잎 터널 아래를 걸으면 공주가 된 기분이야."]},
+  pond:{name:"배리 씨네 연못", x:515, y:430, bg:"ch1_pond", bgW:"ch6_morning", from:1, say:["'{pond}'. 물결이 오늘도 반짝반짝해."]},
+  home:{name:"초록 지붕 집", x:405, y:300, bg:"ch1_home", bgS:{spring:"ch8_porch", summer:"ch8_porch", autumn:"ch10_home", winter:"home_winter"}, from:1, say:["초록 지붕 집. 이제 진짜 내 집이야.", "다락방 창문에서 벚나무가 손을 흔들어."]},
   lynde:{name:"린드 부인 집", x:205, y:520, bg:"ch2_lynde", from:2, say:["린드 부인은 오늘도 창가에서 길을 지켜보고 계실 거야.", "린드 부인의 정원은 늘 반듯반듯해."]},
-  lane:{name:"연인의 오솔길", x:1090, y:430, bg:"ch2_lane", bgW:"ch6_snow", from:2, say:["'{lane}'. 나무들이 소곤소곤 이야기하는 길이야."]},
+  lane:{name:"연인의 오솔길", x:1090, y:430, bg:"ch2_lane", bgW:"ch6_morning", from:2, say:["'{lane}'. 나무들이 소곤소곤 이야기하는 길이야."]},
   barry:{name:"배리 씨네 집", x:800, y:240, bg:"ch3", from:3, say:["다이애나네 집이야. 창문에 불이 켜져 있으면 괜히 기뻐져."]},
-  spring:{name:"통나무 다리 옆 샘", x:935, y:325, bg:"ch3_bridge", bgS:{spring:"ch7_spring", summer:"ch7_spring", autumn:"ch5_spring"}, bgW:"ch6_snow", from:3, say:["'{spring}'. 물속에 요정이 사는 것 같아."]},
-  church:{name:"교회와 목사관", x:715, y:765, bg:"church_out", bgW:"ch6_snow", from:3, say:["교회 종소리가 들리면 일요일이야."]},
-  birch:{name:"자작나무 길", x:1225, y:555, bg:"ch4_birch", bgW:"ch6_snow", from:4, say:["'{birch}'. 하얀 나무들이 줄지어 서 있어."]},
+  spring:{name:"통나무 다리 옆 샘", x:935, y:325, bg:"ch3_bridge", bgS:{spring:"ch7_spring", summer:"ch7_spring", autumn:"ch5_spring"}, bgW:"ch6_morning", from:3, say:["'{spring}'. 물속에 요정이 사는 것 같아."]},
+  church:{name:"교회와 목사관", x:715, y:765, bg:"church_out", bgW:"ch6_morning", from:3, say:["교회 종소리가 들리면 일요일이야."]},
+  birch:{name:"자작나무 길", x:1225, y:555, bg:"ch4_birch", bgW:"ch6_morning", from:4, say:["'{birch}'. 하얀 나무들이 줄지어 서 있어."]},
   school:{name:"에이번리 학교", x:1440, y:615, bg:"ch4", from:4, say:["학교야. 칠판 냄새가 나."]},
   pasture:{name:"뒷목장", x:1330, y:330, bg:"ch10_pasture", from:10, say:["뒷목장. 저녁이면 소들이 집으로 돌아와."]},
   hill:{name:"길모퉁이 언덕", x:1420, y:150, bg:"ch10_hill", from:10, say:["길이 언덕을 넘어 굽어 가. 저 너머엔 뭐가 있을까?"]}
@@ -245,7 +245,7 @@ function naming(n){
   $("nmIn").onclick = e => e.stopPropagation(); $("nmIn").onkeydown = e => { if(e.key === "Enter") done($("nmIn").value); };
 }
 function typeText(t){ const el = $("txt"); clearInterval(typing); let i = 0; el.textContent = ""; el.dataset.full = t;
-  typing = setInterval(() => { el.textContent = t.slice(0, ++i); if(i % 4 === 1 && /\S/.test(t[i - 1] || "")) SFX.tick(); if(i >= t.length){ clearInterval(typing); typing = null; } }, 30); }
+  typing = setInterval(() => { el.textContent = t.slice(0, ++i); if(i % 7 === 1 && /\S/.test(t[i - 1] || "")) SFX.tick(); if(i >= t.length){ clearInterval(typing); typing = null; } }, 30); }
 function stage(st){ const L = $("sL").style, R = $("sR").style;
   if(st && innerWidth > innerHeight){ L.left = st.l[0] + "%"; L.bottom = st.l[1] + "%"; L.height = st.l[2] + "%"; R.left = st.r[0] + "%"; R.right = "auto"; R.bottom = st.r[1] + "%"; R.height = st.r[2] + "%"; }
   else ["left", "bottom", "height", "right"].forEach(k => { L[k] = ""; R[k] = ""; }); }

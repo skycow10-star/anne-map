@@ -52,7 +52,7 @@ CH[1] = {
     ["anne", "happy", "matthew", "\"'{pond}'! 딱 맞는 이름이 떠오르면 온몸이 찌릿해요.\n아저씨도 그런 적 있으세요?\""],
     ["matthew", "happy", "matthew", "\"글쎄다… 그런 것 같기도 하구나.\""]
   ]},
-  {at:"home", label:"초록 지붕 집에 도착하기", lock:{except:["station", "avenue", "pond"], why:"이제 초록 지붕 집으로 가요"}, stage:{l:[30, 4, 62], r:[58, 4, 70]}, nodes:[
+  {at:"home", label:"초록 지붕 집에 도착하기", bg:"ch1_home", lock:{except:["station", "avenue", "pond"], why:"이제 초록 지붕 집으로 가요"}, stage:{l:[30, 4, 62], r:[58, 4, 70]}, nodes:[
     ["matthew", "surprised", "matthew", "\"저기가 초록 지붕 집이다.\""],
     ["inner", "happy", "matthew", "어둠 속 나무 사이로 창문 불빛이 반짝였어.\n저기가… 내 집이 될 곳이야."],
     {q:"초록 지붕 집 앞에 도착했어요. 앤은 무엇을 할까요?", opts:[

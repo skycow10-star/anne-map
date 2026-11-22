@@ -566,7 +566,7 @@ MINI.herd = (m, api) => {
   for(let t = 0; t < 1500; t++){ const cells = shuffle(Array.from({length:C * R}, (_, i) => [i % C, i / C | 0])).slice(0, N);
     const cs = cells.map(([x, y], i) => ({id:i, x, y, dir:"udlr"[Math.random() * 4 | 0]})), d = depth(cs);
     if(!d) continue; const fr = cs.filter(c => free(cs, c)).length, sc = d * 10 - fr * 3;
-    if(sc > bs){ bs = sc; best = cs; } if(d >= DEP && fr <= 3) break; }
+    if(sc > bs){ bs = sc; best = cs; } if(d >= DEP && fr <= 2) break; }
   cows = best;
   const f = api.field; let miss = 0, out = 0, busy = false, left = T, over = false;
   f.innerHTML = `<div class="hd-wrap"><div class="hd-board" id="hb" style="--c:${C};--r:${R}">${Array.from({length:C * R}, () => `<i></i>`).join("")}</div>
@@ -592,8 +592,8 @@ MINI.herd = (m, api) => {
           setTimeout(() => { el.remove(); slot.innerHTML = cowImg; slot.classList.add("in"); SFX.pop(); const sr = slot.getBoundingClientRect(); burst(sr.left + sr.width / 2, sr.top + sr.height / 2, 6);
             if(out >= N) finish(miss === 0 ? 3 : miss <= 2 ? 2 : 1, miss === 0 ? "한 번도 안 부딪히고 모두 우리에 들여보냈어요!" : `${miss}번 부딪혔지만 모두 우리에 들어갔어요.`); }, 620);
         }, Math.min(700, 120 * steps) + 30); }
-      else { busy = true; miss++; msg(); SFX.thud(); el.style.left = (c.x + dx * .35) / C * 100 + "%"; el.style.top = (c.y + dy * .35) / R * 100 + "%"; el.classList.add("bump");
-        const r = el.getBoundingClientRect(); popAt(api, r.left, r.top - 30, m.ouch || "음매! 앞이 막혔어요");
+      else { busy = true; miss++; left = Math.max(1, left - (m.bumpSec || 4)); msg(); SFX.thud(); el.style.left = (c.x + dx * .35) / C * 100 + "%"; el.style.top = (c.y + dy * .35) / R * 100 + "%"; el.classList.add("bump");
+        const r = el.getBoundingClientRect(); popAt(api, r.left, r.top - 30, (m.ouch || "음매! 앞이 막혔어요") + ` -${m.bumpSec || 4}초`);
         setTimeout(() => { el.style.left = c.x / C * 100 + "%"; el.style.top = c.y / R * 100 + "%"; el.classList.remove("bump"); busy = false; }, 380); } };
   });
 };

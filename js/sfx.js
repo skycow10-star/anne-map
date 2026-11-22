@@ -30,7 +30,7 @@ const SFX = (() => {
     chime: () => [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, i * .07, .5, "sine", .12)),
     heart: () => { tone(659, 0, .18, "sine", .18); tone(988, .1, .35, "sine", .16); },
     stars: n => { [523, 659, 784].slice(0, n).forEach((f, i) => tone(f, .1 + i * .22, .35, "triangle", .2)); if(n >= 3) [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, .8 + i * .06, .5, "sine", .12)); },
-    tick:  () => tone(1400, 0, .04, "square", .03),
+    tick:  () => tone(1200, 0, .035, "sine", .025),
     page:  () => noise(0, .12, .05, 800, 2400)
   };
   S.note = tone; S.hiss = noise; S.ctx = ctx;
