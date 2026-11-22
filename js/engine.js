@@ -106,7 +106,7 @@ function eff(e){ if(!e) return; if(typeof e === "function"){ e(); return; }
 
 /* ---------- 지도 ---------- */
 let busy = false;
-const MAPS = {spring:"map_spring", summer:"map_spring", autumn:"map_spring", winter:"map_spring"};   // 새 지도의 계절판을 만들면 바꾸기
+const MAPS = {spring:"map_spring", summer:"map_summer", autumn:"map_autumn", winter:"map_winter"};   // 4장 모두 같은 구도(길 좌표 공유)
 function seasonPaint(){
   const s = (C() && C().season) || "spring", r = $("season"), img = $("mapImg");
   img.setAttribute("href", IMG(MAPS[s]));
