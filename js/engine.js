@@ -16,7 +16,7 @@ const P = {
   lane:{name:"연인의 오솔길", x:1245, y:330, bg:"ch2_lane", bgW:"ch6_snow", from:2, say:["'{lane}'. 나무들이 소곤소곤 이야기하는 길이야."]},
   barry:{name:"배리 씨네 집", x:1050, y:250, bg:"ch3", from:3, say:["다이애나네 집이야. 창문에 불이 켜져 있으면 괜히 기뻐져."]},
   spring:{name:"통나무 다리 옆 샘", x:815, y:360, bg:"ch3_bridge", bgW:"ch6_snow", from:3, say:["'{spring}'. 물속에 요정이 사는 것 같아."]},
-  church:{name:"교회와 목사관", x:790, y:610, bg:"ch7", bgW:"ch6_snow", from:3, say:["교회 종소리가 들리면 일요일이야."]},
+  church:{name:"교회와 목사관", x:790, y:610, bg:"church_out", bgW:"ch6_snow", from:3, say:["교회 종소리가 들리면 일요일이야."]},
   birch:{name:"자작나무 길", x:1430, y:480, bg:"ch4_birch", bgW:"ch6_snow", from:4, say:["'{birch}'. 하얀 나무들이 줄지어 서 있어."]},
   school:{name:"에이번리 학교", x:1460, y:745, bg:"ch4", from:4, say:["학교야. 칠판 냄새가 나."]},
   pasture:{name:"뒷목장", x:1195, y:215, bg:"ch10_pasture", from:10, say:["뒷목장. 저녁이면 소들이 집으로 돌아와."]},
@@ -70,7 +70,7 @@ const ITEMS = {
 };
 
 /* ---------- 저장 ---------- */
-const FRESH = () => ({tips:{}, got:{}, seen:{}, v:2, ch:1, qi:0, max:1, names:{}, hearts:{matthew:1}, met:{}, items:[], hidden:[], stars:{}, tally:{canon:0, imag:0, bal:0}, res:{}, at:"station", fail:{}, over:false});
+const FRESH = () => ({nat:{}, tips:{}, got:{}, seen:{}, v:2, ch:1, qi:0, max:1, names:{}, hearts:{matthew:1}, met:{}, items:[], hidden:[], stars:{}, tally:{canon:0, imag:0, bal:0}, res:{}, at:"station", fail:{}, over:false});
 let S = FRESH();
 const saveS = () => { try{ localStorage.setItem("anneMap2", JSON.stringify(S)); }catch(e){} };
 try{ const d = JSON.parse(localStorage.getItem("anneMap2") || "null"); if(d && d.v === 2) S = Object.assign(FRESH(), d); }catch(e){}
@@ -83,7 +83,7 @@ const quest = () => C() && C().quests[S.qi];
 const fill = t => String(t).replace(/\{(\w+)\}/g, (m, k) => S.names[k] || (P[k] ? P[k].name : m));
 
 /* ---------- 작은 도구 ---------- */
-function show(id){ document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id)); $("bMap").hidden = id !== "place" || busy; $("bBag").hidden = id === "mini"; }
+function show(id){ document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id)); $("bMap").hidden = id !== "place" || busy; $("bBag").hidden = id === "mini"; $("bBook").hidden = id !== "map"; }
 function toast(m){ const t = $("toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2400); }
 const toastQ = []; let toastBusy = false;
 function note(m){ if(toastQ.length > 2) toastQ.shift(); toastQ.push(m); if(!toastBusy) nextNote(); }
@@ -140,7 +140,7 @@ function drawMap(){
   requestAnimationFrame(() => { const sc = sv.clientWidth / 1600; mw.scrollTo({left:Math.max(0, focus.x * sc - mw.clientWidth / 2), behavior:"smooth"}); });
   $("quest").innerHTML = q ? `<b>📒 할 일 ${S.qi + 1}/${C().quests.length}</b> · ${esc(fill(q.label))}` : S.over ? `<b>📒 이야기 끝!</b> 마을을 마음껏 돌아다녀 보세요` : "";
   document.querySelectorAll(".pin").forEach(g => { g.onclick = () => go(g.dataset.k); g.onkeydown = e => { if(e.key === "Enter") go(g.dataset.k); }; });
-  hudTitle(); hud();
+  hudTitle(); hud(); natureDraw();
   // 처음 하는 아이 안내: 다음 장소 핀 아래 손가락
   const hand = $("hand"), tp = P[target];
   if(!S.tips.map && tp){ hand.style.display = ""; hand.setAttribute("transform", `translate(${tp.x + 62} ${tp.y - 22})`); } else hand.style.display = "none";
@@ -343,7 +343,7 @@ function finale(){
   const word = {canon:"원작 속 앤의 마음을 가장 잘 읽은 친구예요.", imag:"앤처럼 상상력으로 세상을 반짝이게 만든 친구예요.", bal:"모두의 마음을 함께 생각한 따뜻한 친구예요."}[big];
   popCard(`<img class="big" src="${IMG("ed_ch10_" + big)}" alt="" onerror="this.style.visibility='hidden'"><span class="lab">이야기 끝</span><h2>앤과 함께한 한 해</h2>
     <p>${word}<br>"하느님은 하늘에 계시고, 세상은 모두 평안하도다."</p>
-    <dl class="sum">${ends}<dt>✍️ 이름 지은 곳</dt><dd>${named || "-"}</dd><dt>⭐ 모은 별</dt><dd>${total}개</dd><dt>✨ 숨은 장면</dt><dd>${hid}/${all}</dd></dl>
+    <dl class="sum">${ends}<dt>✍️ 이름 지은 곳</dt><dd>${named || "-"}</dd><dt>⭐ 모은 별</dt><dd>${total}개</dd><dt>✨ 숨은 장면</dt><dd>${hid}/${all}</dd><dt>📗 자연 도감</dt><dd>${Object.keys(S.nat || {}).length}/${NATURE.length}</dd></dl>
     <div class="btns"><button class="big-btn sub" id="pOk">지도에서 마음껏 놀기</button><button class="big-btn ghost" id="pRe">처음부터</button></div>`, () => { show("map"); drawMap(); }, true);
   $("pRe").onclick = restart;
 }
@@ -409,12 +409,14 @@ const GAME = {boot(){
   $("bMusic").onclick = () => { musicOn = !musicOn; $("bMusic").style.opacity = musicOn ? 1 : .45; if(musicOn) music(); else if(bgm) bgm.pause(); };
   $("bMap").onclick = () => { clearInterval(typing); if(isQuest){ isQuest = false; } show("map"); drawMap(); };
   $("bBag").onclick = bag;
+  $("bBook").onclick = () => natureBook();
+  $("bkClose").onclick = () => $("book").classList.remove("on");
   $("alClose").onclick = () => $("album").classList.remove("on");
   $("alView").onclick = () => $("alView").classList.remove("on");
   const started = S.qi > 0 || S.ch > 1 || S.over;
   if(started){ $("bStart").textContent = "이어서 하기";
-    $("coverMore").innerHTML = `<button id="bAlbum">나의 앨범</button><button id="bPick">장 고르기</button><button id="bNew">처음부터</button>`;
-    $("bAlbum").onclick = () => album(1);
+    $("coverMore").innerHTML = `<button id="bAlbum">나의 앨범</button><button id="bNat">자연 도감</button><button id="bPick">장 고르기</button><button id="bNew">처음부터</button>`;
+    $("bAlbum").onclick = () => album(1); $("bNat").onclick = () => natureBook();
     $("bPick").onclick = chapterPick; $("bNew").onclick = () => { if(confirmNew()) restart(); }; }
   $("bStart").onclick = () => { $("cover").classList.remove("on"); hud();
     if(!started){ chapterIntro(); return; }

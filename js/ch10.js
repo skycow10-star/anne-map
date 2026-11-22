@@ -50,7 +50,7 @@ CH[10] = {
     {eff:{h:{marilla:2}}},
     ["inner", "sad", null, "아저씨가 심어 두신 장미가 피면, 그 곁에 꽃을 심어 드려야지.\n아저씨가 좋아하시던 하얀 장미를."]
   ]},
-  {at:"church", label:"매슈 아저씨께 꽃 심어 드리러 가기", bg:"ch7", nodes:[
+  {at:"church", label:"매슈 아저씨께 꽃 심어 드리러 가기", bg:"church_out", nodes:[
     ["inner", "sad", "marilla_warm", "마릴라 아주머니와 교회 뒤뜰에 갔어.\n매슈 아저씨 곁에 하얀 장미를 심어 드렸지."],
     ["inner", "sad", null, "\"아저씨, 저 잘 지낼게요.\"\n바람이 살랑 불어서, 아저씨가 '글쎄다' 하고 웃으시는 것 같았어."],
     ["marilla", "sad", "marilla_strict", "\"앤, 의사가 그러는데 내 눈이 점점 나빠진대.\n초록 지붕 집을 팔아야 할 것 같구나.\""],

@@ -145,16 +145,39 @@ MINI.pace = (m, api) => {
     msg(); if(ok >= n){ stop(); setTimeout(() => api.end(miss === 0 ? 3 : miss <= 3 ? 2 : 1, miss === 0 ? "한 번도 안 틀렸어요!" : `${miss}번 빗나갔지만 해냈어요.`), 500); } };
 };
 
-/* 꾸미기: base(이모지), items:[{img|e, t}], max */
+/* 꾸미기: 바구니의 꽃을 끌어서 큰 그림(baseImg) 위 원하는 곳에 놓기. 놓은 것도 다시 끌어 옮기거나 밖으로 빼기.
+   baseImg(그림) 또는 base(이모지), items:[{img|e, t}], max */
 MINI.decorate = (m, api) => {
-  const put = []; const max = m.max || 5;
-  const p = panel(api, `<h3>${esc(m.q)}</h3><div class="deco" id="dc">${m.base || "👒"}</div><div class="chips" id="di">${m.items.map((o, i) => `<button data-i="${i}">${look(o)}<span>${esc(o.t)}</span></button>`).join("")}</div>
-    <button class="bigtap" id="dd" style="margin-top:10px">${esc(m.btn || "다 됐어요")}</button>`);
-  api.hud(`${m.say || "마음대로 꾸며요"} · 최대 ${max}개`);
-  p.querySelectorAll("#di button").forEach(b => b.onclick = () => { if(put.length >= max) return; const o = m.items[+b.dataset.i]; put.push(o.t);
-    const a = Math.random() * Math.PI * 2, r = 32 + Math.random() * 10; $("dc").insertAdjacentHTML("beforeend", `<b style="left:${50 + Math.cos(a) * r}%;top:${50 + Math.sin(a) * r}%;transform:translate(-50%,-50%)">${o.img ? `<img src="${IMG(o.img)}" style="width:40px;height:40px;object-fit:contain" alt="" onerror="this.replaceWith('${o.e || "✿"}')">` : o.e}</b>`);
-    api.hud(`${m.say || "마음대로 꾸며요"} · ${put.length}/${max}`); });
-  $("dd").onclick = () => { const n = put.length; api.end(n >= max ? 3 : n >= 2 ? 2 : 1, n ? `${[...new Set(put)].join(", ")}(으)로 꾸몄어요.` : "아무것도 안 달았어요."); };
+  const max = m.max || 8, f = api.field;
+  f.innerHTML = `<div class="dz-wrap"><div class="dz" id="dz">${m.baseImg ? `<img class="dz-base" src="${IMG(m.baseImg)}" alt="" draggable="false">` : `<div class="dz-base emo">${m.base || "👒"}</div>`}</div>
+    <div class="dz-side"><p class="dz-q">${esc(m.q)}</p><div class="dz-tray" id="dt">${m.items.map((o, i) => `<button data-i="${i}" aria-label="${esc(o.t)}">${look(o)}<span>${esc(o.t)}</span></button>`).join("")}</div>
+    <button class="bigtap" id="dd">${esc(m.btn || "다 됐어요")}</button></div></div>`;
+  const dz = $("dz"); let n = 0;
+  const msg = () => api.hud(`${m.say || "꽃을 끌어다 모자 위에 놓아요"} · ${n}/${max}`); msg();
+  const inZone = (x, y) => { const r = dz.getBoundingClientRect(); return x > r.left && x < r.right && y > r.top && y < r.bottom; };
+  const drag = (ghost, x0, y0, onDrop) => {
+    ghost.classList.add("dz-drag"); document.body.appendChild(ghost);
+    const mv = e => { ghost.style.left = e.clientX + "px"; ghost.style.top = e.clientY + "px"; dz.classList.toggle("hot", inZone(e.clientX, e.clientY)); };
+    mv({clientX:x0, clientY:y0});
+    const up = e => { removeEventListener("pointermove", mv); removeEventListener("pointerup", up); removeEventListener("pointercancel", up); dz.classList.remove("hot"); ghost.remove(); onDrop(e.clientX, e.clientY); };
+    addEventListener("pointermove", mv); addEventListener("pointerup", up); addEventListener("pointercancel", up);
+  };
+  const place = (o, x, y) => { const r = dz.getBoundingClientRect(), d = document.createElement("div");
+    d.className = "dz-it"; d.innerHTML = look(o); d.style.left = ((x - r.left) / r.width * 100) + "%"; d.style.top = ((y - r.top) / r.height * 100) + "%";
+    d.style.transform = `translate(-50%,-50%) rotate(${(Math.random() * 40 - 20) | 0}deg)`; d.dataset.t = o.t;
+    d.onpointerdown = e => { e.preventDefault(); const g = d.cloneNode(true); d.style.visibility = "hidden";
+      drag(g, e.clientX, e.clientY, (X, Y) => { if(inZone(X, Y)){ const r2 = dz.getBoundingClientRect(); d.style.left = ((X - r2.left) / r2.width * 100) + "%"; d.style.top = ((Y - r2.top) / r2.height * 100) + "%"; d.style.visibility = ""; }
+        else { d.remove(); n--; msg(); } }); };
+    dz.appendChild(d); n++; msg(); };
+  f.querySelectorAll("#dt button").forEach(b => {
+    b.onpointerdown = e => { e.preventDefault(); if(n >= max){ api.hud(`이제 더 놓을 자리가 없어요 · ${n}/${max}`); return; }
+      const o = m.items[+b.dataset.i], g = document.createElement("div"); g.className = "dz-it"; g.innerHTML = look(o);
+      let moved = false; const sx = e.clientX, sy = e.clientY;
+      drag(g, sx, sy, (X, Y) => { if(inZone(X, Y)) place(o, X, Y);
+        else if(Math.hypot(X - sx, Y - sy) < 8){ const r = dz.getBoundingClientRect(); place(o, r.left + r.width * (.25 + Math.random() * .5), r.top + r.height * (.25 + Math.random() * .4)); } }); };
+  });
+  $("dd").onclick = () => { const put = [...dz.querySelectorAll(".dz-it")].map(d => d.dataset.t);
+    api.end(n >= Math.min(5, max) ? 3 : n >= 2 ? 2 : 1, n ? `${[...new Set(put)].join(", ")}(으)로 꾸몄어요.` : "아무것도 안 달았어요."); };
 };
 
 /* 달리기: 위·가운데·아래 길 바꾸며 피하기. time, obs:[e] */

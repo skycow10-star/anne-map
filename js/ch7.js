@@ -17,7 +17,7 @@ CH[7] = {
       {t:"미운 점도 있었지만 고마운 점도 떠올려 본다.", type:"bal", then:[["inner", "happy", null, "선생님 덕분에 길버트랑 공부 시합도 했잖아.\n고마운 점도 분명 있었어."]]}
     ]}
   ]},
-  {at:"church", label:"새로 오신 앨런 사모님 만나기", bg:"ch7", nodes:[
+  {at:"church", label:"새로 오신 앨런 사모님 만나기", bg:"church_out", nodes:[
     ["inner", "happy", "allan", "새 목사님의 부인, 앨런 사모님은 젊고 다정한 분이셨어.\n주일 학교에서 우리 반을 맡으셨지."],
     {eff:{met:"allan"}},
     ["allan", "happy", "allan", "\"궁금한 게 있으면 무엇이든 물어보렴, 앤.\""],

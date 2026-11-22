@@ -11,12 +11,13 @@ CH[3] = {
   {at:"church", label:"일요일에 혼자 교회 가기", bg:"ch3_path", nodes:[
     ["inner", "happy", null, "일요일, 마릴라 아주머니가 아파서 나 혼자 교회에 가게 됐어.\n아주머니가 만들어 준 수수한 모자를 쓰고."],
     ["inner", "dreamy", null, "가는 길에 미나리아재비와 들장미가 바람에 흔들렸어.\n모자가 너무 밋밋해 보이는걸…"],
-    {mini:{kind:"decorate", id:"hat", title:"꽃 모자 꾸미기", how:"길가의 들꽃을 눌러 모자를 꾸며요. 최대 6개까지 달 수 있어요. 다 꾸몄으면 '다 됐어요'를 눌러요.",
-      q:"앤의 모자를 들꽃으로 꾸며요", base:"👒", max:6, say:"꽃을 눌러 모자에 달아요",
-      items:[{img:"it_scotchRose", e:"🌹", t:"들장미"}, {e:"🌼", t:"미나리아재비"}, {img:"it_narcissus", e:"🌼", t:"수선화"}, {e:"🌸", t:"분홍 꽃"}, {img:"it_iris", e:"💐", t:"붓꽃"}, {e:"🍀", t:"클로버"}],
+    {mini:{kind:"decorate", id:"hat", title:"꽃 모자 꾸미기", how:"오른쪽 꽃바구니의 들꽃을 손가락으로 끌어서 모자 위 원하는 곳에 놓아요. 놓은 꽃도 다시 끌어 옮길 수 있고, 모자 밖으로 빼면 없어져요.",
+      q:"길가의 들꽃으로 모자를 꾸며요", baseImg:"mini_hat", max:10, say:"꽃을 끌어다 모자 위에 놓아요",
+      items:[{img:"hf_buttercup", e:"🌼", t:"미나리아재비"}, {img:"hf_rose", e:"🌹", t:"들장미"}, {img:"hf_daisy", e:"🌼", t:"데이지"}, {img:"hf_violet", e:"🪻", t:"제비꽃"},
+             {img:"hf_forgetmenot", e:"💠", t:"물망초"}, {img:"hf_clover", e:"🌺", t:"붉은 토끼풀"}, {img:"hf_apple", e:"🌸", t:"사과꽃"}, {img:"hf_fern", e:"🌿", t:"고사리 잎"}],
       res:{1:"수수한 모자 그대로예요.", 2:"꽃이 몇 송이 달린 예쁜 모자!", 3:"모자가 꽃밭이 됐어요! 사람들이 깜짝 놀랄지도…"}},
      good:[{eff:{get:"wreath"}}]},
-    ["inner", "surprised", null, "교회에 들어서자 사람들이 모두 나를 쳐다봤어.\n소곤소곤, 킥킥…", {bg:"ch7"}],
+    ["inner", "surprised", null, "교회에 들어서자 사람들이 모두 나를 쳐다봤어.\n소곤소곤, 킥킥…", {bg:"church_in"}],
     {q:"사람들이 모자를 보고 수군거려요. 앤은 어떻게 할까요?", opts:[
       {t:"모르는 척 의젓하게 앉아 기도 시간을 보낸다.", type:"canon", then:[["inner", "dreamy", null, "나는 꽃 모자를 쓰고 꼿꼿이 앉아 있었어.\n설교는 길었지만 창밖 하늘을 보며 상상했지."]]},
       {t:"나는 들꽃 나라의 여왕이라고 상상한다.", type:"imag", eff:{hid:"flowerQueen"}, then:[["inner", "dreamy", null, "나는 들꽃 나라의 여왕이야.\n사람들은 내 왕관을 보고 감탄하는 거야!", {dream:true, still:"sc_flowerQueen"}]]},

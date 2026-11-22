@@ -20,6 +20,7 @@
 <div id="rotate" role="alert"><div class="ph"></div><b>휴대폰을 가로로 돌려 주세요</b><p>에이번리 마을은 넓어서<br>옆으로 눕혀야 잘 보여요.</p></div>
 <div id="game">
   <div class="hud"><span class="t" id="hudT">앤의 에이번리 산책</span><span class="heart" id="hudH" hidden></span><span class="sp"></span>
+    <button id="bBook" hidden title="자연 도감" aria-label="자연 도감">📗<span class="tx"> 도감</span></button>
     <button id="bBag" hidden title="가방" aria-label="가방">🎒<span class="tx"> 가방</span></button>
     <button id="bMap" hidden title="지도로" aria-label="지도로">🗺️<span class="tx"> 지도</span></button>
     <button id="bMusic" title="음악" aria-label="음악 켜고 끄기">♪</button></div>
@@ -29,6 +30,7 @@
       <defs>
         <filter id="wc"><feTurbulence type="fractalNoise" baseFrequency=".02" numOctaves="3" seed="7"/><feDisplacementMap in="SourceGraphic" scale="14"/></filter>
         <filter id="pp"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .55 0 0 0 0 .42 0 0 0 0 .28 0 0 0 .12 0"/></filter>
+        <radialGradient id="natGlow"><stop offset="0" stop-color="#fffbe0" stop-opacity=".95"/><stop offset=".55" stop-color="#ffe98a" stop-opacity=".5"/><stop offset="1" stop-color="#ffe98a" stop-opacity="0"/></radialGradient>
         <radialGradient id="lake" cx=".5" cy=".45"><stop offset="0" stop-color="#cfe9ef"/><stop offset="1" stop-color="#7fb0c4"/></radialGradient>
         <g id="tree"><ellipse cx="0" cy="22" rx="20" ry="6" fill="#5a4630" opacity=".2"/><rect x="-3" y="0" width="6" height="22" fill="#7a5a3e"/><circle r="22" cy="-6" fill="#6f9e5e"/><circle r="14" cx="-8" cy="-12" fill="#86b46f"/></g>
         <g id="fir"><path d="M0-40 L-18 18 H18Z" fill="#3f6a52"/><rect x="-3" y="18" width="6" height="8" fill="#6b4e3a"/></g>
@@ -42,6 +44,7 @@
       </g>
       <path id="guide" d="" fill="none"/><path id="trail" d="" fill="none"/>
       <g id="names" font-family="Jua,sans-serif" font-size="28" fill="#4a3626" text-anchor="middle" paint-order="stroke" stroke="#fbf3e2" stroke-width="7"></g>
+      <g id="nature"></g>
       <g id="pins"></g>
       <g id="hand" style="display:none"><text font-size="56" text-anchor="middle">👈</text></g>
       <g id="me"><ellipse cx="0" cy="0" rx="22" ry="7" fill="#3e2c1e" opacity=".22"/><g id="meBody"><image id="meImg" href="img/walk_anne.webp" x="-35" y="-140" width="70" height="140"/></g></g>
@@ -74,6 +77,9 @@
       <div class="cv-more" id="coverMore"></div>
     </div>
   </section>
+  <section id="book" aria-label="에이번리 자연 도감"><div class="al-head"><h2>에이번리 자연 도감</h2><span id="bkCount"></span><button id="bkClose">닫기</button></div>
+    <p class="bk-tip">지도에서 반짝이는 ✨를 찾아 눌러 보세요. 계절마다 다른 자연이 숨어 있어요.</p>
+    <div class="al-tabs" id="bkTabs"></div><div class="al-body" id="bkBody"></div></section>
   <section id="album" aria-label="나의 앨범"><div class="al-head"><h2>나의 앨범</h2><span id="alCount"></span><button id="alClose" aria-label="닫기">닫기</button></div>
     <div class="al-tabs" id="alTabs"></div><div class="al-body" id="alBody"></div>
     <div class="al-view" id="alView"><img id="alImg" alt=""><p id="alCap"></p></div></section>
@@ -95,6 +101,7 @@
 <script src="js/ch9.js"></script>
 <script src="js/ch10.js"></script>
 <script src="js/say.js"></script>
+<script src="js/nature.js"></script>
 <script>GAME.boot();</script>
 </body>
 </html>
