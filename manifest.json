@@ -1,6 +1,6 @@
 {
-  "name": "에이번리 마을 지도",
-  "short_name": "앤 마을지도",
+  "name": "앤의 에이번리 산책",
+  "short_name": "앤의 산책",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

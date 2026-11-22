@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>에이번리 마을 지도</title>
+<title>앤의 에이번리 산책</title>
 <meta name="screen-orientation" content="landscape">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#f6ecd6">
@@ -14,7 +14,7 @@
 <body>
 <div id="rotate" role="alert"><div class="ph"></div><b>휴대폰을 가로로 돌려 주세요</b><p>에이번리 마을은 넓어서<br>옆으로 눕혀야 잘 보여요.</p></div>
 <div id="game">
-  <div class="hud"><span class="t" id="hudT">에이번리 마을 지도</span><span class="heart" id="hudH" hidden></span><span class="sp"></span>
+  <div class="hud"><span class="t" id="hudT">앤의 에이번리 산책</span><span class="heart" id="hudH" hidden></span><span class="sp"></span>
     <button id="bBag" hidden title="가방" aria-label="가방">🎒<span class="tx"> 가방</span></button>
     <button id="bMap" hidden title="지도로" aria-label="지도로">🗺️<span class="tx"> 지도</span></button>
     <button id="bMusic" title="음악" aria-label="음악 켜고 끄기">♪</button></div>
@@ -56,14 +56,18 @@
     <div id="field"></div>
   </section>
 
-  <div class="card on" id="cover"><div class="in">
-    <img class="big" src="img/ch1_avenue.webp" alt="">
-    <h1>에이번리 마을 지도</h1>
-    <p>앤이 되어 마을을 돌아다니며 사람들을 만나고,<br>예쁜 곳마다 이름을 붙여 보세요.</p>
-    <button class="big-btn" id="bStart">이야기 시작하기</button>
-    <div class="btns" id="coverMore"></div>
-    <p style="font-size:13px;margin-top:10px">열 개의 장 · 앤의 이야기를 끝까지 따라가요</p>
-  </div></div>
+  <section id="cover" class="on">
+    <div class="cv-map"></div>
+    <div class="cv-petals" aria-hidden="true"></div>
+    <img class="cv-anne" src="img/walk_anne.webp" alt="">
+    <div class="cv-box">
+      <p class="cv-sub">빨강 머리 앤과 함께하는</p>
+      <h1 class="cv-title">앤의 에이번리 산책</h1>
+      <p class="cv-desc">마을을 걸으며 사람들을 만나고, 예쁜 곳마다 이름을 붙여요.</p>
+      <button class="cv-start" id="bStart">이야기 시작하기</button>
+      <div class="cv-more" id="coverMore"></div>
+    </div>
+  </section>
   <div class="card" id="pop"><div class="in" id="popIn"></div></div>
   <div class="toast" id="toast"></div>
   <span class="maker">하늘소</span>

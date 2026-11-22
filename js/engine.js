@@ -87,7 +87,7 @@ function note(m){ if(toastQ.length > 2) toastQ.shift(); toastQ.push(m); if(!toas
 function nextNote(){ const m = toastQ.shift(); if(!m){ toastBusy = false; return; } toastBusy = true; toast(m); setTimeout(nextNote, 2000); }
 function popCard(html, ok){ $("popIn").innerHTML = html; $("pop").classList.add("on"); const b = $("pOk"); if(b) b.onclick = () => { $("pop").classList.remove("on"); ok && ok(); }; }
 function closeCard(){ $("pop").classList.remove("on"); }
-function hudTitle(){ $("hudT").textContent = C() ? `${S.ch}장 · ${C().title}` : "에이번리 마을 지도"; }
+function hudTitle(){ $("hudT").textContent = C() ? `${S.ch}장 · ${C().title}` : "앤의 에이번리 산책"; }
 function hud(){
   const h = $("hudH"), k = (C() && C().who) || "matthew";
   h.hidden = !S.met[k]; const n = S.hearts[k] || 0;
@@ -352,6 +352,8 @@ async function music(){
 
 /* ---------- 시작 ---------- */
 const GAME = {boot(){
+  $("cover").querySelector(".cv-petals").innerHTML = Array.from({length:14}, () => `<i style="left:${Math.random() * 110 | 0}%;animation-duration:${7 + Math.random() * 7}s;animation-delay:-${Math.random() * 12}s"></i>`).join("");
+  const cw = (C() && C().walker) || "walk_anne"; document.querySelector(".cv-anne").src = IMG(cw);
   $("box").onclick = advance;
   $("place").onclick = e => { if(e.target === $("bg") || e.target.classList.contains("spr")) advance(); };
   $("bMusic").onclick = () => { musicOn = !musicOn; $("bMusic").style.opacity = musicOn ? 1 : .45; if(musicOn) music(); else if(bgm) bgm.pause(); };
@@ -359,9 +361,9 @@ const GAME = {boot(){
   $("bBag").onclick = bag;
   const started = S.qi > 0 || S.ch > 1 || S.over;
   if(started){ $("bStart").textContent = "이어서 하기";
-    $("coverMore").innerHTML = `<button class="big-btn ghost" id="bPick">장 고르기</button><button class="big-btn ghost" id="bNew">처음부터</button>`;
+    $("coverMore").innerHTML = `<button id="bPick">장 고르기</button><button id="bNew">처음부터</button>`;
     $("bPick").onclick = chapterPick; $("bNew").onclick = () => { if(confirmNew()) restart(); }; }
-  $("bStart").onclick = () => { $("cover").classList.remove("on"); hud();
+  $("bStart").onclick = () => { $("cover").classList.remove("on"); if(started) note(`${S.ch}장 · ${C().title}에서 이어서 해요`); hud();
     if(!started){ chapterIntro(); return; }
     music(); show("map"); drawMap(); };
   if(location.hash === "#test") window.__S = () => S;
