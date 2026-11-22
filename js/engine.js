@@ -431,9 +431,41 @@ const GAME = {boot(){
     if(!S.over && S.qi >= C().quests.length){ music(); chapterEnd(); return; }
     note(`${S.ch}장 · ${C().title}에서 이어서 해요`);
     music(); show("map"); drawMap(); };
-  if(location.hash === "#test") window.__S = () => S;
+  if(/test/.test(location.hash)) testMenu();
 }};
 function confirmNew(){ return true; }
+
+/* ---------- 시험용 메뉴: 주소 끝에 #test 를 붙이면 왼쪽 아래 🔧 단추가 생김 ---------- */
+function testMenu(){
+  const b = document.createElement("button"); b.id = "tBtn"; b.textContent = "🔧 시험"; document.getElementById("game").appendChild(b);
+  const quests = CH.map((c, n) => c ? c.quests.map((q, i) => ({n, i, q})) : []).flat();
+  const findIn = (nodes, key, out, n, i, bg) => (nodes || []).forEach(x => { if(!x || typeof x !== "object" || Array.isArray(x)) return;
+    if(x[key]) out.push({n, i, node:x, bg}); (x.opts || []).forEach(o => findIn(o.then, key, out, n, i, bg)); });
+  const minis = [], duels = [];
+  quests.forEach(({n, i, q}) => { findIn(q.nodes, "mini", minis, n, i, q.bg || P[q.at].bg); findIn(q.nodes, "duel", duels, n, i, q.bg || P[q.at].bg); });
+  const jump = (n, i) => { S.ch = n; S.qi = i; S.max = Math.max(S.max, n); S.tally = {canon:0, imag:0, bal:0};
+    S.at = i > 0 ? CH[n].quests[i - 1].at : "home"; S.tips.map = S.tips.talk = true; saveS();
+    $("cover").classList.remove("on"); closeCard(); $("tPanel").remove(); hud(); music(); show("map"); drawMap(); };
+  const play = (it, nodeKey) => { S.ch = it.n; S.max = Math.max(S.max, it.n); saveS(); $("cover").classList.remove("on"); closeCard(); $("tPanel").remove(); hud();
+    const node = nodeKey === "duel" ? Object.assign({}, it.node, {duel:Object.assign({}, it.node.duel, {_s:null})}) : it.node;
+    curStage = null; isQuest = false; curBg = it.bg; Q = [node]; qi = 0; setBg(it.bg); show("place"); step(); };
+  b.onclick = () => { if($("tPanel")){ $("tPanel").remove(); return; }
+    const p = document.createElement("div"); p.id = "tPanel";
+    p.innerHTML = `<h3>시험용 메뉴 <small>(주소에 #test 가 있을 때만 보여요)</small></h3>
+      <details open><summary>장·할 일로 바로 가기</summary>${CH.map((c, n) => c ? `<div class="tRow"><b>${n}장</b>${c.quests.map((q, i) => `<button data-j="${n},${i}">${i + 1}. ${esc(fill(q.label))}</button>`).join("")}<button data-e="${n}">장 끝 화면</button></div>` : "").join("")}</details>
+      <details><summary>미니게임 바로 하기 (${minis.length})</summary><div class="tRow">${minis.map((m, k) => `<button data-m="${k}">${m.n}장 · ${esc(m.node.mini.title)}</button>`).join("")}</div></details>
+      <details><summary>마음 대결 바로 하기 (${duels.length})</summary><div class="tRow">${duels.map((d, k) => `<button data-d="${k}">${d.n}장 · ${esc(WHO[d.node.duel.who])}</button>`).join("")}</div></details>
+      <div class="tRow"><button id="tAll">모든 장 열기</button><button id="tNat">반짝이 다 찾기</button><button id="tWipe">기록 모두 지우기</button><button id="tClose">닫기</button></div>`;
+    document.getElementById("game").appendChild(p);
+    p.querySelectorAll("[data-j]").forEach(x => x.onclick = () => { const [n, i] = x.dataset.j.split(",").map(Number); jump(n, i); });
+    p.querySelectorAll("[data-e]").forEach(x => x.onclick = () => { S.ch = +x.dataset.e; S.qi = CH[S.ch].quests.length; S.max = Math.max(S.max, S.ch); saveS(); $("cover").classList.remove("on"); p.remove(); chapterEnd(); });
+    p.querySelectorAll("[data-m]").forEach(x => x.onclick = () => play(minis[+x.dataset.m], "mini"));
+    p.querySelectorAll("[data-d]").forEach(x => x.onclick = () => play(duels[+x.dataset.d], "duel"));
+    $("tAll").onclick = () => { S.max = 10; saveS(); toast("모든 장을 열었어요"); };
+    $("tNat").onclick = () => { NATURE.forEach(n => { S.nat[n.id] = S.nat[n.id] || {nm:"", ch:S.ch}; }); saveS(); toast("반짝이를 다 찾았어요"); };
+    $("tWipe").onclick = () => { localStorage.removeItem("anneMap2"); location.reload(); };
+    $("tClose").onclick = () => p.remove(); };
+}
 
 /* ---------- 장 데이터 모양 ----------
 CH[n] = {
