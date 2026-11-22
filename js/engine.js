@@ -95,9 +95,9 @@ function hud(){
   h.hidden = !S.met[k]; const n = S.hearts[k] || 0;
   h.innerHTML = `<img src="${IMG("av_" + k)}" alt="" onerror="this.style.display='none'"><span>${HEARTS[k]}</span> <b>${"♥".repeat(n)}${"♡".repeat(5 - n)}</b>`;
 }
-function heart(k, n){ S.hearts[k] = Math.max(0, Math.min(5, (S.hearts[k] || 0) + n)); S.met[k] = true; hud(); if(n > 0) note(`💗 ${HEARTS[k]}의 마음 +${n}`); }
-function getItem(k){ if(S.items.includes(k)) return; S.items.push(k); (S.got[S.ch] = S.got[S.ch] || []).push(k); note(`🎒 ${ITEMS[k] ? ITEMS[k].name : k}을(를) 가방에 넣었어요`); }
-function hide(id){ if(S.hidden.includes(id)) return; S.hidden.push(id); (S.got[S.ch] = S.got[S.ch] || []).push("@" + id); note("✨ 숨은 장면을 찾았어요!"); }
+function heart(k, n){ S.hearts[k] = Math.max(0, Math.min(5, (S.hearts[k] || 0) + n)); S.met[k] = true; hud(); if(n > 0){ note(`💗 ${HEARTS[k]}의 마음 +${n}`); SFX.heart(); burst(innerWidth / 2, innerHeight * .35, 12, "heart"); } }
+function getItem(k){ if(S.items.includes(k)) return; S.items.push(k); (S.got[S.ch] = S.got[S.ch] || []).push(k); note(`🎒 ${ITEMS[k] ? ITEMS[k].name : k}을(를) 가방에 넣었어요`); SFX.chime(); }
+function hide(id){ if(S.hidden.includes(id)) return; S.hidden.push(id); (S.got[S.ch] = S.got[S.ch] || []).push("@" + id); note("✨ 숨은 장면을 찾았어요!"); SFX.chime(); burst(innerWidth / 2, innerHeight * .4, 16); }
 function eff(e){ if(!e) return; if(typeof e === "function"){ e(); return; }
   if(e.h) Object.entries(e.h).forEach(([k, n]) => heart(k, n));
   if(e.get) [].concat(e.get).forEach(getItem);
@@ -194,7 +194,12 @@ function anneKey(f){
 const sprKey = k => (k && C() && C().spr && C().spr[k]) || k;
 const norm = n => Array.isArray(n) ? Object.assign({w:n[0], f:n[1], o:n[2], t:n[3]}, n[4] || {}) : n;
 function playScene(nodes, bg, stage, quest){ Q = nodes.map(norm); qi = 0; curBg = bg; curStage = stage; isQuest = quest; setBg(bg); show("place"); step(); }
-function setBg(k){ const el = $("bg"); el.style.backgroundImage = k ? `url(${IMG(k)})` : "none"; }
+/* 배경이 바뀌면 살짝 다가가며 나타나고(camin), 머무는 동안은 아주 천천히 움직여요(kb) */
+let bgNow = "";
+function setBg(k){ const el = $("bg"); el.style.backgroundImage = k ? `url(${IMG(k)})` : "none";
+  if(k !== bgNow){ bgNow = k; el.classList.remove("camin"); void el.offsetWidth; el.classList.add("camin"); } }
+/* 감정 카메라: 화나면 살짝 흔들리고, 놀라면 톡 다가가요 */
+function cam(kind){ const p = $("place"); p.classList.remove("cam-shake", "cam-punch"); void p.offsetWidth; p.classList.add("cam-" + kind); setTimeout(() => p.classList.remove("cam-" + kind), 500); }
 function step(){
   $("duel").classList.remove("on");
   const n = Q[qi]; if(!n){ endScene(); return; }
@@ -205,8 +210,9 @@ function step(){
   if(n.mini){ runMini(n); return; }
   if(n.duel){ runDuel(n); return; }
   if(n.bg) curBg = n.bg;
-  const still = n.still || null;
-  setBg(still || curBg);
+  const still = n.still || null, was = bgNow;
+  setBg(still || curBg); if(still && still !== was) SFX.whoosh();
+  if(n.f === "angry" && !still) cam("shake"); else if(n.f === "surprised" && !still) cam("punch");
   $("place").classList.toggle("dream", !!n.dream);
   stage(curStage);
   const sp = n.w === "anne" || n.w === "inner", nar = n.w === "nar" || !n.w;
@@ -224,6 +230,7 @@ function choice(n){
   const who = $("who"); who.className = "who sys"; who.textContent = n.lab || "선택의 순간"; $("txt").textContent = fill(n.q); $("nx").hidden = true;
   $("ch").innerHTML = `<div class="opts">${n.opts.map((o, i) => `<button data-i="${i}">${esc(fill(o.t))}</button>`).join("")}</div>`;
   $("ch").querySelectorAll("button").forEach(b => b.onclick = e => { e.stopPropagation(); const o = n.opts[+b.dataset.i];
+    SFX.ok(); burst(e.clientX, e.clientY, 8);
     if(o.type){ S.tally[o.type]++; note({canon:"📖 원작 속 앤과 같은 선택이에요", imag:"✨ 상상의 날개를 펼쳤어요", bal:"⚖️ 따뜻한 선택이에요"}[o.type]); }
     eff(o.eff); Q = (o.then || []).map(norm).concat(Q.slice(qi + 1)); qi = 0; saveS(); step(); });
 }
@@ -238,13 +245,13 @@ function naming(n){
   $("nmIn").onclick = e => e.stopPropagation(); $("nmIn").onkeydown = e => { if(e.key === "Enter") done($("nmIn").value); };
 }
 function typeText(t){ const el = $("txt"); clearInterval(typing); let i = 0; el.textContent = ""; el.dataset.full = t;
-  typing = setInterval(() => { el.textContent = t.slice(0, ++i); if(i >= t.length){ clearInterval(typing); typing = null; } }, 30); }
+  typing = setInterval(() => { el.textContent = t.slice(0, ++i); if(i % 4 === 1 && /\S/.test(t[i - 1] || "")) SFX.tick(); if(i >= t.length){ clearInterval(typing); typing = null; } }, 30); }
 function stage(st){ const L = $("sL").style, R = $("sR").style;
   if(st && innerWidth > innerHeight){ L.left = st.l[0] + "%"; L.bottom = st.l[1] + "%"; L.height = st.l[2] + "%"; R.left = st.r[0] + "%"; R.right = "auto"; R.bottom = st.r[1] + "%"; R.height = st.r[2] + "%"; }
   else ["left", "bottom", "height", "right"].forEach(k => { L[k] = ""; R[k] = ""; }); }
 function setSpr(img, k, dim){ if(!k){ img.classList.add("off"); return; } img.onerror = () => img.classList.add("off"); img.src = IMG(k); img.classList.remove("off"); img.classList.toggle("dim", !!dim); }
 function advance(){ if(!S.tips.talk && qi >= 2){ S.tips.talk = true; $("nx").textContent = "▼"; $("nx").classList.remove("tip"); saveS(); } const n = Q[qi]; if(!n || n.opts || n.name || n.mini || n.duel || $("pop").classList.contains("on")) return;
-  if(typing){ clearInterval(typing); typing = null; $("txt").textContent = $("txt").dataset.full; return; } qi++; step(); }
+  if(typing){ clearInterval(typing); typing = null; $("txt").textContent = $("txt").dataset.full; return; } SFX.page(); qi++; step(); }
 
 function endScene(){
   if(!isQuest){ show("map"); drawMap(); return; }
@@ -259,17 +266,18 @@ const placeBg = k => { const p = P[k], se = C() && C().season; return (p.bgS && 
 function runMini(n){
   const m = n.mini; show("mini"); $("hudT").textContent = "미니게임 · " + m.title;
   const mini = $("mini"); mini.style.backgroundImage = m.bg === false ? "none" : `url(${IMG(m.bg || curBg)})`; mini.classList.toggle("roll", !!m.roll);
-  $("field").innerHTML = ""; $("mh").textContent = "";
+  miniStopAll(); const of = $("field"), nf = of.cloneNode(false); of.replaceWith(nf); $("mh").textContent = "";   /* 새 판: 이전 놀이가 남긴 타이머·글은 떼어 낸 옛 판에만 닿음 */
+  const ses = runMini.ses = (runMini.ses || 0) + 1, live = () => ses === runMini.ses;
   let rollOn = !!m.roll, rx = 0, last = 0;
   const roll = t => { if(!rollOn) return; if(last && !PORTRAIT.matches && !$("pop").classList.contains("on")) rx -= (t - last) * .09; last = t; $("road").style.backgroundPositionX = rx + "px"; requestAnimationFrame(roll); };
   if(rollOn) requestAnimationFrame(roll);
-  popCard(`<span class="lab">미니게임</span><h2>${esc(m.title)}</h2><p>${esc(m.how)}</p><button class="big-btn sub" id="pOk">시작!</button>`, () => {
+  SFX.pop(); popCard(`<span class="lab">미니게임</span><h2>${esc(m.title)}</h2><p>${esc(m.how)}</p><button class="big-btn sub" id="pOk">시작!</button>`, () => {
     MINI[m.kind](m, {
-      hud: t => { $("mh").textContent = t; }, field: $("field"),
-      end: (st, msg) => {
-        $("field").innerHTML = ""; rollOn = false; mini.classList.remove("roll");
+      hud: t => { if(live()) $("mh").textContent = t; }, field: nf,
+      end: (st, msg) => { if(!live()) return; runMini.ses++; miniStopAll();
+        nf.innerHTML = ""; rollOn = false; mini.classList.remove("roll");
         st = Math.max(1, Math.min(3, st)); const id = m.id || ("m" + S.ch + "_" + S.qi); S.stars[id] = Math.max(S.stars[id] || 0, st); saveS();
-        const line = (m.res && m.res[st]) || msg || "";
+        const line = (m.res && m.res[st]) || msg || ""; SFX.stars(st); setTimeout(() => { for(let k = 0; k < st; k++) setTimeout(() => burst(innerWidth / 2 + (k - (st - 1) / 2) * 40, innerHeight * .32, 10), 120 + k * 220); }, 50);
         popCard(`<span class="lab">미니게임 끝</span><h2>${"⭐".repeat(st)}${"☆".repeat(3 - st)}</h2>${msg && m.res ? `<p>${esc(msg)}</p>` : ""}<p>${esc(line)}</p><button class="big-btn sub" id="pOk">이야기 계속하기</button>`, () => {
           hudTitle(); const add = st >= 2 ? n.good : n.bad; if(n.eff2 && st >= 2) eff(n.eff2);
           Q = (add || []).map(norm).concat(Q.slice(qi + 1)); qi = 0; show("place"); step(); });

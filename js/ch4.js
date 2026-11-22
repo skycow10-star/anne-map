@@ -10,7 +10,7 @@ CH[4] = {
   quests:[
   {at:"birch", label:"다이애나와 학교 가는 길 걷기", nodes:[
     ["diana", "happy", "diana", "\"앤, 이 길로 가면 학교가 금방이야.\n내가 제일 좋아하는 길이야!\""],
-    {mini:{kind:"find", id:"path", title:"숲길 등굣길", bg:"ch4_birch", scene:"hf_birch", how:"자작나무 숲길 그림 속에 숲속 친구들이 숨어 있어요. 오른쪽 목록을 보고 그림에서 찾아 톡 눌러요. 아무 데나 마구 누르면 시간이 줄어요! 20초가 지나면 힌트를 한 번 쓸 수 있어요.",
+    {mini:{kind:"find", id:"path", title:"숲길 등굣길", bg:false, scene:"hf_birch", how:"자작나무 숲길 그림 속에 숲속 친구들이 숨어 있어요. 오른쪽 목록을 보고 그림에서 찾아 톡 눌러요. 아무 데나 마구 누르면 시간이 줄어요! 20초가 지나면 힌트를 한 번 쓸 수 있어요.",
       say:"그림 속에 숨은 것을 찾아요", time:60,
       things:[{img:"hfi_violet", e:"🪻", name:"제비꽃", say:"제비꽃이야!"}, {img:"hfi_butterfly", e:"🦋", name:"노랑나비", say:"나비다!"},
               {img:"hfi_bird", e:"🐦", name:"파랑새", say:"파랑새!"}, {img:"hfi_rabbit", e:"🐇", name:"토끼", say:"쉿, 토끼야!"}, {img:"hfi_puff", e:"🌼", name:"민들레 홀씨", say:"후— 불어 볼까?"}],

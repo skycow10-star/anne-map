@@ -6,9 +6,12 @@ const rnd = (a, b) => a + Math.random() * (b - a);
 const shuffle = a => { a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const look = t => t.img ? `<img src="${IMG(t.img)}" alt="" onerror="this.replaceWith(document.createTextNode('${t.e || "✿"}'))">` : (t.e || "✿");
 const FAST = /fast/.test(location.hash) ? 6 : 1;  // 시험용: 주소 끝에 #fast
-function every(ms, fn){ const h = setInterval(() => { if(!PORTRAIT.matches) fn(); }, ms / FAST); return () => clearInterval(h); }
+/* 미니게임 타이머는 모두 모아 두었다가, 새 미니게임을 시작하거나 끝날 때 한꺼번에 끈다(이전 놀이 퀴즈가 다음 놀이 위에 뜨지 않게) */
+let MTIMERS = [];
+function every(ms, fn){ const h = setInterval(() => { if(!PORTRAIT.matches) fn(); }, ms / FAST); MTIMERS.push(h); return () => clearInterval(h); }
+function miniStopAll(){ MTIMERS.forEach(clearInterval); MTIMERS = []; }
 function panel(api, html){ api.field.innerHTML = `<div class="mpanel">${html}</div>`; return api.field.firstElementChild; }
-function popAt(api, x, y, txt){ const p = document.createElement("div"); p.className = "pop"; p.textContent = txt;
+function popAt(api, x, y, txt){ if(/!|요/.test(txt) && !/앗|음매|천천히|없어요|막혔|삐뚤|벗어/.test(txt)) SFX.pop(); const p = document.createElement("div"); p.className = "pop"; p.textContent = txt;
   p.style.left = Math.min(innerWidth - 180, Math.max(8, x - 40)) + "px"; p.style.top = y + "px"; api.field.appendChild(p); setTimeout(() => p.remove(), 1200); }
 
 /* 날아오는 것 잡기: items:[{img|e, say}], time, goal:[2별,3별] */
@@ -49,7 +52,7 @@ MINI.calm = (m, api) => {
   const boom = () => { if(over) return;
     if(m.flood && phase === 1){ next(); return; }
     anger = 100; bar(); f.querySelectorAll(".thing").forEach(t => t.remove());
-    const mini = $("mini"); mini.classList.remove("boom"); void mini.offsetWidth; mini.classList.add("boom");
+    SFX.thud(); const mini = $("mini"); mini.classList.remove("boom"); void mini.offsetWidth; mini.classList.add("boom");
     f.insertAdjacentHTML("beforeend", `<div class="boomtxt">${esc(m.boomWord || "펑!")}</div>`);
     finish(m.flood ? `${m.boom || "결국 화가 터져 버렸어요."} 그래도 앞에서 ${sent}개의 말을 꾹 참았어요.` : (m.boom || "펑! 참지 못했어요.")); };
   const stopS = every(m.every || 1500, () => { if(i < words.length) bubble(words[i++], rnd(4.5, 5.5)); });
@@ -84,7 +87,7 @@ MINI.pick = (m, api) => {
     api.hud(`${m.say || "알맞은 것을 골라요"} · ${r + 1}/${m.rounds.length}`);
     let done = false;
     const res = (ok, b, why) => { if(done) return; done = true; if(stopR) stopR();
-      if(b) b.classList.add(ok ? "ok" : "no"); if(ok) me++; else if(m.rival && why !== "slow") them++;
+      if(b) b.classList.add(ok ? "ok" : "no"); if(ok){ SFX.ok(); if(b){ const r = b.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, 8); } } else SFX.no(); if(ok) me++; else if(m.rival && why !== "slow") them++;
       if(why === "slow") them++;
       const line = ok ? R.yes : R.no; if(line) popAt(api, innerWidth / 2 - 60, innerHeight * .2, line);
       setTimeout(() => { r++; draw(); }, line ? 1300 : 700); };
@@ -110,7 +113,7 @@ MINI.find = (m, api) => {
     d.style.cssText = `left:${x}%;top:${y}%;width:max(${(sz * (0.8 + Math.random() * .45)).toFixed(2)}%, ${28 + Math.random() * 8 | 0}px);transform:translate(-50%,-50%) rotate(${(Math.random() * 70 - 35) | 0}deg) scaleX(${Math.random() < .5 ? -1 : 1});opacity:${(1 - hide * (0.6 + Math.random() * .6)).toFixed(2)}`;
     hb.appendChild(d); return d; };
   m.things.forEach((t, i) => { for(let k = 0; k < (t.n || 1); k++){ const d = put(t, "real"); d.onclick = e => { e.stopPropagation(); if(over || d.classList.contains("got")) return;
-    d.classList.add("got"); got++; cnt[i]++; $("hc" + i).textContent = `${cnt[i]}/${t.n || 1}`; if(cnt[i] >= (t.n || 1)) $("hr" + i).classList.add("done");
+    d.classList.add("got"); got++; cnt[i]++; SFX.found(); burst(e.clientX, e.clientY, 10); $("hc" + i).textContent = `${cnt[i]}/${t.n || 1}`; if(cnt[i] >= (t.n || 1)) $("hr" + i).classList.add("done");
     popAt(api, e.clientX - 30, e.clientY - 60, t.say || "찾았다!"); msg(); if(got >= total) done(); }; } });
   (m.fakes || []).forEach(t => { const d = put(t, "fake"); d.onclick = e => { e.stopPropagation(); if(over) return; left = Math.max(1, left - 3); d.classList.add("nope"); setTimeout(() => d.classList.remove("nope"), 500);
     popAt(api, e.clientX - 30, e.clientY - 60, "목록에 없어요! -3초"); msg(); }; });
@@ -138,8 +141,8 @@ const findScene = (m, api) => {
   fp.onclick = e => { if(over) return; const b = fp.getBoundingClientRect(), x = (e.clientX - b.left) / b.width * 100, y = (e.clientY - b.top) / b.height * 100;
     let best = -1, bd = 1e9; m.spots.forEach((p, i) => { if(found[i]) return; const d = Math.hypot(x - p.x, (y - p.y) * 9 / 16); if(d < (p.r || 4) * 1.15 && d < bd){ bd = d; best = i; } });
     if(best < 0){ const r = document.createElement("span"); r.className = "hf-miss"; r.style.left = e.clientX + "px"; r.style.top = e.clientY + "px"; document.body.appendChild(r); setTimeout(() => r.remove(), 500);
-      if(++miss >= 3){ miss = 0; left = Math.max(1, left - 2); popAt(api, e.clientX - 30, e.clientY - 60, "천천히 찾아봐요! -2초"); msg(); } return; }
-    miss = 0; found[best] = true; got++; const k = m.spots[best].k, t = m.things[k]; cnt[k]++; mark(best, "got");
+      SFX.tap(); if(++miss >= 3){ miss = 0; left = Math.max(1, left - 2); SFX.no(); popAt(api, e.clientX - 30, e.clientY - 60, "천천히 찾아봐요! -2초"); msg(); } return; }
+    miss = 0; found[best] = true; got++; SFX.found(); burst(e.clientX, e.clientY, 10); const k = m.spots[best].k, t = m.things[k]; cnt[k]++; mark(best, "got");
     $("hc" + k).textContent = `${cnt[k]}/${need[k]}`; if(cnt[k] >= need[k]) $("hr" + k).classList.add("done");
     popAt(api, e.clientX - 30, e.clientY - 60, t.say || "찾았다!"); msg(); if(got >= total) done(); };
   $("hh").onclick = () => { if(hintUsed) return; hintUsed = true; $("hh").disabled = true; $("hh").textContent = "힌트 다 썼어요";
@@ -157,7 +160,7 @@ MINI.bail = (m, api) => {
   f.innerHTML = `<div class="water" id="wt" style="height:25%"></div><div class="bl-q"><b>${esc(m.q || "물을 퍼내요!")}</b><span>화면 아무 데나 빠르게 톡톡! 휴대폰을 흔들어도 돼요</span></div>
     <div class="bl-line" style="bottom:100%"></div><div class="bl-bucket" id="bk">🪣</div>`;
   const msg = () => api.hud(`${m.say || "버텨요!"} · ${left}초 · 물 ${Math.round(lv)}%`); msg();
-  const scoop = (x, y, k = 1) => { if(over) return; taps++; lv = Math.max(0, lv - (m.scoop || 2.6) * k); const b = $("bk"); if(b){ b.classList.remove("dip"); void b.offsetWidth; b.classList.add("dip"); }
+  const scoop = (x, y, k = 1) => { if(over) return; taps++; if(taps % 2) SFX.splash(); lv = Math.max(0, lv - (m.scoop || 2.6) * k); const b = $("bk"); if(b){ b.classList.remove("dip"); void b.offsetWidth; b.classList.add("dip"); }
     if(x !== undefined && taps % 3 === 0){ const s = document.createElement("span"); s.className = "bl-splash"; s.style.left = x + "px"; s.style.top = y + "px"; document.body.appendChild(s); setTimeout(() => s.remove(), 450); } };
   f.onpointerdown = e => { e.preventDefault(); scoop(e.clientX, e.clientY); };
   const shake = e => { const a = e.accelerationIncludingGravity || e.acceleration; if(!a) return; const g = Math.hypot(a.x || 0, a.y || 0, a.z || 0); const now = Date.now();
@@ -268,27 +271,34 @@ MINI.decorate = (m, api) => {
     return best; };
   const setAt = (d, i) => { const s = spots[i]; used[i] = d; d.dataset.s = i; d.style.left = s.x + "%"; d.style.top = s.y + "%";
     d.style.setProperty("--k", s.s || 1); d.style.transform = `translate(-50%,${m.anchor === "bottom" ? -86 : -50}%) rotate(${s.r || 0}deg) scale(var(--k))`; d.style.transformOrigin = m.anchor === "bottom" ? "50% 86%" : ""; d.style.zIndex = s.z || 2; };
-  const drag = (ghost, x0, y0, onDrop) => {
-    ghost.classList.add("dz-drag"); document.body.appendChild(ghost);
-    const mv = e => { ghost.style.left = e.clientX + "px"; ghost.style.top = e.clientY + "px"; dz.classList.toggle("hot", inZone(e.clientX, e.clientY)); };
+  /* 끄는 동안: 놓였을 때와 같은 크기로 보이고, 들어갈 자리를 미리 반짝여 줘요 */
+  const aim = (t, x, y) => { f.querySelectorAll(".dz-spot.aim").forEach(s => s.classList.remove("aim")); if(!spots || !inZone(x, y)) return;
+    const [px, py] = pct(x, y), i = pickSpot(t, px, py); if(i >= 0) f.querySelector(`.dz-spot[data-s="${i}"]`).classList.add("aim"); };
+  const drag = (ghost, x0, y0, onDrop, t) => {
+    ghost.classList.add("dz-drag"); if(m.size) ghost.style.setProperty("--dzs", m.size + "vh"); document.body.appendChild(ghost);
+    const mv = e => { ghost.style.left = e.clientX + "px"; ghost.style.top = e.clientY + "px"; dz.classList.toggle("hot", inZone(e.clientX, e.clientY)); if(t) aim(t, e.clientX, e.clientY); };
     mv({clientX:x0, clientY:y0});
-    const up = e => { removeEventListener("pointermove", mv); removeEventListener("pointerup", up); removeEventListener("pointercancel", up); dz.classList.remove("hot"); ghost.remove(); onDrop(e.clientX, e.clientY); };
+    const up = e => { removeEventListener("pointermove", mv); removeEventListener("pointerup", up); removeEventListener("pointercancel", up); dz.classList.remove("hot"); aim(); ghost.remove(); onDrop(e.clientX, e.clientY); };
     addEventListener("pointermove", mv); addEventListener("pointerup", up); addEventListener("pointercancel", up);
   };
   const place = (o, x, y) => { const d = document.createElement("div"); d.className = "dz-it" + (spots ? " fit" : ""); d.innerHTML = look(o); d.dataset.t = o.t;
-    if(spots){ const [px, py] = pct(x, y), i = pickSpot(o.t, px, py); if(i < 0){ api.hud(`이제 놓을 자리가 없어요 · ${n}/${max}`); return; } setAt(d, i); }
+    if(spots){ const [px, py] = pct(x, y), i = pickSpot(o.t, px, py); if(i < 0){ api.hud(`이제 놓을 자리가 없어요 · ${n}/${max}`); return; } glide(d, x, y, i, true); }
     else { const [px, py] = pct(x, y); d.style.left = px + "%"; d.style.top = py + "%"; d.style.transform = `translate(-50%,-50%) rotate(${(Math.random() * 40 - 20) | 0}deg)`; }
-    d.onpointerdown = e => { e.preventDefault(); const g = d.cloneNode(true); d.style.visibility = "hidden";
+    d.onpointerdown = e => { e.preventDefault(); const g = d.cloneNode(true); g.style.cssText = ""; d.style.visibility = "hidden"; const s0 = spots ? +d.dataset.s : -1; if(spots) used[s0] = null;
       drag(g, e.clientX, e.clientY, (X, Y) => {
-        if(inZone(X, Y)){ if(spots){ used[+d.dataset.s] = null; const [px, py] = pct(X, Y), i = pickSpot(d.dataset.t, px, py); setAt(d, i < 0 ? +d.dataset.s : i); } else { const [px, py] = pct(X, Y); d.style.left = px + "%"; d.style.top = py + "%"; } d.style.visibility = ""; }
-        else { if(spots) used[+d.dataset.s] = null; d.remove(); n--; msg(); } }); };
-    dz.appendChild(d); n++; msg(); };
+        if(inZone(X, Y)){ if(spots){ const [px, py] = pct(X, Y), i = pickSpot(d.dataset.t, px, py); glide(d, X, Y, i < 0 ? s0 : i); } else { const [px, py] = pct(X, Y); d.style.left = px + "%"; d.style.top = py + "%"; } d.style.visibility = ""; }
+        else { d.remove(); n--; msg(); } }, d.dataset.t); };
+    if(!d.isConnected) dz.appendChild(d); n++; msg(); };
+  /* 놓은 곳에 먼저 나타난 뒤 제자리로 스르륵 */
+  const glide = (d, x, y, i, fresh) => { const [px, py] = pct(x, y); d.classList.add("nofx"); d.style.left = px + "%"; d.style.top = py + "%"; d.style.transform = "translate(-50%,-50%) scale(1.15)";
+    if(fresh) dz.appendChild(d); void d.offsetWidth; d.classList.remove("nofx"); setAt(d, i); SFX.pop();
+    setTimeout(() => { const r = d.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, 7); }, 300); d.classList.remove("land"); void d.offsetWidth; d.classList.add("land"); };
   f.querySelectorAll("#dt button").forEach(b => {
     b.onpointerdown = e => { e.preventDefault(); if(n >= max){ api.hud(`이제 더 놓을 자리가 없어요 · ${n}/${max}`); return; }
       const o = m.items[+b.dataset.i], g = document.createElement("div"); g.className = "dz-it"; g.innerHTML = look(o);
       const sx = e.clientX, sy = e.clientY;
       drag(g, sx, sy, (X, Y) => { if(inZone(X, Y)) place(o, X, Y);
-        else if(Math.hypot(X - sx, Y - sy) < 8){ const r = dz.getBoundingClientRect(); place(o, r.left + r.width * (.25 + Math.random() * .5), r.top + r.height * (.25 + Math.random() * .4)); } }); };
+        else if(Math.hypot(X - sx, Y - sy) < 8){ const r = dz.getBoundingClientRect(); place(o, r.left + r.width * (.25 + Math.random() * .5), r.top + r.height * (.25 + Math.random() * .4)); } }, o.t); };
   });
   $("dd").onclick = () => { const put = [...dz.querySelectorAll(".dz-it")].map(d => d.dataset.t);
     const good = m.score ? m.score(put) : null;
@@ -462,6 +472,15 @@ MINI.trace = (m, api) => {
   // 점선 경로를 촘촘한 점으로
   const P = []; for(let i = 0; i < m.path.length - 1; i++){ const [x1, y1] = m.path[i], [x2, y2] = m.path[i + 1], n = Math.max(2, Math.ceil(Math.hypot(x2 - x1, y2 - y1) / .6)); for(let k = 0; k < n; k++) P.push([x1 + (x2 - x1) * k / n, y1 + (y2 - y1) * k / n]); }
   P.push(m.path[m.path.length - 1]);
+  /* wig:{amp(그림 높이 %), n(물결 수)} 꼬불꼬불: 경로 옆으로 물결을 얹어요(양 끝은 잦아들게). 화면 비율을 맞춰 진짜 수직으로 */
+  if(m.wig){ const asp = 747 / (1000 * crop), L = [0];   /* .tr-box 비율과 같게 */
+    for(let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * asp, P[i][1] - P[i - 1][1]));
+    const tot = L[L.length - 1], amp = m.wig.amp || 4, wn = m.wig.n || 9, Q = P.map(p => p.slice());
+    for(let i = 0; i < P.length; i++){ const a = P[Math.max(0, i - 2)], b = P[Math.min(P.length - 1, i + 2)], tx = (b[0] - a[0]) * asp, ty = b[1] - a[1], tl = Math.hypot(tx, ty) || 1;
+      const s = L[i] / tot, o = amp * Math.sin(s * wn * 2 * Math.PI) * Math.min(1, s * 12, (1 - s) * 12);
+      Q[i] = [P[i][0] + (-ty / tl) * o / asp, P[i][1] + (tx / tl) * o]; }
+    P.length = 0; P.push(...Q); }
+  const WIN = m.wig ? 10 : 40;
   const dstr = pts => pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(2) + " " + p[1].toFixed(2)).join(" ");
   $("tpath").setAttribute("d", dstr(P));
   const st = $("tst"); st.style.left = P[0][0] + "%"; st.style.top = P[0][1] + "%";
@@ -473,9 +492,9 @@ MINI.trace = (m, api) => {
   const move = (x, y) => {
     if(over) return; const r = tb.getBoundingClientRect(); tt.style.left = ((x - r.left) / r.width * 100) + "%"; tt.style.top = ((y - r.top) / r.height * 100) + "%";
     if(!down) return;
-    let best = -1, bd = 1e9; for(let i = prog; i < Math.min(P.length, prog + 40); i++){ const [px, py] = toPx(P[i]), dd = Math.hypot(px - x, py - y); if(dd < bd){ bd = dd; best = i; } }
-    if(bd > tol() * 1.6){ if(!wasOff){ wasOff = true; off++; tb.classList.remove("shake"); void tb.offsetWidth; tb.classList.add("shake"); popAt(api, x - 40, y - 60, m.offSay || "앗, 선을 벗어났어요!"); msg(); } return; }
-    if(bd < tol()){ wasOff = false; devSum += bd; devN++; if(best > prog){ prog = best; $("tdone").setAttribute("d", dstr(P.slice(0, prog + 1))); msg(); } }
+    let best = -1, bd = 1e9; for(let i = prog; i < Math.min(P.length, prog + WIN); i++){ const [px, py] = toPx(P[i]), dd = Math.hypot(px - x, py - y); if(dd < bd){ bd = dd; best = i; } }
+    if(bd > tol() * (m.wig ? 1.3 : 1.6)){ if(!wasOff){ wasOff = true; off++; SFX.no(); tb.classList.remove("shake"); void tb.offsetWidth; tb.classList.add("shake"); popAt(api, x - 40, y - 60, m.offSay || "앗, 선을 벗어났어요!"); msg(); } return; }
+    if(bd < tol()){ wasOff = false; devSum += bd; devN++; if(best > prog){ if((best / 9 | 0) > (prog / 9 | 0)) SFX.snip(); prog = best; $("tdone").setAttribute("d", dstr(P.slice(0, prog + 1))); msg(); } }
     if(prog >= P.length - 2) finish();
   };
   tb.onpointerdown = e => { e.preventDefault(); const [sx, sy] = toPx(P[prog]); if(Math.hypot(sx - e.clientX, sy - e.clientY) > tol() * 1.8 && prog === 0){ popAt(api, e.clientX - 40, e.clientY - 60, "반짝이는 시작점에서 시작해요"); return; }
@@ -484,7 +503,7 @@ MINI.trace = (m, api) => {
   tb.onpointerup = tb.onpointercancel = () => { down = false; };
   const finish = () => { if(over) return; over = true; tt.style.display = "none"; $("tdone").style.opacity = 0; $("tpath").style.opacity = 0;
     if(m.after) tb.style.backgroundImage = `url(${IMG(m.after)})`;
-    if(m.afterSvg) $("tafter").innerHTML = m.afterSvg; tb.classList.add("doneflash");
+    if(m.afterSvg) $("tafter").innerHTML = m.afterSvg; tb.classList.add("doneflash"); SFX.chime(); { const r = tb.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height * .4, 16); }
     const avg = devN ? devSum / devN / tol() : 1;
     const st = off === 0 && avg < .45 ? 3 : off <= 2 ? 2 : 1;
     setTimeout(() => api.end(st, off === 0 ? "한 번도 벗어나지 않았어요!" : `${off}번 벗어났지만 끝까지 해냈어요.`), 1300); };
@@ -530,29 +549,45 @@ MINI.shield = (m, api) => {
     setTimeout(() => api.end(st, hurt >= 100 ? (m.boom || "속상해서 눈물이 났어요.") : `놀림 ${blocked}개를 막았어요!`), 600); };
 };
 
-/* 소 우리로 보내기(주차장 빠져나가기처럼): 소는 바라보는 쪽으로만 걸어요. 앞이 막히지 않은 소부터 눌러 모두 내보내요.
-   cols, rows, n(소 수), bg */
+/* 소 우리로 보내기(주차장 빠져나가기처럼): 소는 바라보는 쪽으로만 걸어요. 앞이 막히지 않은 소부터 눌러요.
+   풀밭(울타리 없음)을 빠져나간 소는 옆의 울타리 친 '소 우리'로 걸어 들어가 차곡차곡 모여요.
+   cols, rows, n(소 수), depth(적어도 몇 차례 풀어야 하는지), time(노을 지기까지 초) */
 MINI.herd = (m, api) => {
-  const C = m.cols || 6, R = m.rows || 4, N = m.n || 9, D = {u:[0, -1], d:[0, 1], l:[-1, 0], r:[1, 0]}, ROT = {u:0, r:90, d:180, l:270};
+  const C = m.cols || 7, R = m.rows || 5, N = m.n || 15, DEP = m.depth || 5, T = m.time || 75, D = {u:[0, -1], d:[0, 1], l:[-1, 0], r:[1, 0]}, ROT = {u:0, r:90, d:180, l:270};
   const free = (cows, c) => { let [x, y] = [c.x, c.y]; const [dx, dy] = D[c.dir]; while(true){ x += dx; y += dy; if(x < 0 || y < 0 || x >= C || y >= R) return true; if(cows.some(o => o !== c && o.x === x && o.y === y)) return false; } };
-  const solvable = cows => { let left = cows.slice(), steps = 0; while(left.length){ const k = left.find(c => free(left, c)); if(!k) return false; left = left.filter(c => c !== k); steps++; } return true; };
-  let cows;
-  for(let t = 0; t < 400; t++){ const cells = shuffle(Array.from({length:C * R}, (_, i) => [i % C, i / C | 0])).slice(0, N);
-    cows = cells.map(([x, y], i) => ({id:i, x, y, dir:"udlr"[Math.random() * 4 | 0]}));
-    if(solvable(cows) && cows.filter(c => free(cows, c)).length <= Math.ceil(N / 3)) break; }
-  const f = api.field; let miss = 0, out = 0, busy = false;
+  /* 한 차례에 풀리는 소를 모두 빼며 몇 차례 걸리는지(못 풀면 0) */
+  const depth = cows => { let left = cows.slice(), d = 0; while(left.length){ const k = left.filter(c => free(left, c)); if(!k.length) return 0; left = left.filter(c => !k.includes(c)); d++; } return d; };
+  let cows, best = null, bs = -1;
+  for(let t = 0; t < 1500; t++){ const cells = shuffle(Array.from({length:C * R}, (_, i) => [i % C, i / C | 0])).slice(0, N);
+    const cs = cells.map(([x, y], i) => ({id:i, x, y, dir:"udlr"[Math.random() * 4 | 0]})), d = depth(cs);
+    if(!d) continue; const fr = cs.filter(c => free(cs, c)).length, sc = d * 10 - fr * 3;
+    if(sc > bs){ bs = sc; best = cs; } if(d >= DEP && fr <= 3) break; }
+  cows = best;
+  const f = api.field; let miss = 0, out = 0, busy = false, left = T, over = false;
   f.innerHTML = `<div class="hd-wrap"><div class="hd-board" id="hb" style="--c:${C};--r:${R}">${Array.from({length:C * R}, () => `<i></i>`).join("")}</div>
-    <div class="hd-side"><div class="hd-barn">🏠<b>소 우리</b></div><p>${esc(m.tip || "소는 바라보는 쪽으로만 걸어요. 앞이 막히지 않은 소부터 눌러요.")}</p><div class="hd-count" id="hc"></div></div></div>`;
-  const hb = $("hb");
-  const msg = () => { api.hud(`${m.say || "앞이 막히지 않은 소를 눌러요"} · ${out}/${N}마리`); $("hc").textContent = `우리에 들어간 소 ${out}/${N} · 부딪힘 ${miss}`; }; msg();
-  const pos = c => `left:${c.x / C * 100}%;top:${c.y / R * 100}%`;
-  cows.forEach(c => { const el = document.createElement("button"); el.className = "hd-cow"; el.style.cssText = pos(c) + `;width:${100 / C}%;height:${100 / R}%`;
-    el.innerHTML = `<span style="transform:rotate(${ROT[c.dir]}deg)">${m.img ? `<img src="${IMG(m.img)}" alt="" onerror="this.replaceWith(document.createTextNode('🐄'))">` : "🐄"}<em>▲</em></span>`;
+    <div class="hd-side"><div class="hd-barn"><b>소 우리</b><div class="hd-pen" id="hp">${Array.from({length:N}, () => `<i></i>`).join("")}</div></div>
+    <p>${esc(m.tip || "소는 바라보는 쪽으로만 걸어요. 앞이 막히지 않은 소부터 눌러요.")}</p><div class="hd-count" id="hc"></div></div></div>`;
+  const hb = $("hb"), pen = [...$("hp").children], cowImg = m.img ? `<img src="${IMG(m.img)}" alt="" onerror="this.replaceWith(document.createTextNode('🐄'))">` : "🐄";
+  const msg = () => { api.hud(`${m.say || "앞이 막히지 않은 소를 눌러요"} · 해 지기까지 ${left}초`); $("hc").textContent = `우리에 들어간 소 ${out}/${N} · 부딪힘 ${miss}`; }; msg();
+  const finish = (st, text) => { if(over) return; over = true; stop(); setTimeout(() => api.end(st, text), 500); };
+  const stop = every(1000, () => { if(over) return; left--; msg(); hb.style.filter = `sepia(${(1 - left / T) * .45}) brightness(${1 - (1 - left / T) * .22})`;
+    if(left <= 0) finish(1, `해가 져 버렸어요. 소 ${out}마리가 우리에 들어갔어요.`); });
+  cows.forEach(c => { const el = document.createElement("button"); el.className = "hd-cow"; el.style.cssText = `left:${c.x / C * 100}%;top:${c.y / R * 100}%;width:${100 / C}%;height:${100 / R}%`;
+    el.innerHTML = `<span style="transform:rotate(${ROT[c.dir]}deg)">${cowImg}<em>▲</em></span>`;
     c.el = el; hb.appendChild(el);
-    el.onclick = () => { if(busy || c.gone) return; busy = true; const [dx, dy] = D[c.dir];
-      if(free(cows.filter(o => !o.gone), c)){ c.gone = true; el.classList.add("go"); el.style.left = (c.x + dx * (C + 1)) / C * 100 + "%"; el.style.top = (c.y + dy * (R + 1)) / R * 100 + "%";
-        out++; msg(); setTimeout(() => { el.remove(); busy = false; if(out >= N) api.end(miss === 0 ? 3 : miss <= 2 ? 2 : 1, miss === 0 ? "한 번도 안 부딪히고 모두 들여보냈어요!" : `${miss}번 부딪혔지만 모두 우리에 들어갔어요.`); }, 650); }
-      else { miss++; msg(); el.style.left = (c.x + dx * .35) / C * 100 + "%"; el.style.top = (c.y + dy * .35) / R * 100 + "%"; el.classList.add("bump");
+    el.onclick = () => { if(over || busy || c.gone) return; const [dx, dy] = D[c.dir];
+      if(free(cows.filter(o => !o.gone), c)){ c.gone = true; el.classList.add("go"); SFX.step(); if(out % 3 === 0) setTimeout(SFX.moo, 150); const slot = pen[out]; out++; msg();
+        /* 1) 바라보는 쪽으로 풀밭 끝까지 걸어 나가고 2) 우리 안 제자리로 걸어 들어가요 */
+        const ex = dx > 0 ? C : dx < 0 ? -1 : c.x, ey = dy > 0 ? R : dy < 0 ? -1 : c.y, steps = Math.abs(ex - c.x) + Math.abs(ey - c.y);
+        el.style.transitionDuration = Math.min(.7, .12 * steps) + "s"; el.style.left = ex / C * 100 + "%"; el.style.top = ey / R * 100 + "%";
+        setTimeout(() => { const b = hb.getBoundingClientRect(), s = slot.getBoundingClientRect(), cw = b.width / C, ch = b.height / R;
+          el.classList.add("walk"); el.style.transitionDuration = ".6s";
+          el.style.left = (s.left + s.width / 2 - b.left - cw / 2) / b.width * 100 + "%"; el.style.top = (s.top + s.height / 2 - b.top - ch / 2) / b.height * 100 + "%";
+          el.style.transform = `scale(${Math.max(.3, s.width / cw * 1.1)})`;
+          setTimeout(() => { el.remove(); slot.innerHTML = cowImg; slot.classList.add("in"); SFX.pop(); const sr = slot.getBoundingClientRect(); burst(sr.left + sr.width / 2, sr.top + sr.height / 2, 6);
+            if(out >= N) finish(miss === 0 ? 3 : miss <= 2 ? 2 : 1, miss === 0 ? "한 번도 안 부딪히고 모두 우리에 들여보냈어요!" : `${miss}번 부딪혔지만 모두 우리에 들어갔어요.`); }, 620);
+        }, Math.min(700, 120 * steps) + 30); }
+      else { busy = true; miss++; msg(); SFX.thud(); el.style.left = (c.x + dx * .35) / C * 100 + "%"; el.style.top = (c.y + dy * .35) / R * 100 + "%"; el.classList.add("bump");
         const r = el.getBoundingClientRect(); popAt(api, r.left, r.top - 30, m.ouch || "음매! 앞이 막혔어요");
         setTimeout(() => { el.style.left = c.x / C * 100 + "%"; el.style.top = c.y / R * 100 + "%"; el.classList.remove("bump"); busy = false; }, 380); } };
   });

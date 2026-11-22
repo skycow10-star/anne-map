@@ -484,23 +484,26 @@ html,body{position:fixed;inset:0;width:100%;height:100%;overscroll-behavior:none
 #field.ouch,#mini .ouch{animation:quake .35s}
 /* ---- 소 우리로 보내기 ---- */
 .hd-wrap{position:absolute;inset:0;display:flex;gap:14px;align-items:center;justify-content:center;padding:84px 16px 12px}
-.hd-board{position:relative;height:100%;max-height:520px;aspect-ratio:calc(var(--c) / var(--r));display:grid;grid-template-columns:repeat(var(--c),1fr);grid-template-rows:repeat(var(--r),1fr);background:rgba(160,196,110,.8);border:6px solid #8a6446;border-radius:14px;box-shadow:inset 0 0 18px rgba(60,80,30,.35);overflow:visible}
+.hd-board{position:relative;height:100%;max-height:520px;aspect-ratio:calc(var(--c) / var(--r));display:grid;grid-template-columns:repeat(var(--c),1fr);grid-template-rows:repeat(var(--r),1fr);background:rgba(160,196,110,.8);border:0;border-radius:22px;box-shadow:0 0 0 6px rgba(160,196,110,.45),inset 0 0 18px rgba(60,80,30,.3);overflow:visible;transition:filter 1s}
 .hd-board>i{border:1px dashed rgba(90,110,60,.35)}
 .hd-cow{position:absolute;padding:2px;background:none;border:0;transition:left .55s ease-in,top .55s ease-in,opacity .55s;display:flex;align-items:center;justify-content:center}
 .hd-cow span{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:clamp(26px,6vh,50px)}
 .hd-cow img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 3px 3px rgba(40,25,10,.35))}
 .hd-cow em{position:absolute;top:-6%;left:50%;transform:translateX(-50%);font-style:normal;font-size:clamp(12px,2.4vh,18px);color:#fff;text-shadow:0 0 3px #4a2a1a,0 0 3px #4a2a1a}
-.hd-cow.go{opacity:0}.hd-cow.bump{transition:left .18s,top .18s}
+.hd-cow.go{z-index:5;transition-property:left,top,transform;transition-timing-function:linear}.hd-cow.walk{transition-timing-function:ease-in-out}.hd-cow.bump{transition:left .18s,top .18s}
 .hd-side{width:min(220px,26%);display:flex;flex-direction:column;gap:8px;font-size:14px}
-.hd-barn{font-size:34px;text-align:center;background:rgba(255,251,242,.92);border:2px solid var(--line);border-radius:14px;padding:6px}
-.hd-barn b{display:block;font-family:"Jua",sans-serif;font-size:15px}
+.hd-barn{text-align:center;background:#d9c49a;border:5px solid #8a6446;border-radius:6px;padding:4px 6px 6px;box-shadow:inset 0 0 0 3px #b0895f,0 3px 8px rgba(60,40,20,.3);background-image:repeating-linear-gradient(90deg,transparent 0 22px,rgba(138,100,70,.35) 22px 25px)}
+.hd-barn b{display:block;font-family:"Jua",sans-serif;font-size:15px;font-weight:400;color:#5a3a22}
+.hd-pen{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;margin-top:3px;background:rgba(150,180,100,.55);border-radius:4px;padding:3px}
+.hd-pen i{aspect-ratio:1;border-radius:4px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:14px}
+.hd-pen i img{width:100%;height:100%;object-fit:contain}.hd-pen i.in{animation:boompop .35s}
 .hd-side p{margin:0;background:rgba(255,251,242,.92);border-radius:12px;padding:8px 10px;word-break:keep-all}
 .hd-count{font-family:"Jua",sans-serif;background:rgba(255,251,242,.92);border-radius:12px;padding:6px 10px;text-align:center}
 /* ---- 지도에서 찾기 ---- */
-.mp-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;gap:6px;padding:96px 14px 10px}
-.mp-q{font-family:"Jua",sans-serif;font-size:19px;background:rgba(255,251,242,.95);border:2px solid var(--line);border-radius:999px;padding:4px 18px}
+.mp-wrap{position:absolute;inset:0;overflow:hidden}
+.mp-q{position:absolute;z-index:3;left:50%;top:58px;transform:translateX(-50%);white-space:nowrap;font-family:"Jua",sans-serif;font-size:19px;background:rgba(255,251,242,.95);border:2px solid var(--line);border-radius:999px;padding:4px 18px;box-shadow:0 3px 10px rgba(40,25,10,.25)}
 .mp-q span{font-size:14px;color:var(--ink2)}
-.mp-map{position:relative;flex:1;min-height:0;aspect-ratio:16/9;max-width:100%;background:center/100% 100% no-repeat;border:3px solid var(--line);border-radius:14px;box-shadow:0 6px 18px rgba(40,25,10,.25)}
+.mp-map{position:absolute;left:50%;top:50%;transform:translate(-50%,-47%);width:max(100%,calc(var(--vh,100vh) * 16 / 9));aspect-ratio:16/9;background:center/100% 100% no-repeat}
 .mp-dot{position:absolute;width:30px;height:30px;transform:translate(-50%,-50%);border-radius:50%;border:3px solid #fff;background:rgba(200,85,47,.75);box-shadow:0 2px 6px rgba(0,0,0,.35);padding:0}
 .mp-dot.ok{background:#6b8a4e;transform:translate(-50%,-50%) scale(1.35)}.mp-dot.no{background:#7a6a5a;animation:quake .4s}
 /* ---- 물 퍼내기 ---- */
@@ -520,20 +523,34 @@ html,body{position:fixed;inset:0;width:100%;height:100%;overscroll-behavior:none
 .sl-clues button{display:block;margin:4px auto 0;font-family:"Jua",sans-serif;background:var(--green);color:#fff;border:0;border-radius:10px;padding:4px 16px}
 /* ---- 꾸미기 자리 ---- */
 .dz-spot{position:absolute;width:26px;height:16px;transform:translate(-50%,-50%);border-radius:50%;background:rgba(60,36,20,.35);box-shadow:inset 0 2px 4px rgba(0,0,0,.4);pointer-events:none}
-.dz-it.fit{transition:left .2s,top .2s}
+.dz-it.fit{transition:left .32s cubic-bezier(.2,.8,.3,1.1),top .32s cubic-bezier(.2,.8,.3,1.1),transform .32s ease-out}.dz-it.nofx{transition:none!important}
+.dz-spot.aim{width:44px;height:28px;background:rgba(255,224,120,.55);box-shadow:0 0 0 3px #fff,0 0 14px #ffd76a;animation:aimglow .7s ease-in-out infinite alternate}
+@keyframes aimglow{to{box-shadow:0 0 0 5px #fff,0 0 24px 6px #ffd76a}}
 .ob img{width:60px;height:60px;object-fit:contain}
 @media (orientation:landscape) and (max-height:520px){
   .tr-wrap{padding:72px 10px 8px}.tr-tool{font-size:26px}
   .sh-word{font-size:14px;padding:2px 9px}.sh-shield{width:52px;height:64px}.sh-shield span{font-size:24px}
-  .hd-wrap{padding:70px 10px 6px;gap:8px}.hd-side{font-size:12px}.hd-barn{font-size:24px}
-  .mp-wrap{padding:84px 10px 6px}.mp-q{font-size:15px}.mp-dot{width:24px;height:24px}
+  .hd-wrap{padding:70px 10px 6px;gap:8px}.hd-side{font-size:12px}.hd-barn b{font-size:13px}
+  .mp-q{font-size:14px;top:42px;padding:2px 14px}.mp-dot{width:24px;height:24px}
   .bl-q b{font-size:16px}.bl-bucket{font-size:40px}
   .sl-clues{font-size:13px;padding:8px 12px}.ob img{width:46px;height:46px}}
 
-.fs-board{display:flex;align-items:center;justify-content:center;cursor:default;padding:46px 6px 6px}
+.fs-board{display:flex;align-items:center;justify-content:center;cursor:default;padding:46px 6px 6px 10px;background:#efe6d4}
 .fs-pic{position:relative;aspect-ratio:16/9;width:100%;max-height:100%;max-width:calc((100vh - 52px) * 16 / 9);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(60,40,20,.25);cursor:crosshair}
 .fs-pic img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none}
 .fs-mark{position:absolute;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none}
 .fs-mark.got{border:3px solid #e7b84a;box-shadow:0 0 0 2px rgba(255,255,255,.7),0 0 10px #fff3c4;animation:boompop .4s}
 .fs-mark.hint{border:3px dashed #fff;animation:hintblink .5s 5}
 .fs-mark.show{border:3px dashed #c8552f}
+/* ---- 카메라·반짝이 효과 ---- */
+.scene.camin{animation:camin .7s ease-out,kb 28s ease-in-out .7s infinite alternate}
+@keyframes camin{from{transform:scale(1.07);opacity:.35}to{transform:scale(1);opacity:1}}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.045) translate(-.6%,-.4%)}}
+#place.cam-shake .scene,#place.cam-shake .spr:not(.off){animation:quake .4s}
+#place.cam-punch .scene{animation:campunch .45s ease-out}
+@keyframes campunch{40%{transform:scale(1.05)}}
+.dream .scene.camin{animation:camin 1s ease-out,dreamkb 9s ease-in-out 1s infinite alternate}
+@keyframes dreamkb{from{transform:scale(1)}to{transform:scale(1.05) translate(.5%,-.5%)}}
+.fx-spark{position:fixed;z-index:120;pointer-events:none;font-style:normal;line-height:1;transform:translate(-50%,-50%);text-shadow:0 0 4px rgba(255,255,255,.9);animation:fxspark .7s ease-out forwards}
+@keyframes fxspark{to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.3) rotate(90deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){.scene.camin,.dream .scene.camin{animation:none}#place.cam-shake .scene,#place.cam-shake .spr,#place.cam-punch .scene{animation:none}}

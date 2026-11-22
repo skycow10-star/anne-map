@@ -52,8 +52,8 @@ CH[8] = {
   {at:"home", label:"마릴라 아주머니와 머리 손질하기", bg:"ch8", walker:"walk_green", anne:"anne_green", lock:{except:["spring"], why:"초록 머리로는 사람들 앞에 나갈 수 없어요"}, nodes:[
     ["marilla", "anne_green_hair", "marilla_strict", "일주일 동안 날마다 머리를 감았지만 초록색은 빠지지 않았어.\n\"앤, 이제는 자를 수밖에 없구나.\""],
     {eff:{get:"scissors"}},
-    {mini:{kind:"trace", id:"haircut", title:"초록 머리 자르기", bg:"ch8", how:"마릴라 아주머니를 도와 초록 머리를 잘라요. 반짝이는 시작점에 손가락을 대고, 점선을 따라 끝까지 천천히 그어요. 선에서 벗어나면 머리가 삐뚤어져요!",
-      say:"점선을 따라 천천히 잘라요", img:"anne_green_hair", after:"anne_short_sad", crop:.42, tool:"✂", tol:28, offSay:"앗, 삐뚤어질라!",
+    {mini:{kind:"trace", id:"haircut", title:"초록 머리 자르기", bg:"ch8", how:"마릴라 아주머니를 도와 초록 머리를 잘라요. 반짝이는 시작점에 손가락을 대고, 꼬불꼬불한 점선을 따라 끝까지 천천히 그어요. 선에서 벗어나면 머리가 삐뚤어져요!",
+      say:"점선을 따라 천천히 잘라요", img:"anne_green_hair", after:"anne_short_sad", crop:.42, tool:"✂", tol:13, wig:{amp:8, n:7}, offSay:"앗, 삐뚤어질라!",
       path:[[31, 30], [29, 45], [30, 60], [34, 74], [42, 86], [50, 90], [58, 86], [66, 74], [70, 60], [71, 45], [69, 30]],
       res:{1:"조금 삐뚤빼뚤하지만 괜찮아요. 머리는 다시 자라요.", 2:"제법 반듯하게 잘랐어요!", 3:"아주 반듯하게 잘랐어요! 마릴라 아주머니도 놀라셨어요."}}},
     ["inner", "anne_short_sad", "marilla_warm", "싹둑, 싹둑.\n나는 울지 않았어. 아니, 아주 조금만 울었어."],
