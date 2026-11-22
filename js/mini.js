@@ -147,7 +147,7 @@ MINI.decorate = (m, api) => {
 /* 달리기: 위·가운데·아래 길 바꾸며 피하기. time, obs:[e] */
 MINI.run = (m, api) => {
   let lane = 1, hit = 0, left = m.time || 20, over = false; const f = api.field;
-  f.innerHTML = `<div class="lane" style="top:22%"></div><div class="lane" style="top:44%"></div><div class="lane" style="top:66%;border:0"></div><div class="runner" id="rn" style="background-image:url(${IMG((C() && C().walker) || "walk_anne")})"></div>
+  f.innerHTML = `<div class="lane" style="top:22%"></div><div class="lane" style="top:44%"></div><div class="lane" style="top:66%;border:0"></div><div class="runner" id="rn" style="background-image:url(${IMG((quest() && quest().walker) || (C() && C().walker) || "walk_anne")})"></div>
     <div style="position:absolute;inset:22% 0 0 0;display:flex;flex-direction:column;z-index:7"><button class="zt" data-d="-1" style="flex:1;opacity:0">위로</button><button class="zt" data-d="1" style="flex:1;opacity:0">아래로</button></div>`;
   const place = () => { $("rn").style.top = `calc(${22 + lane * 22 + 11}% - 32px)`; }; place();
   f.querySelectorAll(".zt").forEach(b => b.onclick = e => { e.stopPropagation(); lane = Math.max(0, Math.min(2, lane + +b.dataset.d)); place(); });

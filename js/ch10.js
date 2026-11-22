@@ -9,7 +9,7 @@ const myMapRounds = () => {
   return rounds.length ? rounds : [{q:"앤이 처음 도착한 곳은 어디였을까요?", opts:[{t:"브라이트 리버 역", ok:1}, {t:"에이번리 학교"}, {t:"뒷목장"}]}];
 };
 CH[10] = {
-  title:"길모퉁이", when:"열여섯 살의 봄부터 가을까지", season:"autumn", img:"ch10", bgm:"bgm_ch10.mp3", anne:"anne_grow", who:"matthew",
+  title:"길모퉁이", when:"열여섯 살의 봄부터 가을까지", season:"autumn", img:"ch10", bgm:"bgm_ch10.mp3", anne:"anne_grow", walker:"walk_grow", who:"matthew",
   intro:"퀸스 학교를 마친 앤이 에이버리 장학금을 받고 초록 지붕 집으로 돌아왔어요. 이제 대학에 갈 수 있어요. 그런데 길은 가끔 생각지 못한 모퉁이를 돌아요.",
   teaser:"앤의 이야기는 길모퉁이 너머로 계속돼요.",
   end:{canon:["하느님은 하늘에, 세상은 평안히", "원작 속 앤처럼 꿈을 잠시 내려놓고 초록 지붕 집을 지키기로 했어요. 길모퉁이 너머에도 좋은 것이 기다리고 있대요."],

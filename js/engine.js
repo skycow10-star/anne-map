@@ -128,7 +128,7 @@ function drawMap(){
   const at = P[S.at] || P.station; if(!walking){ $("me").setAttribute("transform", `translate(${at.x + 40} ${at.y + 6})`); $("meBody").setAttribute("transform", ""); }
   $("trail").setAttribute("d", "");
   $("guide").setAttribute("d", target && target !== S.at && P[S.at] ? pathD(route(S.at, target)) : "");
-  const wk = (C() && C().walker) || "walk_anne", mi = $("meImg"); if(mi.dataset.k !== wk){ mi.dataset.k = wk; mi.onerror = () => mi.setAttribute("href", IMG("walk_anne")); mi.setAttribute("href", IMG(wk)); }
+  const wk = (q && q.walker) || (C() && C().walker) || "walk_anne", mi = $("meImg"); if(mi.dataset.k !== wk){ mi.dataset.k = wk; mi.onerror = () => mi.setAttribute("href", IMG("walk_anne")); mi.setAttribute("href", IMG(wk)); }
   const mw = $("mw"), sv = mw.firstElementChild, focus = P[target] || at;
   requestAnimationFrame(() => { const sc = sv.clientWidth / 1600; mw.scrollTo({left:Math.max(0, focus.x * sc - mw.clientWidth / 2), behavior:"smooth"}); });
   $("quest").innerHTML = q ? `<b>📒 할 일 ${S.qi + 1}/${C().quests.length}</b> · ${esc(fill(q.label))}` : S.over ? `<b>📒 이야기 끝!</b> 마을을 마음껏 돌아다녀 보세요` : "";

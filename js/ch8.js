@@ -34,7 +34,7 @@ CH[8] = {
       {t:"\"그래도 눈은 예쁘대요…\" 하고 작게 말한다.", type:"bal", then:[["marilla", "anne_green_hair", "marilla_warm", "\"…그래, 눈은 예쁘지.\"\n아주머니가 한숨을 쉬며 살짝 웃으셨어."]]}
     ]}
   ]},
-  {at:"spring", label:"샘물에서 머리 감아 보기", bg:"ch7_spring", nodes:[
+  {at:"spring", label:"샘물에서 머리 감아 보기", bg:"ch7_spring", walker:"walk_green", nodes:[
     ["inner", "anne_green_hair", null, "샘물에 머리를 감으면 초록색이 빠질지도 몰라.\n나는 몰래 나무 요정의 샘으로 달려갔어."],
     ["inner", "anne_green_hair", null, "첨벙첨벙, 비누로 박박.\n…하나도 안 빠져. 오히려 더 초록색으로 반짝여!"],
     ["diana", "anne_green_hair", "diana", "\"앤? 너 머리가 왜… 초록색이야?\"\n하필 그때 다이애나가 샘가로 왔어."],
@@ -44,7 +44,7 @@ CH[8] = {
       {t:"솔직하게 행상인한테 산 염색약 이야기를 한다.", type:"bal", eff:{h:{diana:1}}, then:[["diana", "anne_green_hair", "diana", "\"그랬구나. 앤, 많이 속상하겠다.\"\n다이애나는 놀리지 않고 걱정해 주었어."]]}
     ]}
   ]},
-  {at:"home", label:"마릴라 아주머니와 머리 손질하기", bg:"ch8", nodes:[
+  {at:"home", label:"마릴라 아주머니와 머리 손질하기", bg:"ch8", walker:"walk_green", nodes:[
     ["marilla", "anne_green_hair", "marilla_strict", "일주일 동안 날마다 머리를 감았지만 초록색은 빠지지 않았어.\n\"앤, 이제는 자를 수밖에 없구나.\""],
     {eff:{get:"scissors"}},
     ["inner", "sad", "marilla_warm", "싹둑, 싹둑.\n나는 울지 않았어. 아니, 아주 조금만 울었어."],
@@ -60,7 +60,7 @@ CH[8] = {
       {t:"아주머니께 \"자르느라 힘드셨죠\" 하고 말한다.", type:"bal", eff:{h:{marilla:2}}, then:[["marilla", "anne_short_happy", "marilla_warm", "\"…녀석, 별걱정을 다 하는구나.\"\n아주머니가 내 짧은 머리를 쓰다듬어 주셨어."]]}
     ]}
   ]},
-  {at:"school", label:"짧은 머리로 학교 가기", bg:"ch4", nodes:[
+  {at:"school", label:"짧은 머리로 학교 가기", bg:"ch4", walker:"walk_short", nodes:[
     ["inner", "anne_short_sad", null, "학교에 가자 모두 내 머리를 쳐다봤어.\n조지 파이가 킥킥 웃었지."],
     {mini:{kind:"calm", id:"tease", title:"놀림 꾹 참기", how:"조지 파이의 놀리는 말이 날아와요. 톡 눌러 흘려보내요. 앤에게 닿으면 속상함 게이지가 올라가요.",
       say:"말을 눌러 흘려보내요!", gauge:"앤의 속상함", ok:"괜찮아", boom:"속상해서 눈물이 났어요.",
