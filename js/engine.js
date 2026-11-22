@@ -70,10 +70,13 @@ const ITEMS = {
 };
 
 /* ---------- 저장 ---------- */
-const FRESH = () => ({v:2, ch:1, qi:0, max:1, names:{}, hearts:{matthew:1}, met:{}, items:[], hidden:[], stars:{}, tally:{canon:0, imag:0, bal:0}, res:{}, at:"station", fail:{}, over:false});
+const FRESH = () => ({tips:{}, got:{}, seen:{}, v:2, ch:1, qi:0, max:1, names:{}, hearts:{matthew:1}, met:{}, items:[], hidden:[], stars:{}, tally:{canon:0, imag:0, bal:0}, res:{}, at:"station", fail:{}, over:false});
 let S = FRESH();
 const saveS = () => { try{ localStorage.setItem("anneMap2", JSON.stringify(S)); }catch(e){} };
 try{ const d = JSON.parse(localStorage.getItem("anneMap2") || "null"); if(d && d.v === 2) S = Object.assign(FRESH(), d); }catch(e){}
+if(!S.tips) S.tips = {};
+if(S.qi > 0 || S.ch > 1){ S.tips.map = S.tips.talk = true; }
+Object.entries(S.res || {}).forEach(([n, r]) => { S.seen[n + "_" + r.e] = true; });
 
 const C = () => CH[S.ch];
 const quest = () => C() && C().quests[S.qi];
@@ -94,8 +97,8 @@ function hud(){
   h.innerHTML = `<img src="${IMG("av_" + k)}" alt="" onerror="this.style.display='none'"><span>${HEARTS[k]}</span> <b>${"♥".repeat(n)}${"♡".repeat(5 - n)}</b>`;
 }
 function heart(k, n){ S.hearts[k] = Math.max(0, Math.min(5, (S.hearts[k] || 0) + n)); S.met[k] = true; hud(); if(n > 0) note(`💗 ${HEARTS[k]}의 마음 +${n}`); }
-function getItem(k){ if(S.items.includes(k)) return; S.items.push(k); note(`🎒 ${ITEMS[k] ? ITEMS[k].name : k}을(를) 가방에 넣었어요`); }
-function hide(id){ if(S.hidden.includes(id)) return; S.hidden.push(id); note("✨ 숨은 장면을 찾았어요!"); }
+function getItem(k){ if(S.items.includes(k)) return; S.items.push(k); (S.got[S.ch] = S.got[S.ch] || []).push(k); note(`🎒 ${ITEMS[k] ? ITEMS[k].name : k}을(를) 가방에 넣었어요`); }
+function hide(id){ if(S.hidden.includes(id)) return; S.hidden.push(id); (S.got[S.ch] = S.got[S.ch] || []).push("@" + id); note("✨ 숨은 장면을 찾았어요!"); }
 function eff(e){ if(!e) return; if(typeof e === "function"){ e(); return; }
   if(e.h) Object.entries(e.h).forEach(([k, n]) => heart(k, n));
   if(e.get) [].concat(e.get).forEach(getItem);
@@ -138,6 +141,9 @@ function drawMap(){
   $("quest").innerHTML = q ? `<b>📒 할 일 ${S.qi + 1}/${C().quests.length}</b> · ${esc(fill(q.label))}` : S.over ? `<b>📒 이야기 끝!</b> 마을을 마음껏 돌아다녀 보세요` : "";
   document.querySelectorAll(".pin").forEach(g => { g.onclick = () => go(g.dataset.k); g.onkeydown = e => { if(e.key === "Enter") go(g.dataset.k); }; });
   hudTitle(); hud();
+  // 처음 하는 아이 안내: 다음 장소 핀 아래 손가락
+  const hand = $("hand"), tp = P[target];
+  if(!S.tips.map && tp){ hand.style.display = ""; hand.setAttribute("transform", `translate(${tp.x + 62} ${tp.y - 22})`); } else hand.style.display = "none";
 }
 const pathD = pts => "M" + pts.map(p => p.map(Math.round).join(" ")).join("L");
 let walking = false;
@@ -162,7 +168,8 @@ function blocked(k){ const q = quest(), L = q && q.lock; if(!L || k === q.at) re
 function go(k){
   if(busy) return;
   if(!(P[k].from <= S.ch || S.over)){ toast(`아직 가 본 적 없는 곳이에요. ${P[k].from}장에서 열려요`); return; }
-  if(blocked(k)){ toast(quest().lock.why); return; } const p = P[k], q = quest(); busy = true;
+  if(blocked(k)){ toast(quest().lock.why); return; }
+  if(!S.tips.map){ S.tips.map = true; $("hand").style.display = "none"; } const p = P[k], q = quest(); busy = true;
   const pts = S.at && P[S.at] && S.at !== k ? route(S.at, k) : null;
   const arrive = () => { S.at = k; saveS(); drawMap();
   setTimeout(() => { busy = false;
@@ -209,6 +216,7 @@ function step(){
   if(n.opts) return choice(n);
   if(n.name) return naming(n);
   typeText(fill(n.t));
+  if(!S.tips.talk){ $("nx").textContent = "▼ 화면을 누르면 다음 이야기"; $("nx").classList.add("tip"); }
 }
 function choice(n){
   const who = $("who"); who.className = "who sys"; who.textContent = n.lab || "선택의 순간"; $("txt").textContent = fill(n.q); $("nx").hidden = true;
@@ -233,7 +241,7 @@ function stage(st){ const L = $("sL").style, R = $("sR").style;
   if(st && innerWidth > innerHeight){ L.left = st.l[0] + "%"; L.bottom = st.l[1] + "%"; L.height = st.l[2] + "%"; R.left = st.r[0] + "%"; R.right = "auto"; R.bottom = st.r[1] + "%"; R.height = st.r[2] + "%"; }
   else ["left", "bottom", "height", "right"].forEach(k => { L[k] = ""; R[k] = ""; }); }
 function setSpr(img, k, dim){ if(!k){ img.classList.add("off"); return; } img.onerror = () => img.classList.add("off"); img.src = IMG(k); img.classList.remove("off"); img.classList.toggle("dim", !!dim); }
-function advance(){ const n = Q[qi]; if(!n || n.opts || n.name || n.mini || n.duel || $("pop").classList.contains("on")) return;
+function advance(){ if(!S.tips.talk && qi >= 2){ S.tips.talk = true; $("nx").textContent = "▼"; $("nx").classList.remove("tip"); saveS(); } const n = Q[qi]; if(!n || n.opts || n.name || n.mini || n.duel || $("pop").classList.contains("on")) return;
   if(typing){ clearInterval(typing); typing = null; $("txt").textContent = $("txt").dataset.full; return; } qi++; step(); }
 
 function endScene(){
@@ -302,7 +310,8 @@ function chapterIntro(){
 function endingOf(t){ return t.canon >= t.imag && t.canon >= t.bal ? (t.canon > t.imag && t.canon > t.bal ? "canon" : t.imag === t.canon ? "imag" : "bal") : t.imag > t.bal ? "imag" : "bal"; }
 function chapterEnd(){
   const c = C(), t = S.tally, e = endingOf(t), E = c.end[e];
-  S.res[S.ch] = {e, title:E[0], t:{...t}}; saveS();
+  S.res[S.ch] = {e, title:E[0], t:{...t}}; S.seen[S.ch + "_" + e] = true; saveS();
+  const got = (S.got[S.ch] || []).map(x => x[0] === "@" ? `<img src="${IMG("sc_" + x.slice(1))}" alt="" title="${esc(HID[x.slice(1)] || "숨은 장면")}" class="sc" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'sc nopic',textContent:'✨'}))">` : ITEMS[x] ? `<img src="${IMG(ITEMS[x].img)}" alt="" title="${esc(ITEMS[x].name)}" onerror="this.style.display='none'">` : "").join("");
   const hidAll = countHidden(c), hidGot = S.hidden.filter(h => hidAll.includes(h)).length;
   const stars = Object.entries(S.stars).filter(([k]) => (c.minis || []).includes(k)).map(([, v]) => v);
   const names = (c.names || []).map(k => S.names[k]).filter(Boolean);
@@ -314,10 +323,12 @@ function chapterEnd(){
     <dt>💗 ${HEARTS[k]}</dt><dd style="color:#d9645c">${"♥".repeat(hn)}${"♡".repeat(5 - hn)}</dd>
     ${stars.length ? `<dt>⭐ 미니게임</dt><dd>${stars.map(v => "⭐".repeat(v)).join(" · ")}</dd>` : ""}
     ${hidAll.length ? `<dt>✨ 숨은 장면</dt><dd>${hidGot}/${hidAll.length}</dd>` : ""}</dl>
+    ${got ? `<div class="gotrow"><span>이번 장에서 모은 것</span><div>${got}</div></div>` : ""}
     <p style="font-size:14px">${esc(c.teaser)}</p>
-    <div class="btns"><button class="big-btn" id="pOk">${S.ch < 10 ? "다음 장으로" : "이야기를 마치며"}</button></div>`, () => {
+    <div class="btns"><button class="big-btn" id="pOk">${S.ch < 10 ? "다음 장으로" : "이야기를 마치며"}</button><button class="big-btn ghost" id="pAl">앨범</button></div>`, () => {
       if(S.ch >= 10){ finale(); return; }
       S.ch++; S.qi = 0; S.max = Math.max(S.max, S.ch); S.tally = {canon:0, imag:0, bal:0}; saveS(); chapterIntro(); }, true);
+  $("pAl").onclick = () => album(S.ch);
 }
 function countHidden(c){ const out = []; const walk = a => (a || []).forEach(n => { if(!n || typeof n !== "object") return; if(Array.isArray(n)){ if(n[4]) walk([n[4]]); return; }
   if(n.eff && n.eff.hid) out.push(n.eff.hid); if(n.hid) out.push(n.hid); (n.opts || []).forEach(o => { if(o.eff && o.eff.hid) out.push(o.eff.hid); walk(o.then); });
@@ -343,8 +354,39 @@ function bag(){
   const its = S.items.map(k => ITEMS[k] ? `<div><img src="${IMG(ITEMS[k].img)}" alt="" onerror="this.style.visibility='hidden'">${esc(ITEMS[k].name)}</div>` : "").join("");
   const hs = Object.keys(HEARTS).filter(k => S.met[k]).map(k => `<dt>${HEARTS[k]}</dt><dd style="color:#d9645c">${"♥".repeat(S.hearts[k] || 0)}${"♡".repeat(5 - (S.hearts[k] || 0))}</dd>`).join("");
   popCard(`<h2>🎒 앤의 가방</h2>${its ? `<div class="bag">${its}</div>` : "<p>아직 비어 있어요.</p>"}${hs ? `<h2 style="font-size:20px">💗 마음</h2><dl class="sum">${hs}</dl>` : ""}
-    <button class="big-btn sub" id="pOk">닫기</button>`);
+    <div class="btns"><button class="big-btn ghost" id="pAl">나의 앨범</button><button class="big-btn sub" id="pOk">닫기</button></div>`);
+  $("pAl").onclick = () => { closeCard(); album(); };
 }
+
+/* ---------- 나의 앨범: 결말 그림과 숨은 장면 ---------- */
+const HID = {cherry:"벚나무 위 대리석 궁전", mirror:"노을 거울 연못", castle:"탑이 일곱 개인 성",
+  sunsetHair:"노을빛 머리의 노래", curse:"빨간 머리 마녀의 저주", quietHurt:"떨리는 목소리", rehearsal:"매슈 아저씨의 린드 부인 연기", biggerPerson:"더 큰 사람",
+  flowerQueen:"들꽃 나라의 여왕", askFirst:"다음엔 먼저 여쭤볼게요", withE:"끝에 e가 붙는 앤", cordelia:"다시 나타난 코델리아", lilyCrown:"참나리 왕관의 맹세", pinky:"새끼손가락 약속", starSisters:"같은 별에서 온 자매", treasure:"우정의 보석 상자",
+  rival:"1등을 걸고", knight:"길버트 경의 전설", fair:"만나 보고 판단하기", dragon:"불을 뿜는 용", sayIt:"\"당장 사과해!\"", glassWall:"보이지 않는 유리벽", returned:"돌려준 하트 사탕", needTime:"아직은 시간이 필요해", starQuest:"별 백 개의 시험",
+  careful:"꼼꼼한 안주인", banquet:"여왕의 연회장", appleFace:"얼굴 그린 사과", rubyPotion:"마법의 루비 물약", oddTaste:"어딘가 이상한 맛", factsOnly:"있는 그대로", silence:"백 일의 침묵", mailbox:"통나무 다리 비밀 우체통", pebble:"이름 새긴 조약돌",
+  rescueTeam:"겨울밤 구조대", braveTale:"용감한 공주 이야기", teamwork:"셋이 나눈 일",
+  farewellTragedy:"비극의 작별 연설", dryadScarf:"요정의 무지개 스카프", lessonLearned:"다음엔 꼭 냄새부터",
+  magicPotion:"까마귀 물약", testStrand:"한 가닥 먼저 시험", spaRumor:"샘물 요정의 장난", ravenPrincess:"까마귀 머리 공주",
+  sunsetElaine:"노을빛 일레인", ladyOfLake:"호수의 여인", lancelotHorse:"백마 탄 랜슬롯",
+  restMatthew:"\"오늘은 제가 몰게요\"", starLetter:"별에게 쓴 편지", namedMap:"이름 지은 길들의 지도"};
+let alCh = 1;
+function album(ch){
+  const tot = {e:0, eg:0, h:0, hg:0};
+  CH.slice(1).forEach((c, i) => { tot.e += 3; tot.eg += ["canon", "imag", "bal"].filter(e => S.seen[(i + 1) + "_" + e]).length; const hs = countHidden(c); tot.h += hs.length; tot.hg += hs.filter(h => S.hidden.includes(h)).length; });
+  $("alCount").textContent = `결말 ${tot.eg}/${tot.e} · 숨은 장면 ${tot.hg}/${tot.h}`;
+  alCh = ch || alCh || S.ch;
+  $("alTabs").innerHTML = CH.slice(1).map((c, i) => `<button data-n="${i + 1}" class="${i + 1 === alCh ? "on" : ""}" ${i + 1 > S.max && !S.over ? "disabled" : ""}>${i + 1}장</button>`).join("");
+  $("alTabs").querySelectorAll("button").forEach(b => b.onclick = () => album(+b.dataset.n));
+  const c = CH[alCh], L = {canon:"원작 결말", imag:"상상 결말", bal:"균형 결말"};
+  const ends = ["canon", "imag", "bal"].map(e => { const ok = S.seen[alCh + "_" + e];
+    return `<button class="al-it ${ok ? "" : "lock"}" ${ok ? `data-img="ed_ch${alCh}_${e}" data-cap="${esc(L[e] + " · " + c.end[e][0])}"` : ""}>${ok ? `<img src="${IMG(`ed_ch${alCh}_${e}`)}" alt="" onerror="this.style.visibility='hidden'">` : "<i>?</i>"}<b>${L[e]}</b><span>${ok ? esc(c.end[e][0]) : "아직 못 봤어요"}</span></button>`; }).join("");
+  const hids = countHidden(c).map(h => { const ok = S.hidden.includes(h);
+    return `<button class="al-it ${ok ? "" : "lock"}" ${ok ? `data-img="sc_${h}" data-cap="${esc(HID[h] || "숨은 장면")}"` : ""}>${ok ? `<img src="${IMG("sc_" + h)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('i'),{textContent:'✨'}))">` : "<i>?</i>"}<b>숨은 장면</b><span>${ok ? esc(HID[h] || "") : "상상의 길을 골라 보세요"}</span></button>`; }).join("");
+  $("alBody").innerHTML = `<h3>${alCh}장 · ${esc(c.title)}</h3><div class="al-grid">${ends}${hids}</div>`;
+  $("alBody").querySelectorAll(".al-it[data-img]").forEach(b => b.onclick = () => { $("alImg").src = IMG(b.dataset.img); $("alImg").onerror = () => { $("alImg").removeAttribute("src"); }; $("alCap").textContent = b.dataset.cap; $("alView").classList.add("on"); });
+  $("album").classList.add("on");
+}
+
 function chapterPick(){
   const list = CH.slice(1).map((c, i) => `<button data-n="${i + 1}" ${i + 1 > S.max ? "disabled" : ""}><b>${i + 1}장 · ${esc(c.title)}</b>${S.res[i + 1] ? esc(S.res[i + 1].title) : i + 1 > S.max ? "아직 못 가요" : "하는 중"}</button>`).join("");
   popCard(`<h2>장 고르기</h2><p>지난 장을 다시 할 수 있어요. 이름·가방·마음은 그대로 남아요.</p><div class="chlist">${list}</div><button class="big-btn ghost" id="pOk">닫기</button>`);
@@ -367,9 +409,12 @@ const GAME = {boot(){
   $("bMusic").onclick = () => { musicOn = !musicOn; $("bMusic").style.opacity = musicOn ? 1 : .45; if(musicOn) music(); else if(bgm) bgm.pause(); };
   $("bMap").onclick = () => { clearInterval(typing); if(isQuest){ isQuest = false; } show("map"); drawMap(); };
   $("bBag").onclick = bag;
+  $("alClose").onclick = () => $("album").classList.remove("on");
+  $("alView").onclick = () => $("alView").classList.remove("on");
   const started = S.qi > 0 || S.ch > 1 || S.over;
   if(started){ $("bStart").textContent = "이어서 하기";
-    $("coverMore").innerHTML = `<button id="bPick">장 고르기</button><button id="bNew">처음부터</button>`;
+    $("coverMore").innerHTML = `<button id="bAlbum">나의 앨범</button><button id="bPick">장 고르기</button><button id="bNew">처음부터</button>`;
+    $("bAlbum").onclick = () => album(1);
     $("bPick").onclick = chapterPick; $("bNew").onclick = () => { if(confirmNew()) restart(); }; }
   $("bStart").onclick = () => { $("cover").classList.remove("on"); if(started) note(`${S.ch}장 · ${C().title}에서 이어서 해요`); hud();
     if(!started){ chapterIntro(); return; }
