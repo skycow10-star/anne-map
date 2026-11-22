@@ -402,6 +402,13 @@ async function music(){
 }
 
 /* ---------- 시작 ---------- */
+/* 화면 높이 맞추기: 휴대폰에서 껐다 켜거나 돌렸을 때 위에 빈 띠가 생기지 않게 */
+function fitScreen(){ const h = (window.visualViewport && visualViewport.height) || innerHeight;
+  document.documentElement.style.setProperty("--vh", Math.round(h) + "px"); if(scrollY || scrollX) scrollTo(0, 0); }
+["resize", "orientationchange", "pageshow", "focus"].forEach(ev => addEventListener(ev, () => { fitScreen(); setTimeout(fitScreen, 300); }));
+document.addEventListener("visibilitychange", () => { if(!document.hidden){ fitScreen(); setTimeout(fitScreen, 300); } });
+if(window.visualViewport) visualViewport.addEventListener("resize", fitScreen);
+fitScreen();
 const GAME = {boot(){
   $("cover").querySelector(".cv-petals").innerHTML = Array.from({length:14}, () => `<i style="left:${Math.random() * 110 | 0}%;animation-duration:${7 + Math.random() * 7}s;animation-delay:-${Math.random() * 12}s"></i>`).join("");
   $("box").onclick = advance;
