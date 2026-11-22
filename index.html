@@ -9,109 +9,15 @@
 <meta name="theme-color" content="#f6ecd6">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
-<style>
-/* VOICE: 동화책을 펼친 듯 다정하고 느긋하게
-   IDEA: 앤이 손으로 그린 에이번리 마을 그림지도 위를 걷는 놀이판
-   PICTURE: 수채화 지도 한 장 + 장소 핀 + 길 위를 걷는 앤 얼굴
-   COLOUR: 초록 지붕 #4f8a5b, 종이 #f6ecd8, 앤 머리 #c8552f 강조
-   TYPE: Gowun Batang 제목 / Gowun Dodum 본문 · LAYOUT: 화면을 꽉 채운 판 하나, 아래 대사 상자 */
-:root{--paper:#f6ecd8;--ink:#3e2c1e;--ink2:#6e5642;--green:#4f8a5b;--red:#c8552f;--line:#d9c3a0}
-*{box-sizing:border-box;min-width:0}
-html,body{margin:0;height:100%;background:#2f2418;color:var(--ink);font:16px/1.6 "Gowun Dodum",system-ui,sans-serif;overflow:hidden}
-button{font:inherit;cursor:pointer}
-#game{position:fixed;inset:0;max-width:1280px;margin:0 auto;background:var(--paper);overflow:hidden;
-  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-.hud{position:absolute;z-index:30;top:calc(8px + env(safe-area-inset-top));left:10px;right:10px;display:flex;gap:6px;align-items:center;pointer-events:none}
-.hud .t{font-family:"Gowun Batang",serif;font-weight:700;font-size:15px;background:rgba(255,250,240,.9);border:1.5px solid var(--line);border-radius:999px;padding:3px 12px}
-.hud .sp{flex:1}
-.hud button{pointer-events:auto;background:rgba(255,250,240,.92);border:1.5px solid var(--line);border-radius:12px;min-width:44px;height:40px;padding:0 10px;color:var(--ink)}
-.hud .heart{display:flex;align-items:center;gap:4px;background:rgba(255,250,240,.9);border:1.5px solid var(--line);border-radius:999px;padding:2px 10px 2px 3px;font-size:13px}
-.hud .heart img{width:28px;height:28px;border-radius:50%}
-.hud .heart b{color:#d9645c;letter-spacing:1px}
-.screen{position:absolute;inset:0;display:none}.screen.on{display:block}
-/* 지도 */
-#map .mw{position:absolute;inset:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}#map .mw::-webkit-scrollbar{display:none}
-#map svg{display:block;height:100%;width:auto;aspect-ratio:16/9;min-width:100%}
-.pin{cursor:pointer}.pin .dot{transition:transform .2s}
-.pin.locked{opacity:.38;cursor:default}
-.pin.new .dot{animation:bob 1s ease-in-out infinite}
-@keyframes bob{50%{transform:translateY(-10px)}}
-.quest{position:absolute;z-index:20;left:12px;bottom:calc(12px + env(safe-area-inset-bottom));max-width:min(420px,80%);background:rgba(255,250,240,.94);border:1.5px solid var(--line);border-radius:14px;padding:8px 14px;font-size:14px;box-shadow:0 4px 14px rgba(60,40,20,.2)}
-.quest b{font-family:"Gowun Batang",serif}
-/* 장소 */
-.scene{position:absolute;inset:0;background:#e8dcc8 center/cover}
-.spr{position:absolute;bottom:0;height:82%;max-width:44%;object-fit:contain;object-position:bottom;transition:opacity .3s,transform .3s;filter:drop-shadow(0 6px 12px rgba(40,25,10,.25))}
-.spr.l{left:4%}.spr.r{right:4%}.spr.off{opacity:0}.spr.dim{filter:brightness(.8) drop-shadow(0 6px 12px rgba(40,25,10,.25))}
-.box{position:absolute;z-index:10;left:3%;right:3%;bottom:calc(3% + env(safe-area-inset-bottom));background:rgba(255,251,242,.96);border:2px solid var(--line);border-radius:18px;padding:22px 18px 12px;box-shadow:0 8px 24px rgba(40,25,10,.25)}
-.bi{max-height:min(56vh,460px);overflow:auto}
-.who{position:absolute;top:-15px;left:18px;font-family:"Gowun Batang",serif;font-weight:700;color:#fff;background:var(--red);border-radius:999px;padding:2px 14px;font-size:15px}
-.who.matthew{background:#6b8a4e}.who.station{background:#7a6a5a}.who.inner{background:#9b6fb5}.who.sys{background:#a07a3a}
-.txt{font-size:clamp(16px,2.2vw,20px);line-height:1.75;white-space:pre-line;word-break:keep-all;min-height:3.2em}
-.next{text-align:right;font-size:13px;color:var(--ink2)}
-.opts{display:flex;flex-direction:column;gap:8px;margin-top:8px}
-.opts button{text-align:left;background:#fffaf1;border:2px solid #e0cdb0;border-radius:13px;padding:10px 14px;min-height:44px;color:var(--ink);font-size:16px}
-.opts button:hover,.opts button:focus-visible{border-color:var(--red);outline:none}
-.namein{display:flex;gap:6px;margin-top:6px}.namein input{flex:1;font:inherit;font-size:16px;padding:8px 12px;border:2px solid #e0cdb0;border-radius:12px;background:#fff}
-.namein button{border:0;border-radius:12px;background:var(--green);color:#fff;padding:0 16px}
-.dream .scene{filter:saturate(1.15) brightness(1.05)}
-/* 미니게임 */
-#mini .road{position:absolute;inset:0;background:url(img/ch1_road.webp) 0 0/auto 100% repeat-x;animation:pan 14s linear infinite}
-@keyframes pan{to{background-position:-1600px 0}}
-#mini .cart{position:absolute;left:3%;bottom:0;height:34%;max-width:40%;object-fit:contain;object-position:bottom;pointer-events:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.3))}
-.thing{position:absolute;width:74px;height:74px;cursor:pointer;animation:fly linear forwards;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25))}
-.thing img,.thing svg{width:100%;height:100%;object-fit:contain}
-@keyframes fly{from{transform:translateX(0)}to{transform:translateX(-130vw)}}
-.pop{position:absolute;z-index:15;font-family:"Gowun Batang",serif;font-weight:700;background:#fffaf1;border:2px solid var(--line);border-radius:14px;padding:4px 12px;font-size:15px;white-space:nowrap;animation:up 1.2s forwards;pointer-events:none}
-@keyframes up{to{transform:translateY(-50px);opacity:0}}
-.mhud{position:absolute;z-index:12;top:calc(56px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:rgba(255,250,240,.94);border:1.5px solid var(--line);border-radius:999px;padding:4px 16px;font-weight:700;white-space:nowrap}
-/* 카드(시작·안내·결과) */
-.card{position:absolute;z-index:40;inset:0;display:none;align-items:center;justify-content:center;background:rgba(40,25,12,.55);padding:16px}
-.card.on{display:flex}
-.card .in{width:min(560px,100%);max-height:100%;overflow:auto;background:var(--paper);border-radius:20px;padding:20px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.35)}
-.card h1,.card h2{font-family:"Gowun Batang",serif;margin:.2em 0;line-height:1.15;text-wrap:balance}
-.card h1{font-size:clamp(30px,6vw,44px)}.card h2{font-size:clamp(22px,4.5vw,30px)}
-.card p{margin:.4em 0;color:var(--ink2);word-break:keep-all}
-.card img.big{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:14px}
-.big-btn{border:0;border-radius:14px;background:var(--red);color:#fff;font-size:18px;padding:12px 26px;margin-top:10px;min-height:48px;box-shadow:0 4px 0 #8d3a1f}
-.big-btn.sub{background:var(--green);box-shadow:0 4px 0 #34623e}
-.sum{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;text-align:left;margin:12px auto;max-width:400px;font-size:15px}
-.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.sum dt{color:var(--ink2)}.sum dd{margin:0;font-weight:700}
-.toast{position:absolute;z-index:50;left:50%;top:calc(60px + env(safe-area-inset-top));transform:translateX(-50%);background:#4a3626;color:#fff;border-radius:999px;padding:7px 18px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
-.toast.on{opacity:1}
-.maker{position:absolute;right:8px;bottom:4px;font-size:10px;color:rgba(90,60,30,.4)}
-@media (max-width:520px){.hud .t{font-size:13px;padding:3px 10px;white-space:nowrap;max-width:46vw;overflow:hidden;text-overflow:ellipsis}.hud .heart{font-size:0;padding-right:8px}.hud .heart b{font-size:12px}.hud .tx{display:none}.mhud{font-size:13px;top:calc(58px + env(safe-area-inset-top))}}
-@media (max-aspect-ratio:1/1){.spr{height:58%;bottom:30%;max-width:70%}.spr.l{left:-6%}.spr.r{right:-6%}}
-@media (prefers-reduced-motion:reduce){.pin.new .dot,#mini .road{animation:none}}
-/* 가로 모드 전용: 세로로 든 휴대폰·태블릿에서는 돌려 달라는 안내 */
-/* 낮은 가로 화면(휴대폰 가로): 카드는 그림 왼쪽, 글 오른쪽 */
-@media (orientation:landscape) and (max-height:520px){
-.card{padding:10px}.card .in{padding:14px 16px;border-radius:16px}
-.card .in:has(>img.big){width:min(860px,100%);display:grid;grid-template-columns:46% 1fr;column-gap:18px;align-items:center;align-content:center}
-.card .in:has(>img.big)>img.big{grid-column:1;grid-row:1/span 12;height:100%;max-height:calc(100dvh - 48px);aspect-ratio:auto;align-self:stretch}
-.card .in:has(>img.big)>*:not(img.big){grid-column:2}
-.card h1{font-size:28px}.card h2{font-size:22px}.card p{font-size:14px;margin:.3em 0}
-.box{left:2%;right:2%;bottom:calc(2% + env(safe-area-inset-bottom));padding:16px 14px 8px;border-radius:14px;font-size:15px}
-.bi{max-height:62vh}.who{font-size:13px;top:-12px}
-.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:6px}
-.opts button{font-size:14px;padding:7px 10px;min-height:40px;line-height:1.35}
-.quest{font-size:12px;padding:5px 10px;max-width:min(360px,60%)}
-.big-btn{font-size:16px;padding:9px 20px;min-height:42px;margin-top:6px}
-.sum{font-size:13px;gap:1px 10px;margin:6px auto}.btns .big-btn{flex:1}
-}
-#rotate{display:none;position:fixed;inset:0;z-index:9999;background:#f6ecd6;color:#5a3d2b;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px;font-family:"Gowun Batang",serif}
-#rotate .ph{width:64px;height:104px;border:5px solid #b5523b;border-radius:14px;position:relative;animation:turn 2.4s ease-in-out infinite}
-#rotate .ph::after{content:"";position:absolute;left:50%;bottom:6px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#b5523b}
-#rotate b{font-size:22px}#rotate p{margin:0;font-size:15px;line-height:1.6;opacity:.85}
-@keyframes turn{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
-@media (orientation:portrait) and (max-width:1000px){#rotate{display:flex}.thing,#mini .road{animation-play-state:paused!important}}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div id="rotate" role="alert"><div class="ph"></div><b>휴대폰을 가로로 돌려 주세요</b><p>에이번리 마을은 넓어서<br>옆으로 눕혀야 잘 보여요.</p></div>
 <div id="game">
-  <div class="hud"><span class="t" id="hudT">1장 · 기차역의 기다림</span><span class="heart" id="hudH" hidden></span><span class="sp"></span>
-    <button id="bMap" hidden title="지도로" aria-label="지도로">🗺️<span class="tx"> 지도</span></button><button id="bMusic" title="음악">♪</button></div>
+  <div class="hud"><span class="t" id="hudT">에이번리 마을 지도</span><span class="heart" id="hudH" hidden></span><span class="sp"></span>
+    <button id="bBag" hidden title="가방" aria-label="가방">🎒<span class="tx"> 가방</span></button>
+    <button id="bMap" hidden title="지도로" aria-label="지도로">🗺️<span class="tx"> 지도</span></button>
+    <button id="bMusic" title="음악" aria-label="음악 켜고 끄기">♪</button></div>
 
   <section class="screen" id="map"><div class="mw" id="mw">
     <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-label="에이번리 마을 지도">
@@ -121,27 +27,17 @@ button{font:inherit;cursor:pointer}
         <radialGradient id="lake" cx=".5" cy=".45"><stop offset="0" stop-color="#cfe9ef"/><stop offset="1" stop-color="#7fb0c4"/></radialGradient>
         <g id="tree"><ellipse cx="0" cy="22" rx="20" ry="6" fill="#5a4630" opacity=".2"/><rect x="-3" y="0" width="6" height="22" fill="#7a5a3e"/><circle r="22" cy="-6" fill="#6f9e5e"/><circle r="14" cx="-8" cy="-12" fill="#86b46f"/></g>
         <g id="fir"><path d="M0-40 L-18 18 H18Z" fill="#3f6a52"/><rect x="-3" y="18" width="6" height="8" fill="#6b4e3a"/></g>
+        <g id="birch"><rect x="-3" y="-30" width="6" height="52" fill="#f4f1e8" stroke="#9a9080" stroke-width="1"/><circle r="15" cy="-34" fill="#a9c97a"/></g>
         <g id="bloom"><circle r="16" fill="#fbf3f5"/><circle r="10" cx="9" cy="-6" fill="#f4dfe6"/><circle r="9" cx="-9" cy="-4" fill="#ffffff"/></g>
       </defs>
-      <rect width="1600" height="900" fill="#e9dcae"/>
-      <g filter="url(#wc)">
-        <path d="M0 0H1600V180Q1300 230 1000 170T400 200 0 160Z" fill="#9cc7d8"/>
-        <path d="M0 160Q400 200 1000 170T1600 180V240Q1200 300 800 250T0 260Z" fill="#e6d39a"/>
-        <path d="M0 250Q500 300 900 260T1600 250V900H0Z" fill="#a8c98a"/>
-        <path d="M0 520Q300 470 520 560T1000 600 1600 520V900H0Z" fill="#b9d39a" opacity=".7"/>
-        <ellipse cx="930" cy="610" rx="210" ry="85" fill="url(#lake)"/>
-        <path d="M980 280Q1040 420 1000 520T1050 700 1010 900" stroke="#8fc0d2" stroke-width="22" fill="none"/>
-        <path id="road" d="M210 760C330 720 420 650 540 560S760 520 900 520 1180 460 1220 340" stroke="#c9a874" stroke-width="30" fill="none" stroke-linecap="round"/>
-        <path d="M210 760C330 720 420 650 540 560S760 520 900 520 1180 460 1220 340" stroke="#e8d3a8" stroke-width="12" fill="none" stroke-dasharray="2 22" stroke-linecap="round"/>
-        <rect x="120" y="760" width="190" height="20" fill="#7a6a5a"/><rect x="0" y="790" width="1600" height="8" fill="#8a7a6a" opacity=".5"/>
+      <g id="land">
+        <image id="mapImg" href="img/map_spring.webp" width="1600" height="900" preserveAspectRatio="none"/>
+        <rect id="season" width="1600" height="900" fill="#fff" opacity="0"/>
+        <g id="snow"></g>
       </g>
-      <g id="deco"></g>
-      <g><rect x="150" y="700" width="120" height="70" fill="#a56d48"/><path d="M140 705L210 660 280 705Z" fill="#7e4d33"/><rect x="190" y="725" width="22" height="45" fill="#5b3b25"/></g>
-      <g><rect x="1160" y="270" width="150" height="90" fill="#f5f0e2"/><path d="M1145 275L1235 205 1325 275Z" fill="#4f8a5b"/><rect x="1180" y="295" width="24" height="24" fill="#ffd98a"/><rect x="1268" y="295" width="24" height="24" fill="#ffd98a"/><rect x="1222" y="318" width="22" height="42" fill="#7d5a40"/></g>
-      <rect width="1600" height="900" filter="url(#pp)"/>
-      <g id="names" font-family="Gowun Batang,serif" font-weight="700" font-size="30" fill="#4a3626" text-anchor="middle" paint-order="stroke" stroke="#fbf3e2" stroke-width="7"></g>
+      <g id="names" font-family="Gowun Batang,serif" font-weight="700" font-size="28" fill="#4a3626" text-anchor="middle" paint-order="stroke" stroke="#fbf3e2" stroke-width="7"></g>
       <g id="pins"></g>
-      <g id="me" style="transition:transform .9s ease-in-out"><circle r="30" fill="#fff" stroke="#c8552f" stroke-width="5"/><clipPath id="mc"><circle r="26"/></clipPath><image href="img/anne_happy.webp" x="-46" y="-34" width="92" height="160" clip-path="url(#mc)" preserveAspectRatio="xMidYMin slice"/></g>
+      <g id="me" style="transition:transform .9s ease-in-out"><circle r="30" fill="#fff" stroke="#c8552f" stroke-width="5"/><clipPath id="mc"><circle r="26"/></clipPath><image id="meImg" href="img/anne_happy.webp" x="-46" y="-34" width="92" height="160" clip-path="url(#mc)" preserveAspectRatio="xMidYMin slice"/></g>
     </svg></div>
     <div class="quest" id="quest"></div>
   </section>
@@ -149,12 +45,13 @@ button{font:inherit;cursor:pointer}
   <section class="screen" id="place">
     <div class="scene" id="bg"></div>
     <img class="spr l off" id="sL" alt=""><img class="spr r off" id="sR" alt="">
+    <div class="duel" id="duel"><span id="duelN">마음</span><span>꽁꽁</span><div class="bar"><i id="duelBar"></i></div><span>사르르</span></div>
     <div class="box" id="box"><span class="who" id="who"></span><div class="bi"><div class="txt" id="txt"></div><div id="ch"></div></div><div class="next" id="nx">▼ 눌러서 계속</div></div>
   </section>
 
   <section class="screen" id="mini">
-    <div class="road"></div>
-    <div class="mhud" id="mh">예쁜 것을 톡! 눌러 보세요 · 0개</div>
+    <div class="road" id="road"></div><img class="cart" src="img/mini_cart.webp" alt="">
+    <div class="mhud" id="mh"></div>
     <div id="field"></div>
   </section>
 
@@ -163,222 +60,26 @@ button{font:inherit;cursor:pointer}
     <h1>에이번리 마을 지도</h1>
     <p>앤이 되어 마을을 돌아다니며 사람들을 만나고,<br>예쁜 곳마다 이름을 붙여 보세요.</p>
     <button class="big-btn" id="bStart">이야기 시작하기</button>
-    <p style="font-size:13px;margin-top:12px">시험판 · 1장만 들어 있어요</p>
+    <div class="btns" id="coverMore"></div>
+    <p style="font-size:13px;margin-top:10px">열 개의 장 · 앤의 이야기를 끝까지 따라가요</p>
   </div></div>
   <div class="card" id="pop"><div class="in" id="popIn"></div></div>
   <div class="toast" id="toast"></div>
   <span class="maker">하늘소</span>
 </div>
 
-<script>
-{
-const $ = id => document.getElementById(id);
-const IMG = k => `img/${k}.webp`;
-let S = {done:{}, names:{}, heart:1, tally:{canon:0, imag:0, bal:0}, items:[], hidden:[], stars:0, at:"station"};
-const saveS = () => { try{ localStorage.setItem("anneMap1", JSON.stringify(S)); }catch(e){} };
-try{ const d = JSON.parse(localStorage.getItem("anneMap1") || "null"); if(d) S = Object.assign(S, d); }catch(e){}
-
-/* 장소 */
-const P = {
-  station:{name:"브라이트 리버 역", x:210, y:690, bg:"ch1", stage:{l:[26, 6, 66], r:[60, 6, 72]}},
-  avenue:{name:"꽃이 핀 가로수길", x:540, y:520, bg:"ch1_avenue", need:"station", mini:true, still:"sc_matthewTalk"},
-  pond:{name:"배리 씨네 연못", x:900, y:470, bg:"ch1_pond", need:"avenue", still:"sc_mirror"},
-  home:{name:"초록 지붕 집", x:1235, y:420, bg:"ch1_home", need:"pond", stage:{l:[30, 4, 62], r:[58, 4, 70]}}
-};
-const QUEST = {station:"기차역에서 나를 데리러 올 사람을 기다리기", avenue:"마차를 타고 가로수길로 가기", pond:"연못 쪽으로 가기", home:"초록 지붕 집에 도착하기"};
-const nextPlace = () => Object.keys(P).find(k => !S.done[k]);
-
-function drawMap(){
-  const deco = $("deco"); if(!deco.innerHTML){
-    let h = ""; const R = (a, b) => a + Math.random() * (b - a);
-    for(let i = 0; i < 26; i++) h += `<use href="#fir" x="${R(1330, 1580)|0}" y="${R(300, 640)|0}"/>`;
-    for(let i = 0; i < 18; i++) h += `<use href="#tree" x="${R(40, 380)|0}" y="${R(330, 620)|0}"/>`;
-    for(let i = 0; i < 22; i++){ const t = i / 21; h += `<use href="#bloom" x="${(430 + t * 230 + R(-10, 10))|0}" y="${(600 - t * 90 + (i % 2 ? 40 : -40))|0}"/>`; }
-    for(let i = 0; i < 10; i++) h += `<use href="#tree" x="${R(1060, 1300)|0}" y="${R(430, 560)|0}"/>`;
-    deco.innerHTML = h;
-  }
-  const nx = nextPlace();
-  $("pins").innerHTML = Object.entries(P).map(([k, p]) => {
-    const open = !p.need || S.done[p.need], cls = !open ? "locked" : (k === nx ? "new" : "");
-    return `<g class="pin ${cls}" data-k="${k}" transform="translate(${p.x} ${p.y})" tabindex="0" role="button" aria-label="${p.name}">
-      <g class="dot"><path d="M0 0C-26-30-30-46-30-58A30 30 0 0 1 30-58C30-46 26-30 0 0Z" fill="${S.done[k] ? "#6b8a4e" : k === nx ? "#c8552f" : "#a08060"}" stroke="#fff" stroke-width="4"/>
-      <text y="-48" text-anchor="middle" font-size="30" fill="#fff" font-weight="700">${!open ? "·" : k === nx ? "!" : "✓"}</text></g></g>`;
-  }).join("");
-  $("names").innerHTML = Object.entries(P).map(([k, p]) => (!p.need || S.done[p.need]) ? `<text x="${p.x}" y="${p.y + 48}">${esc(S.names[k] || p.name)}</text>` : "").join("");
-  const at = P[S.at] || P.station; $("me").setAttribute("transform", `translate(${at.x} ${at.y - 120})`);
-  const mw = $("mw"), sv = mw.firstElementChild, focus = P[nx] || at; requestAnimationFrame(() => { const sc = sv.clientWidth / 1600; mw.scrollTo({left:Math.max(0, focus.x * sc - mw.clientWidth / 2), behavior:"smooth"}); });
-  $("quest").innerHTML = nx ? `<b>📒 할 일</b> · ${QUEST[nx]}` : `<b>📒 1장 끝!</b> 2장은 준비 중이에요`;
-  document.querySelectorAll(".pin").forEach(g => g.onclick = () => go(g.dataset.k));
-}
-const esc = s => String(s).replace(/[&<>"]/g, m => ({"&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;"}[m]));
-function show(id){ document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id)); $("bMap").hidden = id !== "place"; }
-function toast(m){ const t = $("toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2200); }
-function hud(){ const h = $("hudH"); h.hidden = !S.met; h.innerHTML = `<img src="${IMG("av_matthew")}" alt="">매슈 <b>${"♥".repeat(S.heart)}${"♡".repeat(5 - S.heart)}</b>`; }
-function heart(n){ S.heart = Math.min(5, S.heart + n); hud(); toast(`💗 매슈 아저씨의 마음 +${n}`); }
-
-function go(k){
-  const p = P[k]; if(p.need && !S.done[p.need]) { toast("아직 갈 수 없어요"); return; }
-  if(S.done[k]){ playScene(REVISIT[k] || [{w:"inner", f:"anne_happy", t:`${S.names[k] || p.name}. 다시 와도 좋은 곳이야.`}], k); return; }
-  S.at = k; drawMap(); saveS();
-  setTimeout(() => { if(p.mini && !S.miniDone) startMini(() => playScene(SC[k], k)); else playScene(SC[k], k); }, 900);
-}
-
-/* ---------- 대사 엔진 ---------- */
-let Q = [], qi = 0, curK = null, typing = null;
-function playScene(nodes, k){ Q = nodes; qi = 0; curK = k; $("bg").style.backgroundImage = `url(${IMG(P[k].bg)})`; show("place"); step(); }
-function step(){
-  const n = Q[qi]; if(!n){ finishPlace(curK); return; }
-  if(n.do){ n.do(); qi++; step(); return; }
-  if(n.when && !n.when()){ qi++; step(); return; }
-  const pl = P[curK], still = n.still !== undefined ? n.still : (n.name ? null : pl.still);
-  $("bg").style.backgroundImage = `url(${IMG(still || n.bg || pl.bg)})`;
-  $("place").classList.toggle("dream", !!n.dream);
-  stage(pl.stage);
-  setSpr($("sL"), still ? null : n.f, n.w === "matthew" || n.w === "station"); setSpr($("sR"), still ? null : n.o, n.w === "anne" || n.w === "inner");
-  const who = $("who");
-  who.className = "who " + (n.w || ""); who.textContent = {anne:"앤 셜리", inner:"앤 셜리 (속마음)", matthew:"매슈 커스버트", station:"역장", sys:"선택의 순간"}[n.w] || "";
-  $("ch").innerHTML = ""; $("nx").hidden = false;
-  if(n.opts){ who.className = "who sys"; who.textContent = "선택의 순간"; $("txt").textContent = n.q; $("nx").hidden = true;
-    $("ch").innerHTML = `<div class="opts">${n.opts.map((o, i) => `<button data-i="${i}">${esc(o.t)}</button>`).join("")}</div>`;
-    $("ch").querySelectorAll("button").forEach(b => b.onclick = e => { e.stopPropagation(); const o = n.opts[+b.dataset.i];
-      S.tally[o.type]++; if(o.eff) o.eff(); toast({canon:"원작 속 앤과 같은 선택이에요", imag:"상상의 날개를 펼쳤어요", bal:"따뜻한 선택이에요"}[o.type]);
-      Q = o.then.concat(Q.slice(qi + 1)); qi = 0; saveS(); step(); });
-    return; }
-  if(n.name){ who.className = "who sys"; who.textContent = "이름 짓기"; $("txt").textContent = n.q; $("nx").hidden = true;
-    $("ch").innerHTML = `<div class="opts">${n.pick.map((o, i) => `<button data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div>
-      <div class="namein"><input id="nmIn" maxlength="14" placeholder="직접 지어도 돼요"><button id="nmOk">짓기</button></div>`;
-    const done = v => { v = v.replace(/[<>]/g, "").trim().slice(0, 14); if(!v) return; S.names[n.name] = v; const same = v === n.pick[0];
-      S.tally[same ? "canon" : "imag"]++; toast(same ? "원작과 똑같은 이름이에요" : "나만의 이름이 생겼어요"); if(n.after) n.after(v); saveS(); qi++; step(); };
-    $("ch").querySelectorAll("button[data-v]").forEach(b => b.onclick = e => { e.stopPropagation(); done(b.dataset.v); });
-    $("nmOk").onclick = e => { e.stopPropagation(); done($("nmIn").value); };
-    $("nmIn").onclick = e => e.stopPropagation(); $("nmIn").onkeydown = e => { if(e.key === "Enter") done($("nmIn").value); };
-    return; }
-  typeText(fill(n.t));
-}
-const fill = t => t.replace(/\{(\w+)\}/g, (m, k) => S.names[k] || P[k].name);
-function typeText(t){ const el = $("txt"); clearInterval(typing); let i = 0; el.textContent = ""; typing = setInterval(() => { el.textContent = t.slice(0, ++i); if(i >= t.length){ clearInterval(typing); typing = null; } }, 32); el.dataset.full = t; }
-function stage(st){ const L = $("sL").style, R = $("sR").style;
-  if(st && innerWidth > innerHeight){ L.left = st.l[0] + "%"; L.bottom = st.l[1] + "%"; L.height = st.l[2] + "%"; R.left = st.r[0] + "%"; R.right = "auto"; R.bottom = st.r[1] + "%"; R.height = st.r[2] + "%"; }
-  else { ["left","bottom","height","right"].forEach(k => { L[k] = ""; R[k] = ""; }); } }
-function setSpr(img, k, dim){ if(!k){ img.classList.add("off"); return; } img.src = IMG(k); img.classList.remove("off"); img.classList.toggle("dim", !!dim); }
-$("box").onclick = () => { const n = Q[qi]; if(!n || n.opts || n.name) return; if(typing){ clearInterval(typing); typing = null; $("txt").textContent = $("txt").dataset.full; return; } qi++; step(); };
-$("place").onclick = e => { if(e.target === $("bg") || e.target.classList.contains("spr")) $("box").click(); };
-
-function finishPlace(k){
-  if(!S.done[k]){ S.done[k] = true; saveS();
-    if(k === "home"){ ending(); return; }
-    const nx = nextPlace(); if(nx) setTimeout(() => toast(`📒 새 할 일: ${QUEST[nx]}`), 400); }
-  show("map"); drawMap();
-}
-
-/* ---------- 1장 장면 ---------- */
-const A = (t, f = "anne_dreamy", o) => ({w:"inner", t, f, o});
-const SC = {
-station:[
-  A("나는 앤 셜리, 열한 살이야.\n오늘 고아원을 떠나 기차를 타고 브라이트 리버 역에 왔어.", "anne_dreamy"),
-  A("초록 지붕 집의 커스버트 씨가 나를 데리러 온대.\n처음으로 진짜 내 집이 생기는 거야!", "anne_happy"),
-  {w:"station", f:"anne_surprised", t:"\"얘야, 혼자 밖에 있지 말고 대합실 안에 들어가 기다리렴.\""},
-  {q:"역장님이 대합실에 들어가 있으래요. 앤은 어디서 기다릴까요?", opts:[
-    {t:"고맙지만 밖에서 기다릴래요. 밖이 상상할 게 더 많거든요!", type:"canon", then:[{w:"anne", f:"anne_happy", t:"\"감사하지만 저는 밖에 있을래요. 밖이 상상할 거리가 훨씬 많거든요.\"\n역장님은 \"참 별난 아이로군\" 하셨어."}]},
-    {t:"철길 모퉁이의 하얀 벚나무에 올라가 본다.", type:"imag", eff:() => { if(!S.hidden.includes("cherry")) S.hidden.push("cherry"); S.items.push("petal"); },
-      then:[{w:"inner", f:"anne_dreamy", dream:true, still:"sc_cherry", t:"하얀 꽃이 가득한 벚나무 위는 대리석 궁전 같았어.\n나는 꽃잎 한 장을 주머니에 넣었어."}, {do:() => toast("✨ 숨은 장면 발견! · 🌸 벚꽃잎을 얻었어요")}]},
-    {t:"역장님 말씀대로 대합실에 들어가 얌전히 기다린다.", type:"bal", then:[A("대합실은 깨끗했지만 답답했어.\n결국 살금살금 다시 밖으로 나왔지.", "anne_sad")]}
-  ]},
-  Object.assign(A("그때 키 크고 등이 구부정한 아저씨가 서둘러 다가오셨어.\n초록 지붕 집의 매슈 커스버트 아저씨야!", "anne_surprised", "matthew"), {still:"sc_princess"}),
-  {do:() => { S.met = true; hud(); }},
-  {still:"sc_princess", q:"아저씨가 머뭇머뭇 다가와요. 앤은 어떻게 할까요?", opts:[
-    {t:"벌떡 일어나 먼저 손을 내밀며 인사한다.", type:"canon", eff:() => heart(1), then:[{w:"anne", f:"anne_happy", o:"matthew", t:"\"초록 지붕 집 매슈 커스버트 아저씨세요? 만나서 정말 반가워요!\"\n아저씨는 내 작은 손을 어색하게 잡아 주셨어."}]},
-    {t:"기차역의 공주님처럼 우아하게 앉아 기다린다.", type:"imag", then:[{w:"inner", f:"anne_dreamy", o:"matthew", dream:true, t:"나는 공주님처럼 앉아 있었어.\n그런데 아저씨는 모자만 만지작거리셨어. 결국 내가 먼저 일어났지!"}]},
-    {t:"아저씨가 편하게 말할 수 있게 조용히 기다린다.", type:"bal", eff:() => heart(1), then:[{w:"matthew", f:"anne_happy", o:"matthew", t:"\"…늦어서 미안하구나. 네가 앤이냐?\"\n아저씨 목소리가 생각보다 다정했어."}]}
-  ]},
-  {still:"sc_princess", w:"matthew", f:"anne_happy", o:"matthew", t:"\"자, 가자. 가방은 내가 들어 주마. 마차는 저쪽에 있다.\""},
-  {do:() => { S.items.push("carpetbag"); toast("🎒 낡은 융단 가방을 챙겼어요"); }},
-  A("아저씨 얼굴이 조금 당황한 것 같았어. 왜일까?\n그래도 괜찮아. 이제 초록 지붕 집으로 가는 거야!", "anne_happy", "matthew")
-],
-avenue:[
-  {w:"matthew", f:"anne_dreamy", o:"matthew", t:"\"여기는 그냥 가로수길이라고들 부르지.\""},
-  A("하얀 사과꽃이 지붕처럼 길을 덮고 있었어.\n저 끝에 노을이 성당의 장미창처럼 빛났어.", "anne_dreamy", "matthew"),
-  {w:"anne", f:"anne_happy", o:"matthew", t:"\"가로수길이라니요! 그건 이름이 아니에요. 제가 더 어울리는 이름을 붙여 줄래요.\""},
-  {name:"avenue", q:"꽃이 핀 가로수길에 어떤 이름을 붙일까요?", pick:["기쁨의 하얀 길", "하얀 꽃 터널", "눈꽃 지붕길"],
-   after:() => { S.items.push("namecard"); setTimeout(() => toast("✍️ 이름 카드를 얻었어요 · 지도에 이름이 생겼어요!"), 300); }},
-  {w:"matthew", f:"anne_happy", o:"matthew", t:"\"'{avenue}'라… 글쎄다, 참 좋은 이름이구나.\""}
-],
-pond:[
-  A("언덕을 내려가자 기다란 연못이 나타났어.\n물에 노을빛이 일렁여서 꼭 보석 같았어.", "anne_dreamy", "matthew"),
-  {w:"matthew", f:"anne_dreamy", o:"matthew", t:"\"배리 씨네 연못이다. 저 언덕 위 집에 배리 씨네가 살지.\""},
-  {name:"pond", q:"반짝이는 연못에 어떤 이름을 붙일까요?", pick:["반짝이는 호수", "노을 거울 연못", "은빛 물결 호수"],
-   after:v => { if(v === "노을 거울 연못" && !S.hidden.includes("mirror")){ S.hidden.push("mirror"); setTimeout(() => toast("✨ 숨은 장면 발견! 노을 거울 연못"), 300); } }},
-  {w:"anne", f:"anne_happy", o:"matthew", t:"\"'{pond}'! 딱 맞는 이름이 떠오르면 온몸이 찌릿해요. 아저씨도 그런 적 있으세요?\""},
-  {w:"matthew", f:"anne_happy", o:"matthew", t:"\"글쎄다… 그런 것 같기도 하구나.\""}
-],
-home:[
-  {w:"matthew", f:"anne_surprised", o:"matthew", t:"\"저기가 초록 지붕 집이다.\""},
-  A("어둠 속 나무 사이로 창문 불빛이 반짝였어.\n저기가… 내 집이 될 곳이야.", "anne_happy", "matthew"),
-  {q:"초록 지붕 집 앞에 도착했어요. 앤은 무엇을 할까요?", opts:[
-    {t:"꿈이 아닌지 팔을 꼬집어 본다.", type:"canon", then:[A("나는 팔을 꼬집어 봤어. 아야!\n꿈이 아니야. 정말이야!", "anne_surprised", "matthew")]},
-    {t:"탑이 일곱 개인 성이라고 상상한다.", type:"imag", eff:() => { if(!S.hidden.includes("castle")) S.hidden.push("castle"); }, then:[{w:"inner", f:"anne_dreamy", o:"matthew", dream:true, still:"sc_castle", t:"눈을 감으니 탑이 일곱 개 있는 성이 보였어.\n창문마다 촛불이 켜져 있고, 정원에는 은빛 분수가 솟았어."}]},
-    {t:"아저씨께 데리러 와 줘서 고맙다고 말한다.", type:"bal", eff:() => heart(1), then:[{w:"anne", f:"anne_happy", o:"matthew", t:"\"아저씨, 데리러 와 주셔서 정말 고마워요.\"\n아저씨 얼굴이 노을처럼 빨개지셨어."}]}
-  ]}
-]};
-const REVISIT = {
-  station:[A("기차역이야. 여기서 아저씨를 처음 만났지.", "anne_happy")],
-  avenue:[A("'{avenue}'. 언제 와도 꽃 지붕이 반겨 줘.", "anne_dreamy")],
-  pond:[A("'{pond}'. 물결이 오늘도 반짝반짝해.", "anne_dreamy")]
-};
-
-/* ---------- 미니게임: 이름 붙이기 산책 ---------- */
-const PORTRAIT = matchMedia("(orientation:portrait) and (max-width:1000px)");
-const THINGS = [{img:"it_plum", say:"하얀 레이스 같아!"}, {img:"it_petal", say:"벚꽃잎이 춤춰요!"}, {img:"it_narcissus", say:"수선화가 인사해요!"},
-  {img:"it_scotchRose", say:"들장미 향기!"}, {img:"it_iris", say:"보랏빛 붓꽃이에요!"}, {img:"it_wreath", say:"꽃 모자를 쓰고 싶어요!"}];
-function startMini(after){
-  show("mini"); $("hudT").textContent = "미니게임 · 꽃길 산책";
-  let got = 0, left = 20; const f = $("field"); f.innerHTML = "";
-  $("mh").textContent = `마차에서 보이는 예쁜 것을 톡! · ${left}초 · ${got}개`;
-  const spawn = setInterval(() => { if(PORTRAIT.matches) return;
-    const t = THINGS[Math.random() * THINGS.length | 0], d = document.createElement("div"); d.className = "thing"; d.style.zIndex = 5;
-    d.style.left = "100vw"; d.style.top = (12 + Math.random() * 52) + "%"; d.style.animationDuration = (4.5 + Math.random() * 2.5) + "s";
-    d.innerHTML = t.img ? `<img src="${IMG(t.img)}" alt="">` : t.svg;
-    d.onclick = e => { e.stopPropagation(); got++; const r = d.getBoundingClientRect(), p = document.createElement("div"); p.className = "pop"; p.textContent = t.say;
-      p.style.left = Math.min(innerWidth - 170, Math.max(8, r.left - 30)) + "px"; p.style.top = r.top + "px"; f.appendChild(p); setTimeout(() => p.remove(), 1200); d.remove();
-      $("mh").textContent = `마차에서 보이는 예쁜 것을 톡! · ${left}초 · ${got}개`; };
-    d.addEventListener("animationend", () => d.remove()); f.appendChild(d);
-  }, 900);
-  const tick = setInterval(() => { if(PORTRAIT.matches) return; left--; $("mh").textContent = `마차에서 보이는 예쁜 것을 톡! · ${left}초 · ${got}개`;
-    if(left <= 0){ clearInterval(tick); clearInterval(spawn); f.innerHTML = "";
-      const st = got >= 10 ? 3 : got >= 5 ? 2 : 1; S.stars = Math.max(S.stars, st); S.miniDone = true; saveS(); $("hudT").textContent = "1장 · 기차역의 기다림";
-      popCard(`<h2>${"⭐".repeat(st)}${"☆".repeat(3 - st)}</h2><p><b>${got}개</b>의 예쁜 것을 찾았어요!</p>
-        <p>매슈 아저씨: "글쎄다, 너는 정말 말을 잘하는구나. 실컷 말하렴. 나는 괜찮다."</p>
-        <button class="big-btn sub" id="pOk">가로수길에 도착!</button>`, () => { if(st >= 2) heart(1); after(); }); } }, 1000);
-}
-function popCard(html, ok){ $("popIn").innerHTML = html; $("pop").classList.add("on"); $("pOk").onclick = () => { $("pop").classList.remove("on"); ok && ok(); }; }
-
-/* ---------- 결말 ---------- */
-function ending(){
-  const t = S.tally, e = t.canon > t.imag && t.canon > t.bal ? "canon" : t.imag > t.canon && t.imag > t.bal ? "imag" : "bal";
-  const E = {canon:["꿈이 아니기를", "원작 속 앤이 했던 선택을 거의 그대로 따라갔어요. 앤의 마음을 정말 잘 읽었어요!"],
-    imag:["별빛 아래의 코델리아", "원작과 다른 상상의 길을 많이 골랐어요. 앤처럼 상상력이 반짝이는 친구예요!"],
-    bal:["고마워요, 매슈 아저씨", "앤의 마음도, 아저씨의 마음도 함께 생각했어요. 따뜻한 선택이었어요!"]}[e];
-  const items = {carpetbag:"낡은 융단 가방", namecard:"이름 카드", petal:"벚꽃잎"};
-  popCard(`<img class="big" src="${IMG("ed_ch1_" + e)}" alt=""><h2>${E[0]}</h2><p>${E[1]}</p>
-    <dl class="sum"><dt>📖 원작 · ✨ 상상 · ⚖️ 균형</dt><dd>${t.canon} · ${t.imag} · ${t.bal}</dd>
-    <dt>✍️ 내가 지은 이름</dt><dd>${esc(S.names.avenue || "-")}, ${esc(S.names.pond || "-")}</dd>
-    <dt>💗 매슈 아저씨</dt><dd style="color:#d9645c">${"♥".repeat(S.heart)}${"♡".repeat(5 - S.heart)}</dd>
-    <dt>🎒 가방</dt><dd>${[...new Set(S.items)].map(k => items[k]).filter(Boolean).join(", ")}</dd>
-    <dt>⭐ 미니게임</dt><dd>${"⭐".repeat(S.stars)}</dd><dt>✨ 숨은 장면</dt><dd>${S.hidden.length}/3</dd></dl>
-    <p style="font-size:14px">그런데… 아저씨와 아주머니가 기다린 건 정말 남자아이였을까?<br><b>2장 「린드 부인의 독설」은 준비 중이에요.</b></p>
-    <div class="btns"><button class="big-btn" id="pOk">지도 보기</button><button class="big-btn sub" id="pRe">처음부터</button></div>`, () => { show("map"); drawMap(); });
-  $("pRe").onclick = () => { try{ localStorage.removeItem("anneMap1"); }catch(x){} location.reload(); };
-}
-
-/* ---------- 음악·시작 ---------- */
-let bgm = null, musicOn = true;
-async function music(){ if(!musicOn) return; try{ if(!bgm){ const r = await fetch("bgm_ch1.mp3"); bgm = new Audio(URL.createObjectURL(await r.blob())); bgm.loop = true; bgm.volume = .35; } await bgm.play(); }catch(e){} }
-$("bMusic").onclick = () => { musicOn = !musicOn; $("bMusic").style.opacity = musicOn ? 1 : .45; if(musicOn) music(); else if(bgm) bgm.pause(); };
-$("bMap").onclick = () => { clearInterval(typing); show("map"); drawMap(); };
-$("bStart").onclick = () => { $("cover").classList.remove("on"); music(); hud(); show("map"); drawMap();
-  if(!S.done.station) setTimeout(() => toast("📒 빨간 느낌표(!) 장소를 눌러 보세요"), 600); };
-if(Object.keys(S.done).length) $("bStart").textContent = "이어서 하기";
-}
-</script>
+<script src="js/engine.js"></script>
+<script src="js/mini.js"></script>
+<script src="js/ch1.js"></script>
+<script src="js/ch2.js"></script>
+<script src="js/ch3.js"></script>
+<script src="js/ch4.js"></script>
+<script src="js/ch5.js"></script>
+<script src="js/ch6.js"></script>
+<script src="js/ch7.js"></script>
+<script src="js/ch8.js"></script>
+<script src="js/ch9.js"></script>
+<script src="js/ch10.js"></script>
+<script>GAME.boot();</script>
 </body>
 </html>

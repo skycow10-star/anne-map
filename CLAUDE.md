@@ -8,13 +8,15 @@
 - 사이트: https://skycow10-star.github.io/anne-map/ (main 브랜치 루트, GitHub Pages)
 
 ## 구조
-- `index.html` 한 파일에 화면·스타일·스크립트가 다 있음. 빌드 과정 없음.
-  - `P`: 장소(지도 좌표 `x,y`는 1600×900 SVG 기준, `bg`, `need` 앞 장소, `stage` 인물 위치, `still` 장면 그림, `mini`)
-  - `QUEST`: 장소별 할 일 문구
-  - 대사 노드: `{w, t, f, o, dream, still, when, do}` / 선택 `{q, opts:[{t, type, eff, then}]}` / 이름 짓기 `{name, q, pick, after}`
-  - 미니게임 `startMini()`; 결말 `ending()`; 저장은 localStorage `anneMap1`
-- `img/*.webp`: 그림. 이름 규칙은 앤 저장소와 같음(`av_` 얼굴, `it_` 물건, `ed_chN_canon|imag|bal` 결말, `sc_` 숨은 장면/장면 그림).
-- `bgm_ch1.mp3`, `manifest.json`(가로 모드)
+- `index.html` 화면 뼈대, `style.css` 모양. 빌드 과정 없음.
+- `js/engine.js` 엔진: 장소 `P`(지도 좌표는 1600×900 기준, `from`=열리는 장), 인물 `WHO`·하트 `HEARTS`, 물건 `ITEMS`, 저장(localStorage `anneMap2`),
+  지도·대사·선택·이름 짓기·마음 대결·장 결말·최종 결말·가방·장 고르기. 맨 아래에 **장 데이터 모양** 설명이 있음.
+- `js/mini.js` 미니게임 10가지: catch(날아오는 것 잡기) calm(말 흘려보내기) order(순서) pick(고르기, rival 있으면 대결) find(숨은 것 찾기)
+  bail(물 퍼내기) pour(따르기) pace(박자) decorate(꾸미기) run(눈길 달리기). 주소 끝에 `#fast`를 붙이면 시험용으로 빨라짐.
+- `js/ch1.js`~`ch10.js` 장마다 이야기 데이터 `CH[n]`. 할 일(quests) 순서대로 진행, 한 할 일 = 지도 장소 하나 + 대사 노드 목록.
+- `img/`: 그림. 지도는 `map_spring|summer|autumn|winter.webp`(장의 season에 따라), 꽃길 미니게임은 `mini_avenue.webp`(옆으로 흐르는 배경)·`mini_cart.webp`(마차).
+  나머지 이름 규칙은 앤 저장소와 같음(`av_` 얼굴, `it_` 물건, `ed_chN_canon|imag|bal` 결말, `sc_` 숨은 장면). 그림이 없으면 자동으로 숨기거나 이모지로 대신함.
+- `bgm_ch1~10.mp3` 장마다 음악, `manifest.json`(가로 모드)
 
 ## 꼭 지킬 것
 - **가로 모드 전용.** 세로에서는 `#rotate` 안내만 보임. 새 화면도 휴대폰 가로(844×390)에서 잘리지 않게 확인.
@@ -25,4 +27,5 @@
 - 앤 저장소(`anne`)는 이 작업에서 고치지 않음. 그림이 필요하면 거기서 복사해 옴.
 
 ## 확인
-`python3 -m http.server`로 띄우고, 휴대폰 가로 844×390과 PC 1280×760에서 처음부터 끝까지 한 번 플레이해 보고 콘솔 오류가 없는지 확인.
+`python3 -m http.server`로 띄우고 `http://localhost:8000/#fast`로 열어, 휴대폰 가로 844×390과 PC 1280×760에서 1장부터 10장 결말까지 한 번 플레이해 보고 콘솔 오류가 없는지 확인.
+대사·선택지를 고칠 때는 해당 `js/chN.js`만 고치면 됨.

@@ -1,0 +1,166 @@
+/* VOICE: 동화책을 펼친 듯 다정하고 느긋하게
+   IDEA: 앤이 손으로 그린 에이번리 마을 그림지도 위를 걷는 놀이판
+   PICTURE: 수채화 지도 한 장 + 장소 핀 + 길 위를 걷는 앤 얼굴
+   COLOUR: 초록 지붕 #4f8a5b, 종이 #f6ecd8, 앤 머리 #c8552f 강조
+   TYPE: Gowun Batang 제목 / Gowun Dodum 본문 · LAYOUT: 화면을 꽉 채운 판 하나, 아래 대사 상자 */
+:root{--paper:#f6ecd8;--ink:#3e2c1e;--ink2:#6e5642;--green:#4f8a5b;--red:#c8552f;--line:#d9c3a0}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;height:100%;background:#2f2418;color:var(--ink);font:16px/1.6 "Gowun Dodum",system-ui,sans-serif;overflow:hidden}
+button{font:inherit;cursor:pointer;color:inherit}
+#game{position:fixed;inset:0;max-width:1280px;margin:0 auto;background:var(--paper);overflow:hidden;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+
+/* 위쪽 줄 */
+.hud{position:absolute;z-index:30;top:calc(8px + env(safe-area-inset-top));left:10px;right:10px;display:flex;gap:6px;align-items:center;pointer-events:none}
+.hud .t{font-family:"Gowun Batang",serif;font-weight:700;font-size:15px;background:rgba(255,250,240,.9);border:1.5px solid var(--line);border-radius:999px;padding:3px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40vw}
+.hud .sp{flex:1}
+.hud button{pointer-events:auto;background:rgba(255,250,240,.92);border:1.5px solid var(--line);border-radius:12px;min-width:44px;height:40px;padding:0 10px}
+.hud .heart{display:flex;align-items:center;gap:4px;background:rgba(255,250,240,.9);border:1.5px solid var(--line);border-radius:999px;padding:2px 10px 2px 3px;font-size:13px;white-space:nowrap}
+.hud .heart img{width:28px;height:28px;border-radius:50%;object-fit:cover}
+.hud .heart b{color:#d9645c;letter-spacing:1px}
+.screen{position:absolute;inset:0;display:none}.screen.on{display:block}
+
+/* 지도 */
+#map .mw{position:absolute;inset:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}#map .mw::-webkit-scrollbar{display:none}
+#map svg{display:block;height:100%;width:auto;aspect-ratio:16/9;min-width:100%}
+.pin{cursor:pointer}.pin .dot{transition:transform .2s}
+.pin.new .dot{animation:bob 1s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-10px)}}
+#season{mix-blend-mode:multiply;transition:opacity .6s}
+.quest{position:absolute;z-index:20;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));max-width:min(520px,70%);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(255,250,240,.94);border:1.5px solid var(--line);border-radius:14px;padding:8px 14px;font-size:14px;box-shadow:0 4px 14px rgba(60,40,20,.2)}
+.quest b{font-family:"Gowun Batang",serif}
+
+/* 장소·대화 */
+.scene{position:absolute;inset:0;background:#e8dcc8 center/cover;transition:filter .4s}
+.spr{position:absolute;bottom:0;height:82%;max-width:44%;object-fit:contain;object-position:bottom;transition:opacity .3s,transform .3s;filter:drop-shadow(0 6px 12px rgba(40,25,10,.25))}
+.spr.l{left:4%}.spr.r{right:4%}.spr.off{opacity:0}.spr.dim{filter:brightness(.8) drop-shadow(0 6px 12px rgba(40,25,10,.25))}
+.box{position:absolute;z-index:10;left:3%;right:3%;bottom:calc(3% + env(safe-area-inset-bottom));background:rgba(255,251,242,.96);border:2px solid var(--line);border-radius:18px;padding:22px 18px 12px;box-shadow:0 8px 24px rgba(40,25,10,.25)}
+.bi{max-height:min(56vh,460px);overflow:auto}
+.who{position:absolute;top:-15px;left:18px;font-family:"Gowun Batang",serif;font-weight:700;color:#fff;background:var(--red);border-radius:999px;padding:2px 14px;font-size:15px}
+.who:empty{display:none}
+.who.matthew{background:#6b8a4e}.who.marilla{background:#5d6b8a}.who.diana{background:#3d5a80}.who.gilbert{background:#8a6a3a}
+.who.lynde{background:#9a5a7a}.who.barry{background:#6a4a6a}.who.allan{background:#4a8a8a}.who.other{background:#7a6a5a}
+.who.inner{background:#9b6fb5}.who.sys{background:#a07a3a}
+.txt{font-size:clamp(16px,2.2vw,20px);line-height:1.75;white-space:pre-line;word-break:keep-all;min-height:3.2em}
+.next{text-align:right;font-size:13px;color:var(--ink2)}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.opts button{text-align:left;background:#fffaf1;border:2px solid #e0cdb0;border-radius:13px;padding:10px 14px;min-height:44px;font-size:16px}
+.opts button:hover,.opts button:focus-visible{border-color:var(--red);outline:none}
+.opts button small{display:inline-block;margin-right:8px;padding:0 8px;border-radius:999px;background:#efe2c8;color:var(--ink2);font-size:12px;vertical-align:1px}
+.namein{display:flex;gap:6px;margin-top:6px}.namein input{flex:1;font:inherit;font-size:16px;padding:8px 12px;border:2px solid #e0cdb0;border-radius:12px;background:#fff}
+.namein button{border:0;border-radius:12px;background:var(--green);color:#fff;padding:0 16px}
+.dream .scene{filter:saturate(1.2) brightness(1.06) hue-rotate(-8deg)}
+.nopic .scene::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(255,240,250,.0),rgba(120,80,140,.28))}
+
+/* 마음 대결 */
+.duel{position:absolute;z-index:11;top:calc(56px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);display:none;align-items:center;gap:10px;background:rgba(255,250,240,.95);border:1.5px solid var(--line);border-radius:999px;padding:5px 14px;font-size:14px;white-space:nowrap}
+.duel.on{display:flex}
+.duel .bar{width:min(240px,30vw);height:14px;border-radius:999px;background:linear-gradient(90deg,#9cc7e8,#cfe6f5);overflow:hidden;border:1px solid #b9d2e4}
+.duel .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#f7b6a8,#e9735f);transition:width .5s}
+
+/* 미니게임 공통 */
+#mini{background:#e8dcc8 center/cover}
+#mini .road{position:absolute;inset:0;background:url(img/mini_avenue.webp) 0 100%/auto 100% repeat-x;display:none}
+#mini.roll .road{display:block}
+#mini .cart{position:absolute;z-index:4;left:2%;bottom:1%;height:46%;max-width:52%;object-fit:contain;object-position:left bottom;pointer-events:none;display:none;filter:drop-shadow(0 6px 8px rgba(40,25,10,.3));animation:bump .45s ease-in-out infinite alternate}
+#mini.roll .cart{display:block}
+@keyframes bump{to{transform:translateY(-4px) rotate(-.4deg)}}
+.mhud{position:absolute;z-index:12;top:calc(56px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:rgba(255,250,240,.94);border:1.5px solid var(--line);border-radius:999px;padding:4px 16px;font-weight:700;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
+#field{position:absolute;inset:0}
+.thing{position:absolute;width:74px;height:74px;cursor:pointer;animation:fly linear forwards;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25));display:flex;align-items:center;justify-content:center;font-size:54px;line-height:1;user-select:none}
+.thing img{width:100%;height:100%;object-fit:contain}
+@keyframes fly{from{transform:translateX(0)}to{transform:translateX(-130vw)}}
+.pop{position:absolute;z-index:15;font-family:"Gowun Batang",serif;font-weight:700;background:#fffaf1;border:2px solid var(--line);border-radius:14px;padding:4px 12px;font-size:15px;white-space:nowrap;animation:up 1.2s forwards;pointer-events:none}
+@keyframes up{to{transform:translateY(-50px);opacity:0}}
+.mpanel{position:absolute;z-index:12;left:50%;top:52%;transform:translate(-50%,-50%);width:min(760px,94%);max-height:76%;overflow:auto;background:rgba(255,251,242,.96);border:2px solid var(--line);border-radius:18px;padding:16px;text-align:center;box-shadow:0 8px 24px rgba(40,25,10,.25)}
+.mpanel h3{font-family:"Gowun Batang",serif;margin:0 0 8px;font-size:20px;word-break:keep-all}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
+.chips button{background:#fffaf1;border:2px solid #e0cdb0;border-radius:14px;padding:8px 14px;min-height:46px;font-size:16px;display:flex;align-items:center;gap:8px}
+.chips button img{width:40px;height:40px;object-fit:contain}
+.chips button.ok{border-color:var(--green);background:#eaf5e6}.chips button.no{border-color:#d9645c;background:#fbe9e6;animation:shake .3s}
+.chips button.used{opacity:.35;pointer-events:none}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.built{min-height:44px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;border-bottom:2px dashed var(--line);padding-bottom:8px;font-family:"Gowun Batang",serif;font-size:17px}
+.built span{background:#eaf5e6;border-radius:10px;padding:2px 10px}
+.meter{position:relative;height:22px;border-radius:999px;background:#efe2c8;overflow:hidden;margin:10px 0;border:1.5px solid var(--line)}
+.meter i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#f2c46b,#e9735f);transition:width .1s}
+.meter .zone{position:absolute;top:0;bottom:0;background:rgba(79,138,91,.35);border-left:2px solid var(--green);border-right:2px solid var(--green)}
+.meter .mk{position:absolute;top:-2px;bottom:-2px;width:8px;margin-left:-4px;border-radius:4px;background:var(--ink)}
+.bigtap{border:0;border-radius:18px;background:var(--green);color:#fff;font-size:20px;padding:14px 30px;min-height:56px;box-shadow:0 5px 0 #34623e;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.bigtap:active{transform:translateY(3px);box-shadow:0 2px 0 #34623e}
+.score{display:flex;gap:18px;justify-content:center;font-weight:700;margin-bottom:6px}
+.rival{height:8px;border-radius:999px;background:#efe2c8;overflow:hidden;margin:6px auto 0;width:70%}.rival i{display:block;height:100%;background:#8a6a3a;width:0}
+.water{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(#7fb0c4cc,#4f7f99ee);transition:height .1s;z-index:5}
+.lane{position:absolute;left:0;right:0;height:33.3%;border-bottom:2px dashed rgba(255,255,255,.5)}
+.runner{position:absolute;left:8%;width:64px;height:64px;border-radius:50%;border:4px solid #fff;background:#fff center 12%/150% no-repeat;box-shadow:0 4px 10px rgba(0,0,0,.3);transition:top .15s;z-index:6}
+.ob{position:absolute;font-size:46px;line-height:1;z-index:5;animation:fly linear forwards}
+.spot{position:absolute;font-size:34px;line-height:1;cursor:pointer;opacity:.82;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3));padding:6px}
+.spot.got{animation:up .8s forwards}
+.cup{width:90px;height:110px;margin:6px auto;border:4px solid #8a6a4a;border-top:0;border-radius:0 0 26px 26px;position:relative;overflow:hidden;background:#fff8}
+.cup i{position:absolute;left:0;right:0;bottom:0;background:#b5523b;transition:height .05s}
+.cup .ln{position:absolute;left:0;right:0;border-top:2px dashed var(--green)}
+.deco{position:relative;width:min(300px,60%);aspect-ratio:1;margin:0 auto;border-radius:50%;background:#fff6e6;border:3px dashed var(--line);display:flex;align-items:center;justify-content:center;font-size:90px}
+.deco b{position:absolute;font-size:34px;line-height:1}
+
+/* 카드(시작·안내·결과) */
+.card{position:absolute;z-index:40;inset:0;display:none;align-items:center;justify-content:center;background:rgba(40,25,12,.55);padding:16px}
+.card.on{display:flex}
+.card .in{width:min(560px,100%);max-height:100%;overflow:auto;background:var(--paper);border-radius:20px;padding:20px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.card h1,.card h2{font-family:"Gowun Batang",serif;margin:.2em 0;line-height:1.15;text-wrap:balance}
+.card h1{font-size:clamp(30px,6vw,44px)}.card h2{font-size:clamp(22px,4.5vw,30px)}
+.card p{margin:.4em 0;color:var(--ink2);word-break:keep-all}
+.card .lab{display:inline-block;font-size:13px;background:#efe2c8;border-radius:999px;padding:1px 12px;color:var(--ink2)}
+.card img.big{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:14px;background:#e8dcc8}
+.big-btn{border:0;border-radius:14px;background:var(--red);color:#fff;font-size:18px;padding:12px 26px;margin-top:10px;min-height:48px;box-shadow:0 4px 0 #8d3a1f}
+.big-btn.sub{background:var(--green);box-shadow:0 4px 0 #34623e}
+.big-btn.ghost{background:#efe2c8;color:var(--ink);box-shadow:0 4px 0 #cdb894}
+.sum{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;text-align:left;margin:12px auto;max-width:440px;font-size:15px}
+.sum dt{color:var(--ink2)}.sum dd{margin:0;font-weight:700;word-break:keep-all}
+.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.bag{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin:10px 0;text-align:center}
+.bag div{background:#fffaf1;border:1.5px solid var(--line);border-radius:12px;padding:6px;font-size:13px;line-height:1.3;word-break:keep-all}
+.bag img{width:56px;height:56px;object-fit:contain;display:block;margin:0 auto 2px}
+.chlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:10px 0}
+.chlist button{background:#fffaf1;border:1.5px solid var(--line);border-radius:12px;padding:8px;text-align:left;font-size:14px;line-height:1.35}
+.chlist button b{display:block;font-family:"Gowun Batang",serif}
+.chlist button:disabled{opacity:.4}
+.toast{position:absolute;z-index:35;left:50%;top:calc(60px + env(safe-area-inset-top));transform:translateX(-50%);background:#4a3626;color:#fff;border-radius:999px;padding:7px 18px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
+.toast.on{opacity:1}
+.maker{position:absolute;right:8px;bottom:4px;font-size:10px;color:rgba(90,60,30,.4);pointer-events:none}
+
+@media (max-width:620px){.hud .tx{display:none}.hud .heart span{display:none}}
+@media (prefers-reduced-motion:reduce){.pin.new .dot,#mini .cart{animation:none}}
+
+/* 낮은 가로 화면(휴대폰 가로) */
+@media (orientation:landscape) and (max-height:520px){
+.hud .t{font-size:13px;padding:2px 10px}.hud button{height:36px;min-width:40px}.hud .heart img{width:24px;height:24px}
+.card{padding:10px}.card .in{padding:14px 16px;border-radius:16px}
+.card .in:has(>img.big){width:min(860px,100%);display:grid;grid-template-columns:44% 1fr;column-gap:18px;align-items:center;align-content:center}
+.card .in:has(>img.big)>img.big{grid-column:1;grid-row:1/span 14;height:100%;max-height:calc(100dvh - 48px);aspect-ratio:auto;align-self:stretch}
+.card .in:has(>img.big)>*:not(img.big){grid-column:2}
+.card h1{font-size:28px}.card h2{font-size:22px}.card p{font-size:14px;margin:.3em 0}
+.box{left:2%;right:2%;bottom:calc(2% + env(safe-area-inset-bottom));padding:16px 14px 8px;border-radius:14px;font-size:15px}
+.bi{max-height:62vh}.who{font-size:13px;top:-12px}
+.txt{font-size:16px;line-height:1.6}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:6px}
+.opts button{font-size:14px;padding:7px 10px;min-height:40px;line-height:1.35}
+.quest{font-size:12px;padding:4px 10px;max-width:min(460px,64%)}
+.big-btn{font-size:16px;padding:9px 20px;min-height:42px;margin-top:6px}
+.sum{font-size:13px;gap:1px 10px;margin:6px auto}.btns .big-btn{flex:1}
+.mhud{top:calc(50px + env(safe-area-inset-top));font-size:13px;padding:3px 12px}
+.mpanel{top:56%;max-height:74%;padding:10px 12px}.mpanel h3{font-size:16px;margin-bottom:4px}
+.chips{gap:6px;margin-top:6px}.chips button{min-height:40px;padding:5px 10px;font-size:14px}.chips button img{width:30px;height:30px}
+.bigtap{font-size:17px;padding:10px 22px;min-height:46px}
+.duel{top:calc(48px + env(safe-area-inset-top));font-size:12px;padding:3px 10px}
+.cup{width:70px;height:80px}
+.deco{width:min(190px,40vh);font-size:60px}.deco b{font-size:26px}
+.bag{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}.bag img{width:40px;height:40px}
+}
+
+/* 가로 모드 전용: 세로로 든 휴대폰·태블릿에서는 돌려 달라는 안내 */
+#rotate{display:none;position:fixed;inset:0;z-index:9999;background:#f6ecd6;color:#5a3d2b;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px;font-family:"Gowun Batang",serif}
+#rotate .ph{width:64px;height:104px;border:5px solid #b5523b;border-radius:14px;position:relative;animation:turn 2.4s ease-in-out infinite}
+#rotate .ph::after{content:"";position:absolute;left:50%;bottom:6px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#b5523b}
+#rotate b{font-size:22px}#rotate p{margin:0;font-size:15px;line-height:1.6;opacity:.85}
+@keyframes turn{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+@media (orientation:portrait) and (max-width:1000px){#rotate{display:flex}.thing,.ob,#mini .cart{animation-play-state:paused!important}}

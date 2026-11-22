@@ -7,5 +7,12 @@
   "orientation": "landscape",
   "background_color": "#f6ecd6",
   "theme_color": "#f6ecd6",
-  "icons": [{"src": "img/anne_happy.webp", "sizes": "512x512", "type": "image/webp", "purpose": "any"}]
+  "icons": [
+    {
+      "src": "img/av_matthew.webp",
+      "sizes": "256x256",
+      "type": "image/webp",
+      "purpose": "any"
+    }
+  ]
 }
