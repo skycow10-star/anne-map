@@ -1,4 +1,4 @@
-/* 에이번리 자연 도감
+/* 앤의 반짝이 수첩 (자연 모으기)
    계절마다 지도 곳곳에 반짝이(✨)가 숨어 있고, 누르면 자연을 발견해 도감에 담는다.
    발견할 때 아이가 앤처럼 이름을 붙인다(진짜 이름은 아래에 작게).
    그림은 img/<img>.webp, 없으면 이모지 e로 대신한다. 장의 season과 같은 계절 것만 나온다. */
@@ -79,8 +79,8 @@ function natFound(id){
 function natSave(id, nm){
   S.nat = S.nat || {}; S.nat[id] = {nm, ch:S.ch}; saveS();
   const all = NATURE.filter(x => x.s === NAT[id].s), got = all.filter(x => S.nat[x.id]).length;
-  note(`📗 자연 도감에 담았어요 · ${SEASON_KO[NAT[id].s]} ${got}/${all.length}`);
-  if(got === all.length) setTimeout(() => note(`🎉 ${SEASON_KO[NAT[id].s]} 도감을 다 채웠어요!`), 2100);
+  note(`📔 반짝이 수첩에 담았어요 · ${SEASON_KO[NAT[id].s]} ${got}/${all.length}`);
+  if(got === all.length) setTimeout(() => note(`🎉 ${SEASON_KO[NAT[id].s]} 수첩을 다 채웠어요!`), 2100);
   natKey = ""; drawMap();
 }
 

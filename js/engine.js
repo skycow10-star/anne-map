@@ -343,7 +343,7 @@ function finale(){
   const word = {canon:"원작 속 앤의 마음을 가장 잘 읽은 친구예요.", imag:"앤처럼 상상력으로 세상을 반짝이게 만든 친구예요.", bal:"모두의 마음을 함께 생각한 따뜻한 친구예요."}[big];
   popCard(`<img class="big" src="${IMG("ed_ch10_" + big)}" alt="" onerror="this.style.visibility='hidden'"><span class="lab">이야기 끝</span><h2>앤과 함께한 한 해</h2>
     <p>${word}<br>"하느님은 하늘에 계시고, 세상은 모두 평안하도다."</p>
-    <dl class="sum">${ends}<dt>✍️ 이름 지은 곳</dt><dd>${named || "-"}</dd><dt>⭐ 모은 별</dt><dd>${total}개</dd><dt>✨ 숨은 장면</dt><dd>${hid}/${all}</dd><dt>📗 자연 도감</dt><dd>${Object.keys(S.nat || {}).length}/${NATURE.length}</dd></dl>
+    <dl class="sum">${ends}<dt>✍️ 이름 지은 곳</dt><dd>${named || "-"}</dd><dt>⭐ 모은 별</dt><dd>${total}개</dd><dt>✨ 숨은 장면</dt><dd>${hid}/${all}</dd><dt>📔 반짝이 수첩</dt><dd>${Object.keys(S.nat || {}).length}/${NATURE.length}</dd></dl>
     <div class="btns"><button class="big-btn sub" id="pOk">지도에서 마음껏 놀기</button><button class="big-btn ghost" id="pRe">처음부터</button></div>`, () => { show("map"); drawMap(); }, true);
   $("pRe").onclick = restart;
 }
@@ -422,7 +422,7 @@ const GAME = {boot(){
   $("alView").onclick = () => $("alView").classList.remove("on");
   const started = S.qi > 0 || S.ch > 1 || S.over;
   if(started){ $("bStart").textContent = "이어서 하기";
-    $("coverMore").innerHTML = `<button id="bAlbum">나의 앨범</button><button id="bNat">자연 도감</button><button id="bPick">장 고르기</button><button id="bNew">처음부터</button>`;
+    $("coverMore").innerHTML = `<button id="bAlbum">나의 앨범</button><button id="bNat">반짝이 수첩</button><button id="bPick">장 고르기</button><button id="bNew">처음부터</button>`;
     $("bAlbum").onclick = () => album(1); $("bNat").onclick = () => natureBook();
     $("bPick").onclick = chapterPick; $("bNew").onclick = () => { if(confirmNew()) restart(); }; }
   $("bStart").onclick = () => { $("cover").classList.remove("on"); hud();
