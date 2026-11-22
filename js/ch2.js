@@ -14,7 +14,7 @@ CH[2] = {
     ["anne", "sad", "marilla_strict", "\"저를 원하지 않으시는군요! 남자아이가 아니라서요!\"\n나는 식탁에 엎드려 엉엉 울었어."],
     {eff:{met:"marilla"}},
     ["marilla", "sad", "marilla_strict", "\"울 것까지는 없다. 오늘 밤은 여기서 자거라.\""],
-    ["inner", "sad", null, "다락방은 차갑고 조용했어.\n창밖에는 꽃이 핀 벚나무가 하얗게 서 있었어.", {bg:"ch2_room"}],
+    ["inner", "sad", null, "다락방은 차갑고 조용했어.\n창밖에는 꽃이 핀 벚나무가 하얗게 서 있었어.", {bg:"ch8_attic"}],
     {q:"잠들기 전, 앤은 무엇을 할까요?", opts:[
       {t:"벚나무에게 '눈의 여왕'이라는 이름을 지어 준다.", type:"canon", then:[["inner", "dreamy", null, "\"안녕, 눈의 여왕님.\"\n이름을 붙여 주니 벚나무가 조금 친구처럼 느껴졌어."]]},
       {t:"내 머리가 노을빛이라고 노래를 지어 부른다.", type:"imag", eff:{hid:"sunsetHair"}, then:[["inner", "dreamy", null, "\"내 머리는 홍당무가 아니라 노을빛이라네~\"\n노래를 부르니 눈물이 쏙 들어갔어.", {dream:true, still:"sc_sunsetHair"}]]},

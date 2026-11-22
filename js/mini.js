@@ -488,18 +488,22 @@ MINI.trace = (m, api) => {
   tt.style.left = P[0][0] + "%"; tt.style.top = P[0][1] + "%";
   let prog = 0, down = false, off = 0, wasOff = false, devSum = 0, devN = 0, over = false;
   const toPx = p => { const r = tb.getBoundingClientRect(); return [r.left + p[0] / 100 * r.width, r.top + p[1] / 100 * r.height]; };
-  const tol = () => (m.tol || 26) * Math.max(.75, Math.min(1.2, tb.getBoundingClientRect().width / 420));
+  const touch = matchMedia("(pointer:coarse)").matches;   /* 휴대폰 손가락은 마우스보다 굵고 손가락에 가려 잘 안 보여요 */
+  const tol = () => (m.tol || 26) * Math.max(.75, Math.min(1.2, tb.getBoundingClientRect().width / 420)) * (touch ? 1.45 : 1);
+  let downAt = null, offRun = 0;
   const msg = () => api.hud(`${m.say || "점선을 따라 끝까지 그어요"} · ${Math.round(prog / (P.length - 1) * 100)}%${off ? ` · 삐뚤 ${off}번` : ""}`); msg();
   const move = (x, y) => {
     if(over) return; const r = tb.getBoundingClientRect(); tt.style.left = ((x - r.left) / r.width * 100) + "%"; tt.style.top = ((y - r.top) / r.height * 100) + "%";
     if(!down) return;
     let best = -1, bd = 1e9; for(let i = prog; i < Math.min(P.length, prog + WIN); i++){ const [px, py] = toPx(P[i]), dd = Math.hypot(px - x, py - y); if(dd < bd){ bd = dd; best = i; } }
-    if(bd > tol() * (m.wig ? 1.3 : 1.6)){ if(!wasOff){ wasOff = true; off++; SFX.no(); tb.classList.remove("shake"); void tb.offsetWidth; tb.classList.add("shake"); popAt(api, x - 40, y - 60, m.offSay || "앗, 선을 벗어났어요!"); msg(); } return; }
+    const moved = downAt ? Math.hypot(x - downAt[0], y - downAt[1]) : 99;
+    if(bd > tol() * (m.wig ? 1.3 : 1.6)){ if(moved < 18 || ++offRun < 3) return; if(!wasOff){ wasOff = true; off++; SFX.no(); tb.classList.remove("shake"); void tb.offsetWidth; tb.classList.add("shake"); popAt(api, x - 40, y - 60, m.offSay || "앗, 선을 벗어났어요!"); msg(); } return; }
+    offRun = 0;
     if(bd < tol()){ wasOff = false; devSum += bd; devN++; if(best > prog){ if((best / 9 | 0) > (prog / 9 | 0)) SFX.snip(); prog = best; $("tdone").setAttribute("d", dstr(P.slice(0, prog + 1))); msg(); } }
-    if(prog >= P.length - 2) finish();
+    if(prog >= P.length - Math.max(2, P.length * .03)) finish();   /* 끝 가까이 오면 끝(손가락이 끝점을 살짝 못 미쳐도) */
   };
-  tb.onpointerdown = e => { e.preventDefault(); const [sx, sy] = toPx(P[prog]); if(Math.hypot(sx - e.clientX, sy - e.clientY) > tol() * 1.8 && prog === 0){ popAt(api, e.clientX - 40, e.clientY - 60, "반짝이는 시작점에서 시작해요"); return; }
-    down = true; st.style.display = "none"; tb.setPointerCapture(e.pointerId); move(e.clientX, e.clientY); };
+  tb.onpointerdown = e => { e.preventDefault(); const [sx, sy] = toPx(P[prog]); if(Math.hypot(sx - e.clientX, sy - e.clientY) > tol() * (touch ? 2.6 : 1.8) && prog === 0){ popAt(api, e.clientX - 40, e.clientY - 60, "반짝이는 시작점에서 시작해요"); return; }
+    down = true; downAt = [e.clientX, e.clientY]; offRun = 0; st.style.display = "none"; tb.setPointerCapture(e.pointerId); move(e.clientX, e.clientY); };
   tb.onpointermove = e => move(e.clientX, e.clientY);
   tb.onpointerup = tb.onpointercancel = () => { down = false; };
   const finish = () => { if(over) return; over = true; tt.style.display = "none"; $("tdone").style.opacity = 0; $("tpath").style.opacity = 0;

@@ -15,7 +15,7 @@ const P = {
   lynde:{name:"린드 부인 집", x:205, y:520, bg:"ch2_lynde", from:2, say:["린드 부인은 오늘도 창가에서 길을 지켜보고 계실 거야.", "린드 부인의 정원은 늘 반듯반듯해."]},
   lane:{name:"연인의 오솔길", x:1090, y:430, bg:"ch2_lane", bgW:"ch6_snow", from:2, say:["'{lane}'. 나무들이 소곤소곤 이야기하는 길이야."]},
   barry:{name:"배리 씨네 집", x:800, y:240, bg:"ch3", from:3, say:["다이애나네 집이야. 창문에 불이 켜져 있으면 괜히 기뻐져."]},
-  spring:{name:"통나무 다리 옆 샘", x:935, y:325, bg:"ch3_bridge", bgW:"ch6_snow", from:3, say:["'{spring}'. 물속에 요정이 사는 것 같아."]},
+  spring:{name:"통나무 다리 옆 샘", x:935, y:325, bg:"ch3_bridge", bgS:{spring:"ch7_spring", summer:"ch7_spring", autumn:"ch5_spring"}, bgW:"ch6_snow", from:3, say:["'{spring}'. 물속에 요정이 사는 것 같아."]},
   church:{name:"교회와 목사관", x:715, y:765, bg:"church_out", bgW:"ch6_snow", from:3, say:["교회 종소리가 들리면 일요일이야."]},
   birch:{name:"자작나무 길", x:1225, y:555, bg:"ch4_birch", bgW:"ch6_snow", from:4, say:["'{birch}'. 하얀 나무들이 줄지어 서 있어."]},
   school:{name:"에이번리 학교", x:1440, y:615, bg:"ch4", from:4, say:["학교야. 칠판 냄새가 나."]},
