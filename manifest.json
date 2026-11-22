@@ -1,0 +1,11 @@
+{
+  "name": "에이번리 마을 지도",
+  "short_name": "앤 마을지도",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#f6ecd6",
+  "theme_color": "#f6ecd6",
+  "icons": [{"src": "img/anne_happy.webp", "sizes": "512x512", "type": "image/webp", "purpose": "any"}]
+}
