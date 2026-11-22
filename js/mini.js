@@ -56,12 +56,13 @@ MINI.calm = (m, api) => {
   const stopD = every(400, () => { if(over || phase === 2) return; anger = Math.max(0, anger - 1); bar(); });
 };
 
-/* 순서 맞추기: q, steps:[맞는 순서] */
+/* 순서 맞추기: q, steps:[맞는 순서], decoys:[끼어든 엉뚱한 말] (누르면 틀린 것) */
 MINI.order = (m, api) => {
   let k = 0, miss = 0; const p = panel(api, `<h3>${esc(m.q)}</h3><div class="built" id="ob"></div><div class="chips" id="oc"></div>`);
   api.hud(m.say || "알맞은 순서대로 눌러요");
-  $("oc").innerHTML = shuffle(m.steps.map((s, i) => ({s, i}))).map(o => `<button data-i="${o.i}">${esc(o.s)}</button>`).join("");
-  p.querySelectorAll("#oc button").forEach(b => b.onclick = () => {
+  $("oc").innerHTML = shuffle(m.steps.map((s, i) => ({s, i})).concat((m.decoys || []).map(s => ({s, i:-1})))).map(o => `<button data-i="${o.i}">${esc(o.s)}</button>`).join("");
+  p.querySelectorAll("#oc button").forEach(b => b.onclick = e => {
+    if(+b.dataset.i < 0){ miss++; b.classList.add("no"); popAt(api, e.clientX - 40, e.clientY - 70, m.decoyNo || "그 말은 어울리지 않아요"); setTimeout(() => b.classList.add("used"), 450); return; }
     if(+b.dataset.i === k){ b.classList.add("used"); $("ob").insertAdjacentHTML("beforeend", `<span>${esc(m.steps[k])}</span>`); k++;
       if(k >= m.steps.length) setTimeout(() => api.end(miss === 0 ? 3 : miss <= 2 ? 2 : 1, miss === 0 ? "한 번에 다 맞혔어요!" : `${miss}번 헷갈렸지만 해냈어요.`), 500); }
     else { miss++; b.classList.add("no"); setTimeout(() => b.classList.remove("no"), 400); }
