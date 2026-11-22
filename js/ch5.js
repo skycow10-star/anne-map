@@ -11,7 +11,7 @@ CH[5] = {
   {at:"home", label:"마릴라 아주머니께 다과회 허락받기", bg:"ch5", nodes:[
     ["marilla", "happy", "marilla_warm", "\"내일 카모디에 다녀오마. 다이애나를 불러 차를 대접해도 좋다.\""],
     ["anne", "happy", "marilla_warm", "\"정말요? 어른처럼요? 장미꽃 무늬 찻잔도 써도 돼요?\""],
-    ["marilla", "sad", "marilla_strict", "\"그건 안 된다. 갈색 찻잔을 쓰렴.\n그리고 거실 찬장 둘째 칸에 빨간 나무딸기 주스가 반쯤 있다. 그걸 대접하거라.\""],
+    ["marilla", "sad", "marilla_strict", "\"그건 안 된다. 갈색 찻잔을 쓰렴.\n거실 찬장 둘째 칸에 빨간 나무딸기 주스가 있으니 그걸 내거라.\""],
     {q:"마릴라 아주머니의 말씀을 듣고 앤은 어떻게 할까요?", opts:[
       {t:"\"찬장 둘째 칸, 빨간 병!\" 하고 꼭 기억한다.", type:"canon", eff:{hid:"careful"}, then:[["inner", "happy", "marilla_warm", "찬장 둘째 칸, 빨간 나무딸기 주스.\n나는 꼼꼼한 안주인이 될 거야!", {still:"sc_careful"}]]},
       {t:"여왕의 연회를 여는 상상에 빠진다.", type:"imag", eff:{hid:"banquet"}, then:[["inner", "dreamy", "marilla_warm", "은촛대, 레이스 식탁보, 금빛 찻잔…\n나는 여왕님의 연회를 여는 거야!", {dream:true, still:"sc_banquet"}]]},

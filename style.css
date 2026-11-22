@@ -39,7 +39,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 /* 장소·대화 */
 .scene{position:absolute;inset:0;background:#e8dcc8 center/cover;transition:filter .4s}
 .spr{position:absolute;bottom:0;height:82%;max-width:44%;object-fit:contain;object-position:bottom;transition:opacity .3s,transform .3s;filter:drop-shadow(0 6px 12px rgba(40,25,10,.25))}
-.spr.l{left:4%}.spr.r{right:4%}
+.spr.l{left:7%}.spr.r{right:7%}
 #place.solo .spr.l{left:30%}.spr.off{opacity:0}.spr.dim{filter:brightness(.8) drop-shadow(0 6px 12px rgba(40,25,10,.25))}
 .box{position:absolute;z-index:10;left:3%;right:3%;bottom:calc(3% + env(safe-area-inset-bottom));background:rgba(255,251,242,.96);border:2px solid var(--line);border-radius:18px;padding:22px 18px 12px;box-shadow:0 8px 24px rgba(40,25,10,.25)}
 .bi{max-height:min(56vh,460px);overflow:auto}
@@ -196,6 +196,25 @@ button{font:inherit;cursor:pointer;color:inherit}
 @keyframes fall{to{transform:translate(-120px,110vh) rotate(540deg)}}
 #cover.on~.hud,#game:has(#cover.on) .hud{display:none}
 @media (prefers-reduced-motion:reduce){.cv-map,.cv-anne,.cv-start,.cv-petals i{animation:none}}
+
+/* 대사창 잘 보이게 (덧씌움) */
+#place::after{content:"";position:absolute;left:0;right:0;bottom:0;height:48%;background:linear-gradient(transparent,rgba(40,25,10,.45));pointer-events:none;z-index:9}
+.box{background:#fffaf0;border:3px solid #a9814f;box-shadow:inset 0 0 0 3px #fffaf0,inset 0 0 0 4.5px #e2cfa8,0 10px 28px rgba(30,18,6,.45)}
+.txt{color:#2a1c10;font-size:clamp(17px,2.3vw,22px);line-height:1.7;letter-spacing:.01em;text-shadow:0 0 .4px #2a1c10}
+.who{font-size:16px;padding:3px 16px;border:2.5px solid #fffaf0;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.next{color:#a9814f;font-weight:700;animation:nudge 1s ease-in-out infinite}
+@keyframes nudge{50%{transform:translateY(3px)}}
+#ch .opts button{background:#fff;border:2.5px solid #d6bf95;color:#2a1c10;font-size:16px;box-shadow:0 2px 0 #d6bf95}
+#ch .opts button:hover,#ch .opts button:focus-visible{border-color:var(--red);background:#fff6ee}
+#txt:has(+ #ch .opts){font-family:"Gowun Batang",serif;font-weight:700;min-height:0;margin-bottom:2px}
+#mini.roll .thing{width:64px;height:64px;filter:saturate(.7) sepia(.18) brightness(1.04) drop-shadow(0 3px 5px rgba(80,40,20,.25));opacity:.93}
+@media (orientation:landscape) and (max-height:520px){
+ .txt{font-size:17px;line-height:1.55;min-height:3.1em}
+ .box{padding:15px 14px 6px}
+ #ch .opts button{font-size:15px;padding:6px 10px;min-height:42px}
+ .spr{height:98%;bottom:-6%}.spr.l{left:8%}.spr.r{right:8%}#place.solo .spr.l{left:34%}
+ .who{font-size:14px;top:-14px}
+}
 
 /* 가로 모드 전용: 세로로 든 휴대폰·태블릿에서는 돌려 달라는 안내 */
 #rotate{display:none;position:fixed;inset:0;z-index:9999;background:#f6ecd6;color:#5a3d2b;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px;font-family:"Gowun Batang",serif}
