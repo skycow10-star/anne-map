@@ -8,7 +8,7 @@ CH[1] = {
        bal:["고마워요, 매슈 아저씨", "앤의 마음도, 아저씨의 마음도 함께 생각했어요. 따뜻한 선택이었어요!"]},
   names:["avenue", "pond"], minis:["walk"],
   quests:[
-  {at:"station", label:"기차역에서 나를 데리러 올 사람을 기다리기", stage:{l:[26, 6, 66], r:[60, 6, 72]}, nodes:[
+  {at:"station", label:"기차역에서 나를 데리러 올 사람을 기다리기", lock:{except:[], why:"먼저 기차역에서 데리러 올 사람을 기다려야 해요"}, stage:{l:[26, 6, 66], r:[60, 6, 72]}, nodes:[
     ["inner", "dreamy", null, "나는 앤 셜리, 열한 살이야.\n오늘 고아원을 떠나 기차를 타고 브라이트 리버 역에 왔어."],
     ["inner", "happy", null, "초록 지붕 집의 커스버트 씨가 나를 데리러 온대.\n처음으로 진짜 내 집이 생기는 거야!"],
     ["station", "surprised", null, "\"얘야, 혼자 밖에 있지 말고 대합실 안에 들어가 기다리렴.\""],
@@ -29,7 +29,7 @@ CH[1] = {
     {eff:{get:"carpetbag"}},
     ["inner", "happy", "matthew", "아저씨 얼굴이 조금 당황한 것 같았어. 왜일까?\n그래도 괜찮아. 이제 초록 지붕 집으로 가는 거야!"]
   ]},
-  {at:"avenue", label:"마차를 타고 가로수길로 가기", nodes:[
+  {at:"avenue", label:"마차를 타고 가로수길로 가기", lock:{except:["station"], why:"매슈 아저씨 마차를 타고 가는 길이에요. 꽃길을 따라가요"}, nodes:[
     {mini:{kind:"catch", id:"walk", title:"꽃길 산책", roll:true, bg:false, how:"마차를 타고 가는 길이에요. 날아오는 예쁜 것을 톡 눌러 잡아요. 20초 동안 많이 잡을수록 별이 늘어요.",
       say:"마차에서 보이는 예쁜 것을 톡!", time:20, goal:[5, 10], top:[8, 44],
       items:[{img:"fl_apple", e:"🌸", say:"하얀 레이스 같아!"}, {img:"fl_cherry", e:"🌸", say:"벚꽃잎이 춤춰요!"}, {img:"fl_daffodil", e:"🌼", say:"수선화가 인사해요!"},
@@ -43,7 +43,7 @@ CH[1] = {
     {name:"avenue", q:"꽃이 핀 가로수길에 어떤 이름을 붙일까요?", pick:["기쁨의 하얀 길", "하얀 꽃 터널", "눈꽃 지붕길"], after:() => getItem("namecard")},
     ["matthew", "happy", "matthew", "\"'{avenue}'… 글쎄다, 참 좋은 이름이구나.\""]
   ]},
-  {at:"pond", label:"연못 쪽으로 가기", nodes:[
+  {at:"pond", label:"연못 쪽으로 가기", lock:{except:["station", "avenue"], why:"매슈 아저씨 마차를 타고 가는 길이에요. 연못 쪽으로 가요"}, nodes:[
     ["inner", "dreamy", "matthew", "언덕을 내려가자 기다란 연못이 나타났어.\n물에 노을빛이 일렁여서 꼭 보석 같았어."],
     ["matthew", "dreamy", "matthew", "\"배리 씨네 연못이다. 저 언덕 위 집에 배리 씨네가 살지.\""],
     {name:"pond", hid:"mirror", q:"반짝이는 연못에 어떤 이름을 붙일까요?", pick:["반짝이는 호수", "노을 거울 연못", "은빛 물결 호수"],
@@ -51,7 +51,7 @@ CH[1] = {
     ["anne", "happy", "matthew", "\"'{pond}'! 딱 맞는 이름이 떠오르면 온몸이 찌릿해요.\n아저씨도 그런 적 있으세요?\""],
     ["matthew", "happy", "matthew", "\"글쎄다… 그런 것 같기도 하구나.\""]
   ]},
-  {at:"home", label:"초록 지붕 집에 도착하기", stage:{l:[30, 4, 62], r:[58, 4, 70]}, nodes:[
+  {at:"home", label:"초록 지붕 집에 도착하기", lock:{except:["station", "avenue", "pond"], why:"이제 초록 지붕 집으로 가요"}, stage:{l:[30, 4, 62], r:[58, 4, 70]}, nodes:[
     ["matthew", "surprised", "matthew", "\"저기가 초록 지붕 집이다.\""],
     ["inner", "happy", "matthew", "어둠 속 나무 사이로 창문 불빛이 반짝였어.\n저기가… 내 집이 될 곳이야."],
     {q:"초록 지붕 집 앞에 도착했어요. 앤은 무엇을 할까요?", opts:[
