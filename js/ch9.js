@@ -13,7 +13,7 @@ CH[9] = {
     ["anne", "sad", "diana", "\"하지만 일레인은 금발인데… 빨간 머리 일레인이 어디 있어?\""],
     ["diana", "happy", "diana", "\"네 머리는 이제 예전보다 훨씬 진해졌어. 적갈색이야!\""],
     {mini:{kind:"decorate", id:"boat", title:"일레인의 배 꾸미기", how:"배리 씨네 평저선을 일레인의 배처럼 꾸며요. 마음에 드는 것을 끌어다 배 위 원하는 곳에 놓아요. 최대 6개예요.",
-      q:"일레인의 배를 꾸며요", baseImg:"mini_boat", base:"🛶", max:6, say:"끌어다 배에 올려요", btn:"출발 준비 끝!",
+      q:"일레인의 배를 꾸며요", baseImg:"mini_boat", base:"🛶", max:6, size:22, say:"끌어다 배에 올려요", btn:"출발 준비 끝!",
       items:[{img:"it_shawl", e:"🖤", t:"검은 숄"}, {img:"it_iris", e:"💐", t:"파란 붓꽃"}, {img:"gd_lily", e:"🌷", t:"하얀 백합"}, {img:"gd_cloth", e:"🧣", t:"금빛 천"}, {img:"gd_leaves", e:"🌿", t:"초록 덩굴"}],
       res:{1:"수수한 배예요.", 2:"제법 그럴듯한 일레인의 배!", 3:"정말 시 속 장면 같아요!"}},
      good:[{eff:{get:"shawl"}}]},

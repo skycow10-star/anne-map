@@ -219,7 +219,7 @@ MINI.decorate = (m, api) => {
   f.innerHTML = `<div class="dz-wrap"><div class="dz" id="dz">${m.baseImg ? `<img class="dz-base" src="${IMG(m.baseImg)}" alt="" draggable="false" onerror="this.outerHTML='<div class=&quot;dz-base emo&quot;>${m.base || "👒"}</div>'">` : `<div class="dz-base emo">${m.base || "👒"}</div>`}</div>
     <div class="dz-side"><p class="dz-q">${esc(m.q)}</p><div class="dz-tray" id="dt">${m.items.map((o, i) => `<button data-i="${i}" aria-label="${esc(o.t)}">${look(o)}<span>${esc(o.t)}</span></button>`).join("")}</div>
     <button class="bigtap" id="dd">${esc(m.btn || "다 됐어요")}</button></div></div>`;
-  const dz = $("dz"); let n = 0;
+  const dz = $("dz"); let n = 0; if(m.size) dz.style.setProperty("--dzs", m.size + "vh");
   const msg = () => api.hud(`${m.say || "꽃을 끌어다 모자 위에 놓아요"} · ${n}/${max}`); msg();
   const inZone = (x, y) => { const r = dz.getBoundingClientRect(); return x > r.left && x < r.right && y > r.top && y < r.bottom; };
   const drag = (ghost, x0, y0, onDrop) => {
