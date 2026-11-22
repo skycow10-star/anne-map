@@ -34,7 +34,7 @@ MINI.calm = (m, api) => {
   const words = shuffle(m.words); let i = 0, over = false, stopF = () => {};
   const bar = () => { const cg = $("cg"); if(cg) cg.style.width = anger + "%"; };
   const bubble = (w, dur) => { const d = document.createElement("div");
-    d.className = "thing"; d.style.cssText = `left:100vw;top:${rnd(14, 58)}%;width:auto;height:auto;font-size:18px;font-family:'Gowun Batang',serif;font-weight:700;background:#fff;border:2px solid #d9645c;border-radius:14px;padding:6px 12px;white-space:nowrap;animation-duration:${dur}s`;
+    d.className = "thing"; d.style.cssText = `left:100vw;top:${rnd(14, 58)}%;width:auto;height:auto;font-size:18px;font-family:'Jua',sans-serif;font-weight:700;background:#fff;border:2px solid #d9645c;border-radius:14px;padding:6px 12px;white-space:nowrap;animation-duration:${dur}s`;
     d.textContent = w;
     d.onclick = e => { e.stopPropagation(); popAt(api, e.clientX, e.clientY, phase === 2 ? "너무 많아!" : (m.ok || "후—")); d.remove(); if(phase === 1){ sent++; left--; msg(); if(left <= 0) next(); } };
     d.addEventListener("animationend", () => { d.remove(); anger = Math.min(100, anger + (phase === 2 ? 14 : (m.hit || 30))); if(phase === 1){ peak = Math.max(peak, anger); left--; } bar(); msg();
