@@ -27,13 +27,13 @@ const P = {
    점(x,y)은 1600×900 기준. 장소는 PLACE_NODE의 점에서 길에 올라탄다. */
 const NODES = {
   st:[418, 770], f1:[305, 682], av1:[268, 565], av2:[282, 455], av3:[318, 345], av4:[378, 255], t1:[432, 234], t2:[565, 238],
-  ly:[640, 345], pn1:[705, 388], pb:[782, 418], sp:[828, 392], g1:[862, 446], g2:[962, 462], gg:[1062, 508],
+  ly:[640, 345], lyr:[722, 300], pn1:[705, 388], pb:[782, 418], sp:[828, 392], g1:[862, 446], g2:[962, 462], gg:[1062, 508],
   tb1:[700, 232], br1:[822, 240], br2:[930, 214], by:[1032, 280], bb:[957, 352],
   l1:[430, 716], l2:[600, 740], l3:[742, 756], ch:[765, 692], l4:[900, 772], l5:[992, 766], l6:[1150, 722], l7:[1250, 642], l8:[1312, 546],
   gs1:[975, 572], gs2:[952, 652], ln1:[1182, 470], ln2:[1292, 432], ln3:[1286, 332], ln4:[1272, 238], pa:[1225, 215],
   h1:[1380, 452], h2:[1462, 380], h5:[1487, 330], h3:[1470, 280], h4:[1422, 222], hl:[1398, 182], bi:[1425, 585], s1:[1232, 772], sc:[1398, 792]
 };
-const EDGES = "st-f1 f1-av1 av1-av2 av2-av3 av3-av4 av4-t1 t1-t2 t2-ly ly-pn1 pn1-pb pb-sp pb-g1 g1-g2 g2-gg t2-tb1 tb1-br1 br1-br2 br2-by by-bb bb-g2 " +
+const EDGES = "st-f1 f1-av1 av1-av2 av2-av3 av3-av4 av4-t1 t1-t2 lyr-ly lyr-pn1 tb1-lyr ly-pn1 pn1-pb pb-sp pb-g1 g1-g2 g2-gg t2-tb1 tb1-br1 br1-br2 br2-by by-bb bb-g2 " +
   "f1-l1 l1-l2 l2-l3 l3-ch l3-l4 l4-l5 l5-l6 l6-l7 l7-l8 gg-gs1 gs1-gs2 gs2-l5 gg-ln1 ln1-ln2 ln2-ln3 ln3-ln4 ln4-pa ln2-l8 l8-h1 h1-h2 h2-h5 h5-h3 h3-h4 h4-hl l8-bi l6-s1 s1-sc";
 const PLACE_NODE = {station:"st", avenue:"av2", lynde:"ly", pond:"pn1", spring:"sp", home:"gg", barry:"by", church:"ch", birch:"bi", school:"sc", lane:"ln3", pasture:"pa", hill:"hl"};
 const GRAPH = {}; EDGES.split(" ").forEach(e => { const [a, b] = e.split("-"); (GRAPH[a] = GRAPH[a] || []).push(b); (GRAPH[b] = GRAPH[b] || []).push(a); });
@@ -125,10 +125,10 @@ function drawMap(){
       <text y="-45" text-anchor="middle" font-size="28" fill="#fff" font-weight="700">${cur ? "!" : "·"}</text></g></g>`;
   }).join("");
   $("names").innerHTML = open.map(([k, p]) => `<text x="${p.x}" y="${p.y + 36}" font-size="${k === target ? 28 : 22}">${esc(S.names[k] || p.name)}</text>`).join("");
-  const at = P[S.at] || P.station; if(!walking) $("me").setAttribute("transform", `translate(${at.x + 52} ${at.y - 62}) scale(.85)`);
+  const at = P[S.at] || P.station; if(!walking){ $("me").setAttribute("transform", `translate(${at.x + 40} ${at.y + 6})`); $("meBody").setAttribute("transform", ""); }
   $("trail").setAttribute("d", "");
   $("guide").setAttribute("d", target && target !== S.at && P[S.at] ? pathD(route(S.at, target)) : "");
-  $("meImg").setAttribute("href", IMG(anneKey("happy")));
+  const wk = (C() && C().walker) || "walk_anne", mi = $("meImg"); if(mi.dataset.k !== wk){ mi.dataset.k = wk; mi.onerror = () => mi.setAttribute("href", IMG("walk_anne")); mi.setAttribute("href", IMG(wk)); }
   const mw = $("mw"), sv = mw.firstElementChild, focus = P[target] || at;
   requestAnimationFrame(() => { const sc = sv.clientWidth / 1600; mw.scrollTo({left:Math.max(0, focus.x * sc - mw.clientWidth / 2), behavior:"smooth"}); });
   $("quest").innerHTML = q ? `<b>📒 할 일 ${S.qi + 1}/${C().quests.length}</b> · ${esc(fill(q.label))}` : S.over ? `<b>📒 이야기 끝!</b> 마을을 마음껏 돌아다녀 보세요` : "";
@@ -145,7 +145,9 @@ function walk(pts, done){
   const tick = t => { if(t0 === null) t0 = t; const f = Math.min(1, (t - t0) / dur), e = f < .5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2;
     let left = e * total, i = 0; while(i < seg.length - 1 && left > seg[i]){ left -= seg[i]; i++; }
     const a = pts[i], b = pts[i + 1] || a, r = seg[i] ? Math.min(1, left / seg[i]) : 1, x = a[0] + (b[0] - a[0]) * r, y = a[1] + (b[1] - a[1]) * r;
-    me.setAttribute("transform", `translate(${x} ${y - 34}) scale(.8)`);
+    const dir = b[0] < a[0] - 1 ? -1 : 1, ph = (t - t0) / 1000 * 9, hop = Math.abs(Math.sin(ph)) * 7;
+    me.setAttribute("transform", `translate(${x} ${y})`);
+    $("meBody").setAttribute("transform", `translate(0 ${-hop}) rotate(${Math.sin(ph) * 5}) scale(${dir} 1)`);
     tr.setAttribute("d", pathD(pts.slice(0, i + 1).concat([[x, y]])));
     if(f < 1) requestAnimationFrame(tick); else { walking = false; done(); } };
   requestAnimationFrame(tick);
@@ -368,7 +370,7 @@ function confirmNew(){ return true; }
 
 /* ---------- 장 데이터 모양 ----------
 CH[n] = {
-  title, when:"초여름", season:"spring|summer|autumn|winter", img:"장 시작 그림", bgm:"bgm_chN.mp3",
+  title, when:"초여름", season:"spring|summer|autumn|winter", img:"장 시작 그림", bgm:"bgm_chN.mp3", walker:"지도 위를 걷는 꼬마 앤 그림(없으면 walk_anne)",
   anne:"anne|anne_short|anne_grow", who:"하트를 보여 줄 인물",
   intro:"장 시작 카드 글", teaser:"장 끝 다음 이야기 예고",
   end:{canon:["제목","설명"], imag:[...], bal:[...]},   // 결말 그림은 img/ed_chN_canon|imag|bal.webp

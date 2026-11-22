@@ -16,7 +16,7 @@
 - 길: `engine.js`의 `NODES`(길 위 점)·`EDGES`(이어진 길)·`PLACE_NODE`(장소가 올라타는 점). 앤은 그림 속 길을 따라 걷고, 다음 할 일까지 발자국 점선이 보임. 지도 그림을 바꾸면 이 점들도 맞춰야 함.
 - `js/say.js` 할 일이 아닌 장소를 눌렀을 때 장마다 나오는 짧은 이야기 `SAY[장][장소]`.
 - `js/ch1.js`~`ch10.js` 장마다 이야기 데이터 `CH[n]`. 같은 장소 할 일이 연달아 오지 않게 할 것. 할 일(quests) 순서대로 진행, 한 할 일 = 지도 장소 하나 + 대사 노드 목록.
-- `img/`: 그림. 지도는 `map_spring|summer|autumn|winter.webp`(장의 season에 따라), 꽃길 미니게임은 `mini_avenue.webp`(옆으로 흐르는 배경)·`mini_cart.webp`(마차).
+- `img/`: 그림. 지도는 `map_spring|summer|autumn|winter.webp`(장의 season에 따라), 지도 위를 걷는 꼬마 앤은 `walk_*.webp`(투명 배경, 200×400 캔버스 아래 맞춤, 오른쪽을 봄. 장의 `walker`로 고름), 꽃길 미니게임은 `mini_avenue.webp`(옆으로 흐르는 배경)·`mini_cart.webp`(마차).
   나머지 이름 규칙은 앤 저장소와 같음(`av_` 얼굴, `it_` 물건, `ed_chN_canon|imag|bal` 결말, `sc_` 숨은 장면). 그림이 없으면 자동으로 숨기거나 이모지로 대신함.
 - `bgm_ch1~10.mp3` 장마다 음악, `manifest.json`(가로 모드)
 

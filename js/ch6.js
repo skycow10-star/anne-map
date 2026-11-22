@@ -1,6 +1,6 @@
 /* 6장 · 미니 메이를 구한 밤 (원작 18장) */
 CH[6] = {
-  title:"미니 메이를 구한 밤", when:"한겨울", season:"winter", img:"ch6", bgm:"bgm_ch6.mp3", anne:"anne", who:"diana",
+  title:"미니 메이를 구한 밤", when:"한겨울", season:"winter", img:"ch6", bgm:"bgm_ch6.mp3", anne:"anne", walker:"walk_winter", who:"diana",
   intro:"눈 덮인 1월의 밤. 어른들은 모두 시내에 연설을 들으러 갔어요. 그때 누군가 초록 지붕 집 부엌문을 다급하게 두드려요!",
   teaser:"봄이 오면 에이번리에 새 목사님 가족이 온대요. 앤은 어떤 어른을 만나게 될까요?",
   end:{canon:["망각의 망토", "원작 속 앤처럼 침착하게 미니 메이를 구했어요. 지난 실수는 이제 망각의 망토로 덮였어요."],
