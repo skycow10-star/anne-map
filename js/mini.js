@@ -97,6 +97,7 @@ MINI.pick = (m, api) => {
 /* 숨은그림 찾기: 그림(bg) 속에 작고 흐리게 섞인 것들을 찾는다. 오른쪽에 찾을 것 목록.
    things:[{img|e, name, n}], fakes:[{img|e}] (목록에 없는 가짜, 누르면 -3초), time, size(화면 너비 %), hide(0~1 흐림 정도) */
 MINI.find = (m, api) => {
+  if(m.scene) return findScene(m, api);
   let left = m.time || 40, got = 0, over = false, hintUsed = false; const f = api.field;
   const total = m.things.reduce((a, t) => a + (t.n || 1), 0), sz = m.size || 4.2, hide = m.hide ?? .35;
   f.innerHTML = `<div class="hf-board" id="hb"></div><div class="hf-list"><b>찾을 것</b>${m.things.map((t, i) =>
@@ -120,6 +121,33 @@ MINI.find = (m, api) => {
   const done = () => { if(over) return; over = true; stop(); hb.querySelectorAll(".hf-it.real:not(.got)").forEach(d => d.classList.add("show"));
     setTimeout(() => api.end(got >= total ? (hintUsed ? 2 : 3) : got >= total * .6 ? 2 : 1, `${total}개 중 ${got}개를 찾았어요.`), 1300); };
   const stop = every(1000, () => { left--; msg(); if(left === (m.time || 40) - 20 && !hintUsed){ $("hh").disabled = false; $("hh").textContent = "힌트 한 번"; } if(left <= 0) done(); });
+};
+
+/* 숨은그림(그림 속): 제미나이가 그린 장면 안에 진짜로 숨어 있는 것을 눌러 찾는다.
+   scene(그림 키), spots:[{k(things 번호), x, y(그림 %), r(맞는 반지름 %)}], things:[{img,name,say}], time
+   빈 곳을 3번 연달아 잘못 누르면 2초가 줄어요(마구 누르기 막기). */
+const findScene = (m, api) => {
+  let left = m.time || 60, got = 0, over = false, hintUsed = false, miss = 0; const f = api.field, T = m.time || 60;
+  const total = m.spots.length, cnt = m.things.map(() => 0), need = m.things.map((t, i) => m.spots.filter(p => p.k === i).length);
+  f.innerHTML = `<div class="hf-board fs-board"><div class="fs-pic" id="fp"><img src="${IMG(m.scene)}" alt="" draggable="false"></div></div><div class="hf-list"><b>찾을 것</b>${m.things.map((t, i) =>
+      `<div class="hf-row" id="hr${i}">${look(t)}<span>${esc(t.name)}</span><em id="hc${i}">0/${need[i]}</em></div>`).join("")}
+    <button class="hf-hint" id="hh" disabled>힌트 (20초 뒤)</button></div>`;
+  const fp = $("fp"), found = m.spots.map(() => false);
+  const mark = (i, cls) => { const p = m.spots[i], d = document.createElement("span"); d.className = "fs-mark " + cls;
+    d.style.cssText = `left:${p.x}%;top:${p.y}%;width:${(p.r || 4) * 2.2}%`; fp.appendChild(d); return d; };
+  fp.onclick = e => { if(over) return; const b = fp.getBoundingClientRect(), x = (e.clientX - b.left) / b.width * 100, y = (e.clientY - b.top) / b.height * 100;
+    let best = -1, bd = 1e9; m.spots.forEach((p, i) => { if(found[i]) return; const d = Math.hypot(x - p.x, (y - p.y) * 9 / 16); if(d < (p.r || 4) * 1.15 && d < bd){ bd = d; best = i; } });
+    if(best < 0){ const r = document.createElement("span"); r.className = "hf-miss"; r.style.left = e.clientX + "px"; r.style.top = e.clientY + "px"; document.body.appendChild(r); setTimeout(() => r.remove(), 500);
+      if(++miss >= 3){ miss = 0; left = Math.max(1, left - 2); popAt(api, e.clientX - 30, e.clientY - 60, "천천히 찾아봐요! -2초"); msg(); } return; }
+    miss = 0; found[best] = true; got++; const k = m.spots[best].k, t = m.things[k]; cnt[k]++; mark(best, "got");
+    $("hc" + k).textContent = `${cnt[k]}/${need[k]}`; if(cnt[k] >= need[k]) $("hr" + k).classList.add("done");
+    popAt(api, e.clientX - 30, e.clientY - 60, t.say || "찾았다!"); msg(); if(got >= total) done(); };
+  $("hh").onclick = () => { if(hintUsed) return; hintUsed = true; $("hh").disabled = true; $("hh").textContent = "힌트 다 썼어요";
+    const i = found.indexOf(false); if(i >= 0){ const d = mark(i, "hint"); setTimeout(() => d.remove(), 2600); } };
+  const msg = () => api.hud(`${m.say || "그림 속에 숨은 것을 찾아요"} · ${left}초 · ${got}/${total}`); msg();
+  const done = () => { if(over) return; over = true; stop(); m.spots.forEach((p, i) => { if(!found[i]) mark(i, "show"); });
+    setTimeout(() => api.end(got >= total ? (hintUsed ? 2 : 3) : got >= total * .6 ? 2 : 1, `${total}개 중 ${got}개를 찾았어요.`), 1600); };
+  const stop = every(1000, () => { left--; msg(); if(left === T - 20 && !hintUsed){ $("hh").disabled = false; $("hh").textContent = "힌트 한 번"; } if(left <= 0) done(); });
 };
 
 /* 물 퍼내기: 화면 어디든 빠르게 톡톡(또는 폰 흔들기)해서 물을 퍼내요. 갈수록 빨리 새고, 가끔 큰 물결이 덮쳐요.

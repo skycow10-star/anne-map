@@ -529,3 +529,11 @@ html,body{position:fixed;inset:0;width:100%;height:100%;overscroll-behavior:none
   .mp-wrap{padding:84px 10px 6px}.mp-q{font-size:15px}.mp-dot{width:24px;height:24px}
   .bl-q b{font-size:16px}.bl-bucket{font-size:40px}
   .sl-clues{font-size:13px;padding:8px 12px}.ob img{width:46px;height:46px}}
+
+.fs-board{display:flex;align-items:center;justify-content:center;cursor:default;padding:46px 6px 6px}
+.fs-pic{position:relative;aspect-ratio:16/9;width:100%;max-height:100%;max-width:calc((100vh - 52px) * 16 / 9);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(60,40,20,.25);cursor:crosshair}
+.fs-pic img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none}
+.fs-mark{position:absolute;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none}
+.fs-mark.got{border:3px solid #e7b84a;box-shadow:0 0 0 2px rgba(255,255,255,.7),0 0 10px #fff3c4;animation:boompop .4s}
+.fs-mark.hint{border:3px dashed #fff;animation:hintblink .5s 5}
+.fs-mark.show{border:3px dashed #c8552f}
