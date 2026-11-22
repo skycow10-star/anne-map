@@ -21,7 +21,7 @@ MINI.catch = (m, api) => {
   const stopS = every(m.every || 900, () => {
     const t = m.items[Math.random() * m.items.length | 0], d = document.createElement("div"); d.className = "thing"; d.style.zIndex = 5;
     d.style.left = "100vw"; d.style.top = rnd(...(m.top || [14, 64])) + "%"; d.style.animationDuration = rnd(4.2, 6.8) + "s"; d.innerHTML = look(t);
-    d.onclick = e => { e.stopPropagation(); if(t.bad){ got = Math.max(0, got - 1); popAt(api, e.clientX, e.clientY, t.say || "앗!"); }
+    d.onclick = e => { e.stopPropagation(); if(t.bad) SFX.no(); else { SFX.found(); burst(e.clientX, e.clientY, 8); } if(t.bad){ got = Math.max(0, got - 1); popAt(api, e.clientX, e.clientY, t.say || "앗!"); }
       else { got++; popAt(api, e.clientX, e.clientY, t.say || "찾았다!"); } d.remove(); msg(); };
     d.addEventListener("animationend", () => d.remove()); api.field.appendChild(d);
   });
@@ -39,8 +39,8 @@ MINI.calm = (m, api) => {
   const bubble = (w, dur) => { const d = document.createElement("div");
     d.className = "thing"; d.style.cssText = `left:100vw;top:${rnd(14, 58)}%;width:auto;height:auto;font-size:18px;font-family:'Jua',sans-serif;font-weight:700;background:#fff;border:2px solid #d9645c;border-radius:14px;padding:6px 12px;white-space:nowrap;animation-duration:${dur}s`;
     d.textContent = w;
-    d.onclick = e => { e.stopPropagation(); popAt(api, e.clientX, e.clientY, phase === 2 ? "너무 많아!" : (m.ok || "후—")); d.remove(); if(phase === 1){ sent++; left--; msg(); if(left <= 0) next(); } };
-    d.addEventListener("animationend", () => { d.remove(); anger = Math.min(100, anger + (phase === 2 ? 14 : (m.hit || 30))); if(phase === 1){ peak = Math.max(peak, anger); left--; } bar(); msg();
+    d.onclick = e => { e.stopPropagation(); SFX.whoosh(); popAt(api, e.clientX, e.clientY, phase === 2 ? "너무 많아!" : (m.ok || "후—")); d.remove(); if(phase === 1){ sent++; left--; msg(); if(left <= 0) next(); } };
+    d.addEventListener("animationend", () => { d.remove(); if(phase === 1) SFX.thud(); anger = Math.min(100, anger + (phase === 2 ? 14 : (m.hit || 30))); if(phase === 1){ peak = Math.max(peak, anger); left--; } bar(); msg();
       if(anger >= 100) boom(); else if(phase === 1 && left <= 0) next(); });
     f.appendChild(d); };
   const stars = () => phase === 1 && anger >= 100 && !m.flood ? 1 : peak < 45 ? 3 : peak < 100 ? 2 : 1;
@@ -87,7 +87,7 @@ MINI.pick = (m, api) => {
     api.hud(`${m.say || "알맞은 것을 골라요"} · ${r + 1}/${m.rounds.length}`);
     let done = false;
     const res = (ok, b, why) => { if(done) return; done = true; if(stopR) stopR();
-      if(b) b.classList.add(ok ? "ok" : "no"); if(ok){ SFX.ok(); if(b){ const r = b.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, 8); } } else SFX.no(); if(ok) me++; else if(m.rival && why !== "slow") them++;
+      if(b) b.classList.add(ok ? "ok" : "no"); if(!b && !ok) SFX.no(); if(ok) me++; else if(m.rival && why !== "slow") them++;
       if(why === "slow") them++;
       const line = ok ? R.yes : R.no; if(line) popAt(api, innerWidth / 2 - 60, innerHeight * .2, line);
       setTimeout(() => { r++; draw(); }, line ? 1300 : 700); };
@@ -241,6 +241,7 @@ MINI.pace = (m, api) => {
       const a = (i / fx.length) * Math.PI * 2, d = good ? 70 + Math.random() * 40 : 24;
       s.style.left = cx + "px"; s.style.top = cy + "px"; s.style.setProperty("--dx", Math.cos(a) * d + "px"); s.style.setProperty("--dy", Math.sin(a) * d - (good ? 20 : 0) + "px");
       document.body.appendChild(s); setTimeout(() => s.remove(), 900); });
+    if(good) SFX.heart(); else SFX.no();
     if(good){ pz.classList.remove("hit"); void pz.offsetWidth; pz.classList.add("hit"); }
     else { const g = pz.parentElement; g.classList.remove("miss"); void g.offsetWidth; g.classList.add("miss"); } };
   $("pt").onclick = e => { e.stopPropagation(); if(lock) return;
@@ -314,7 +315,7 @@ MINI.run = (m, api) => {
     <div class="rn-en" id="en"></div>
     <div class="rn-pad"><button id="rUp" aria-label="위로">▲</button><button id="rDn" aria-label="아래로">▼</button></div>`;
   const place = () => { $("rn").style.top = `calc(${22 + lane * 22 + 11}% - 32px)`; }; place();
-  const mv = d => { if(over) return; lane = Math.max(0, Math.min(2, lane + d)); place(); };
+  const mv = d => { if(over) return; const l0 = lane; lane = Math.max(0, Math.min(2, lane + d)); if(lane !== l0) SFX.step(); place(); };
   $("rUp").onpointerdown = e => { e.preventDefault(); e.stopPropagation(); mv(-1); };
   $("rDn").onpointerdown = e => { e.preventDefault(); e.stopPropagation(); mv(1); };
   const key = e => { if(e.key === "ArrowUp") mv(-1); if(e.key === "ArrowDown") mv(1); }; addEventListener("keydown", key);
@@ -332,8 +333,8 @@ MINI.run = (m, api) => {
   const stopC = every(50, () => { const r = $("rn"); if(!r || over) return; const rb = r.getBoundingClientRect();
     f.querySelectorAll(".ob").forEach(o => { if(o.dataset.hit) return; const b = o.getBoundingClientRect();
       if(+o.dataset.l === lane && b.left < rb.right - 12 && b.right > rb.left + 12){ o.dataset.hit = 1;
-        if(o.classList.contains("good")){ o.remove(); if(energy < 5) energy++; ate++; popAt(api, rb.left + 30, rb.top - 30, m.yum || "따뜻해!"); }
-        else { o.style.opacity = .3; energy--; hit++; r.classList.remove("ouch"); void r.offsetWidth; r.classList.add("ouch"); popAt(api, rb.left + 30, rb.top - 30, m.ouch || "아야!"); }
+        if(o.classList.contains("good")){ SFX.heart(); burst(rb.left + rb.width / 2, rb.top + rb.height / 2, 8, "heart"); o.remove(); if(energy < 5) energy++; ate++; popAt(api, rb.left + 30, rb.top - 30, m.yum || "따뜻해!"); }
+        else { SFX.thud(); o.style.opacity = .3; energy--; hit++; r.classList.remove("ouch"); void r.offsetWidth; r.classList.add("ouch"); popAt(api, rb.left + 30, rb.top - 30, m.ouch || "아야!"); }
         bar(); if(energy <= 0) end(); } }); });
   const stopT = every(1000, () => { if(over) return; left--; msg(); if(left <= 0) end(); });
   const end = () => { if(over) return; over = true; stopS(); stopC(); stopT(); removeEventListener("keydown", key);
@@ -357,7 +358,7 @@ MINI.slots = (m, api) => {
   slots.forEach((sl, i) => sl.onclick = () => { if(!busy2) back(i); });
   p.querySelectorAll("#sh .sl-card").forEach(b => b.onclick = () => { if(busy2 || b.classList.contains("used")) return;
     const i = fill.indexOf(null); if(i < 0) return; const j = +b.dataset.j; fill[i] = j; b.classList.add("used");
-    const c = b.cloneNode(true); c.classList.remove("used"); slots[i].appendChild(c); msg();
+    const c = b.cloneNode(true); c.classList.remove("used"); slots[i].appendChild(c); SFX.pop(); msg();
     if(fill.every(x => x !== null)) check(); });
   const check = () => { busy2 = true; const wrong = fill.map((j, i) => cards[j].k !== i);
     if(!wrong.some(Boolean)){ slots.forEach(s => s.classList.add("ok")); setTimeout(() => api.end(miss === 0 ? 3 : miss <= 2 ? 2 : 1, miss === 0 ? "한 번에 맞혔어요!" : `${miss}번 고쳐서 해냈어요.`), 900); return; }
@@ -535,11 +536,11 @@ MINI.shield = (m, api) => {
         if(!w.done && wr.left < shr.right && wr.right > shr.left && wr.bottom > shr.top && wr.top < shr.bottom){
           w.done = true; w.d.classList.add(w.good ? "lost" : "blocked");
           if(w.good){ popAt(api, shr.left, shr.top - 30, m.goodBlock || "앗, 응원을 막았어요"); }
-          else { blocked++; popAt(api, shr.left, shr.top - 30, m.ok || "막았다!"); }
+          else { blocked++; SFX.thud(); burst(shr.left + shr.width / 2, shr.top + shr.height / 2, 6); popAt(api, shr.left, shr.top - 30, m.ok || "막았다!"); }
           setTimeout(() => w.d.remove(), 400); words.splice(words.indexOf(w), 1); continue; }
         if(w.x < 14){ w.d.remove(); words.splice(words.indexOf(w), 1);
           if(w.good){ hurt = Math.max(0, hurt - 14); popAt(api, fr.left + fr.width * .1, fr.top + w.y / 100 * fr.height - 30, m.yum || "힘이 나!"); }
-          else { hurt = Math.min(100, hurt + 17); peak = Math.max(peak, hurt); f.classList.remove("ouch"); void f.offsetWidth; f.classList.add("ouch"); }
+          else { SFX.no(); hurt = Math.min(100, hurt + 17); peak = Math.max(peak, hurt); f.classList.remove("ouch"); void f.offsetWidth; f.classList.add("ouch"); }
           bar(); if(hurt >= 100){ end(); return; } } } }
     raf = requestAnimationFrame(loop); };
   raf = requestAnimationFrame(loop);

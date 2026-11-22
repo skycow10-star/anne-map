@@ -49,9 +49,9 @@ CH[9] = {
       {t:"\"구해 줘서 고마워. 하지만 아직은 시간이 필요해.\"", type:"bal", eff:{h:{gilbert:2}}, then:[["gilbert", "happy", "gilbert", "\"그래, 기다릴게.\"\n길버트가 처음으로 쑥스럽게 웃었어."]]}
     ]}
   ]},
-  {at:"home", label:"초록 지붕 집에 돌아가 이야기하기", bg:"ch8", nodes:[
+  {at:"home", label:"초록 지붕 집에 돌아가 이야기하기", bg:"ch8_porch", nodes:[
     ["diana", "sad", "diana", "다이애나와 친구들은 내가 물에 빠진 줄 알고 울며 어른들을 부르러 갔었대.", {bg:"ch9"}],
-    ["marilla", "sad", "marilla_strict", "\"앤, 넌 언제 철이 들려고 그러니?\"", {bg:"ch8"}],
+    ["marilla", "sad", "marilla_strict", "\"앤, 넌 언제 철이 들려고 그러니?\"", {bg:"ch8_porch"}],
     ["anne", "happy", "marilla_warm", "\"아주머니, 저 이번에 큰 걸 배웠어요.\n에이번리에서는 낭만을 부려 봤자 소용없다는 거요.\""],
     ["matthew", "happy", "matthew", "\"앤, 낭만을 다 버리지는 마라.\n조금은 간직하렴. 조금은 말이다.\""],
     {eff:{h:{matthew:1}}},

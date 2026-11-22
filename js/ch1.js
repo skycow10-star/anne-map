@@ -18,11 +18,11 @@ CH[1] = {
         then:[["inner", "dreamy", null, "하얀 꽃이 가득한 벚나무 위는 대리석 궁전 같았어.\n나는 꽃잎 한 장을 주머니에 넣었어.", {dream:true, still:"sc_cherry"}]]},
       {t:"역장님 말씀대로 대합실에 들어가 얌전히 기다린다.", type:"bal", then:[["inner", "sad", null, "대합실은 깨끗했지만 답답했어.\n결국 살금살금 다시 밖으로 나왔지."]]}
     ]},
-    ["inner", "surprised", "matthew", "그때 키 크고 등이 구부정한 아저씨가 서둘러 다가오셨어.\n초록 지붕 집의 매슈 커스버트 아저씨야!", {still:"sc_princess"}],
+    ["inner", "surprised", "matthew", "그때 키 크고 등이 구부정한 아저씨가 서둘러 다가오셨어.\n초록 지붕 집의 매슈 커스버트 아저씨야!"],
     {eff:{met:"matthew"}},
     {q:"아저씨가 머뭇머뭇 다가와요. 앤은 어떻게 할까요?", opts:[
       {t:"벌떡 일어나 먼저 손을 내밀며 인사한다.", type:"canon", eff:{h:{matthew:1}}, then:[["anne", "happy", "matthew", "\"초록 지붕 집 매슈 커스버트 아저씨세요? 만나서 정말 반가워요!\"\n아저씨는 내 작은 손을 어색하게 잡아 주셨어."]]},
-      {t:"기차역의 공주님처럼 우아하게 앉아 기다린다.", type:"imag", then:[["inner", "dreamy", "matthew", "나는 공주님처럼 앉아 있었어.\n그런데 아저씨는 모자만 만지작거리셨어. 결국 내가 먼저 일어났지!", {dream:true}]]},
+      {t:"기차역의 공주님처럼 우아하게 앉아 기다린다.", type:"imag", then:[["inner", "dreamy", "matthew", "나는 공주님처럼 앉아 있었어.\n그런데 아저씨는 모자만 만지작거리셨어. 결국 내가 먼저 일어났지!", {dream:true, still:"sc_princess"}]]},
       {t:"아저씨가 편하게 말할 수 있게 조용히 기다린다.", type:"bal", eff:{h:{matthew:1}}, then:[["matthew", "happy", "matthew", "\"…늦어서 미안하구나. 네가 앤이냐?\"\n아저씨 목소리가 생각보다 다정했어."]]}
     ]},
     ["matthew", "happy", "matthew", "\"자, 가자. 가방은 내가 들어 주마. 마차는 저쪽에 있다.\""],

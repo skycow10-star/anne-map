@@ -33,6 +33,7 @@ const SFX = (() => {
     tick:  () => tone(1400, 0, .04, "square", .03),
     page:  () => noise(0, .12, .05, 800, 2400)
   };
+  S.note = tone; S.hiss = noise; S.ctx = ctx;
   return S;
 })();
 
@@ -44,3 +45,36 @@ function burst(x, y, n = 10, kind){
     s.style.cssText = `left:${x}px;top:${y}px;--dx:${Math.cos(a) * r}px;--dy:${Math.sin(a) * r}px;color:${["#f2c14e", "#fff6c8", "#e98aa0", "#9fd3a0"][i % 4]};font-size:${10 + Math.random() * 10}px`;
     box.appendChild(s); setTimeout(() => s.remove(), 750); }
 }
+
+/* 미니게임 안에서 무엇이든 "ok"(맞음)·"no"(틀림) 표시가 붙으면 저절로 소리와 반짝이(놀이마다 따로 안 달아도 되게) */
+(() => { let last = 0;
+  const watch = () => { const box = document.getElementById("mini"); if(!box) return;
+    new MutationObserver(list => { const now = Date.now(); if(now - last < 120) return;
+      for(const r of list){ const el = r.target, was = (r.oldValue || "").split(/\s+/);
+        if(el.classList && el.classList.contains("ok") && !was.includes("ok")){ last = now; SFX.ok(); const b = el.getBoundingClientRect(); if(b.width) burst(b.left + b.width / 2, b.top + b.height / 2, 8); return; }
+        if(el.classList && el.classList.contains("no") && !was.includes("no")){ last = now; SFX.no(); return; } } })
+      .observe(box, {subtree:true, attributes:true, attributeFilter:["class"], attributeOldValue:true}); };
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", watch); else watch(); })();
+
+/* 미니게임 음악: 이야기 음악 대신 통통 튀는 오르골·실로폰 놀이 음악(파일 없이 만들어 계속 되풀이).
+   MUSIC.start() / MUSIC.stop() — engine.js runMini에서 부름 */
+const MUSIC = (() => {
+  const N = n => 440 * Math.pow(2, (n - 69) / 12);   // 미디 번호 -> Hz
+  const BPM = 126, E = 60 / BPM / 2;                   // 8분음표 길이(초)
+  // 4마디씩 두 줄(8분음표 8칸 = 한 마디), 0은 쉼
+  const MEL = [
+    [72,0,76,79, 77,76,74,0], [72,74,76,0, 79,0,76,0], [77,0,81,79, 77,76,74,72], [74,0,76,74, 71,0,67,0],
+    [72,0,76,79, 84,0,81,79], [77,79,81,0, 79,77,76,74], [76,77,79,0, 74,76,77,74], [72,0,79,0, 72,0,0,0]];
+  const BASS = [[48,55],[45,52],[41,48],[43,50],[48,55],[41,48],[43,50],[48,43]];
+  let timer = null, step = 0, next = 0;
+  const tick = () => { const a = SFX.ctx(); if(!a){ stop(); return; }
+    while(next < a.currentTime + .25){ const bar = (step >> 3) % 8, k = step & 7, d = Math.max(0, next - a.currentTime);
+      const m = MEL[bar][k]; if(m){ SFX.note(N(m), d, E * 1.6, "triangle", .07); SFX.note(N(m + 12), d, E * .9, "sine", .025); }
+      if(k === 0 || k === 4){ const b = BASS[bar][k ? 1 : 0]; SFX.note(N(b), d, E * 1.8, "sine", .11); }
+      if(k % 2 === 1) SFX.hiss(d, .04, .02, 5000, 8000);
+      if(k === 2 || k === 6) SFX.note(N([64, 67, 72][bar % 3]), d, E, "sine", .03);
+      step++; next += E; } };
+  const start = () => { stop(); const a = SFX.ctx(); if(!a) return; step = 0; next = a.currentTime + .15; tick(); timer = setInterval(tick, 90); };
+  const stop = () => { if(timer){ clearInterval(timer); timer = null; } };
+  return {start, stop, on:() => !!timer};
+})();

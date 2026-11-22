@@ -82,7 +82,7 @@ const quest = () => C() && C().quests[S.qi];
 const fill = t => String(t).replace(/\{(\w+)\}/g, (m, k) => S.names[k] || (P[k] ? P[k].name : m));
 
 /* ---------- 작은 도구 ---------- */
-function show(id){ document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id)); $("bMap").hidden = id !== "place" || busy; $("bBag").hidden = id === "mini"; $("bBook").hidden = id !== "map"; }
+function show(id){ if(id !== "mini" && typeof inMini !== "undefined" && inMini){ inMini = false; MUSIC.stop(); music(); } document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id)); $("bMap").hidden = id !== "place" || busy; $("bBag").hidden = id === "mini"; $("bBook").hidden = id !== "map"; }
 function toast(m){ const t = $("toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2400); }
 const toastQ = []; let toastBusy = false;
 function note(m){ if(toastQ.length > 2) toastQ.shift(); toastQ.push(m); if(!toastBusy) nextNote(); }
@@ -271,10 +271,10 @@ function runMini(n){
   let rollOn = !!m.roll, rx = 0, last = 0;
   const roll = t => { if(!rollOn) return; if(last && !PORTRAIT.matches && !$("pop").classList.contains("on")) rx -= (t - last) * .09; last = t; $("road").style.backgroundPositionX = rx + "px"; requestAnimationFrame(roll); };
   if(rollOn) requestAnimationFrame(roll);
-  SFX.pop(); popCard(`<span class="lab">미니게임</span><h2>${esc(m.title)}</h2><p>${esc(m.how)}</p><button class="big-btn sub" id="pOk">시작!</button>`, () => {
+  inMini = true; music(); SFX.pop(); popCard(`<span class="lab">미니게임</span><h2>${esc(m.title)}</h2><p>${esc(m.how)}</p><button class="big-btn sub" id="pOk">시작!</button>`, () => {
     MINI[m.kind](m, {
       hud: t => { if(live()) $("mh").textContent = t; }, field: nf,
-      end: (st, msg) => { if(!live()) return; runMini.ses++; miniStopAll();
+      end: (st, msg) => { if(!live()) return; runMini.ses++; miniStopAll(); inMini = false; MUSIC.stop(); setTimeout(music, 1800);
         nf.innerHTML = ""; rollOn = false; mini.classList.remove("roll");
         st = Math.max(1, Math.min(3, st)); const id = m.id || ("m" + S.ch + "_" + S.qi); S.stars[id] = Math.max(S.stars[id] || 0, st); saveS();
         const line = (m.res && m.res[st]) || msg || ""; SFX.stars(st); setTimeout(() => { for(let k = 0; k < st; k++) setTimeout(() => burst(innerWidth / 2 + (k - (st - 1) / 2) * 40, innerHeight * .32, 10), 120 + k * 220); }, 50);
@@ -406,9 +406,10 @@ function chapterPick(){
 }
 
 /* ---------- 음악 ---------- */
-let bgm = null, bgmSrc = "", musicOn = true;
+let bgm = null, bgmSrc = "", musicOn = true, inMini = false;
 async function music(){
   const src = (C() && C().bgm) || "bgm_ch1.mp3"; if(!musicOn) return;
+  if(inMini){ if(bgm) bgm.pause(); MUSIC.start(); return; }
   try{ if(bgm && bgmSrc !== src){ bgm.pause(); bgm = null; }
     if(!bgm){ bgmSrc = src; bgm = new Audio(src); bgm.loop = true; bgm.volume = .35; } await bgm.play(); }catch(e){}
 }
@@ -425,7 +426,7 @@ const GAME = {boot(){
   $("cover").querySelector(".cv-petals").innerHTML = Array.from({length:14}, () => `<i style="left:${Math.random() * 110 | 0}%;animation-duration:${7 + Math.random() * 7}s;animation-delay:-${Math.random() * 12}s"></i>`).join("");
   $("box").onclick = advance;
   $("place").onclick = e => { if(e.target === $("bg") || e.target.classList.contains("spr")) advance(); };
-  $("bMusic").onclick = () => { musicOn = !musicOn; $("bMusic").style.opacity = musicOn ? 1 : .45; if(musicOn) music(); else if(bgm) bgm.pause(); };
+  $("bMusic").onclick = () => { musicOn = !musicOn; $("bMusic").style.opacity = musicOn ? 1 : .45; if(!musicOn) MUSIC.stop(); if(musicOn) music(); else if(bgm) bgm.pause(); };
   $("bMap").onclick = () => { clearInterval(typing); if(isQuest){ isQuest = false; } show("map"); drawMap(); };
   $("bBag").onclick = bag;
   $("bBook").onclick = () => natureBook();
