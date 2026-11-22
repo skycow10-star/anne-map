@@ -122,15 +122,24 @@ MINI.find = (m, api) => {
   const stop = every(1000, () => { left--; msg(); if(left === (m.time || 40) - 20 && !hintUsed){ $("hh").disabled = false; $("hh").textContent = "힌트 한 번"; } if(left <= 0) done(); });
 };
 
-/* 물 퍼내기: time, rise(처음 초당 %), grow(끝날 때 몇 배로 빨리 새는지), scoop(한 번에 퍼내는 %) */
+/* 물 퍼내기: 화면 어디든 빠르게 톡톡(또는 폰 흔들기)해서 물을 퍼내요. 갈수록 빨리 새고, 가끔 큰 물결이 덮쳐요.
+   time, rise(처음 초당 %), grow(끝날 때 몇 배), scoop(한 번에 퍼내는 %), wave(물결 %) */
 MINI.bail = (m, api) => {
-  let lv = 20, peak = 20, left = m.time || 20, over = false; const f = api.field;
-  f.innerHTML = `<div class="water" id="wt" style="height:20%"></div><div class="mpanel" style="top:30%;background:rgba(255,251,242,.85)"><h3>${esc(m.q || "물을 퍼내요!")}</h3><button class="bigtap" id="bt">${esc(m.btn || "물 퍼내기")}</button></div>`;
+  let lv = 25, peak = 25, left = m.time || 20, over = false, taps = 0, lastShake = 0; const f = api.field, T = m.time || 20;
+  f.innerHTML = `<div class="water" id="wt" style="height:25%"></div><div class="bl-q"><b>${esc(m.q || "물을 퍼내요!")}</b><span>화면 아무 데나 빠르게 톡톡! 휴대폰을 흔들어도 돼요</span></div>
+    <div class="bl-line" style="bottom:100%"></div><div class="bl-bucket" id="bk">🪣</div>`;
   const msg = () => api.hud(`${m.say || "버텨요!"} · ${left}초 · 물 ${Math.round(lv)}%`); msg();
-  $("bt").onclick = e => { e.stopPropagation(); lv = Math.max(0, lv - (m.scoop || 5)); };
-  const stopW = every(100, () => { if(over) return; const T = m.time || 20; lv = Math.min(100, lv + (m.rise || 5) * (1 + (T - left) / T * ((m.grow || 1.8) - 1)) / 10); peak = Math.max(peak, lv); const w = $("wt"); if(w) w.style.height = lv + "%"; if(lv >= 100) done(); });
+  const scoop = (x, y, k = 1) => { if(over) return; taps++; lv = Math.max(0, lv - (m.scoop || 2.6) * k); const b = $("bk"); if(b){ b.classList.remove("dip"); void b.offsetWidth; b.classList.add("dip"); }
+    if(x !== undefined && taps % 3 === 0){ const s = document.createElement("span"); s.className = "bl-splash"; s.style.left = x + "px"; s.style.top = y + "px"; document.body.appendChild(s); setTimeout(() => s.remove(), 450); } };
+  f.onpointerdown = e => { e.preventDefault(); scoop(e.clientX, e.clientY); };
+  const shake = e => { const a = e.accelerationIncludingGravity || e.acceleration; if(!a) return; const g = Math.hypot(a.x || 0, a.y || 0, a.z || 0); const now = Date.now();
+    if(g > 17 && now - lastShake > 140){ lastShake = now; scoop(undefined, undefined, 1.4); } };
+  addEventListener("devicemotion", shake);
+  const stopW = every(100, () => { if(over) return; const g = 1 + (T - left) / T * ((m.grow || 2) - 1); lv = Math.min(100, lv + (m.rise || 8) * g / 10); peak = Math.max(peak, lv); const w = $("wt"); if(w) w.style.height = lv + "%"; if(lv >= 100) done(); });
+  const stopV = every(4200, () => { if(over) return; lv = Math.min(100, lv + (m.wave || 9)); f.classList.remove("wave"); void f.offsetWidth; f.classList.add("wave"); popAt(api, innerWidth / 2 - 60, innerHeight * .3, "철썩! 물이 더 들어와요"); });
   const stopT = every(1000, () => { left--; msg(); if(left <= 0) done(); });
-  const done = () => { if(over) return; over = true; stopW(); stopT(); api.end(lv >= 100 ? 1 : peak < 70 ? 3 : 2, lv >= 100 ? (m.sink || "앗, 물이 너무 많아요!") : "끝까지 버텼어요!"); };
+  const done = () => { if(over) return; over = true; stopW(); stopV(); stopT(); removeEventListener("devicemotion", shake); f.onpointerdown = null;
+    api.end(lv >= 100 ? 1 : peak < 60 ? 3 : 2, lv >= 100 ? (m.sink || "앗, 물이 너무 많아요!") : `${taps}번 퍼내며 끝까지 버텼어요!`); };
 };
 
 /* 따르기: 크기가 다른 갈색 찻잔 3개에 빨간 주전자로 차례로 따른다. 꾹 누르면 주전자가 기울며 졸졸,
@@ -212,16 +221,25 @@ MINI.pace = (m, api) => {
     msg(); if(ok >= n){ stop(); setTimeout(() => api.end(miss === 0 ? 3 : miss <= 3 ? 2 : 1, miss === 0 ? "한 번도 안 틀렸어요!" : `${miss}번 빗나갔지만 해냈어요.`), 700); } };
 };
 
-/* 꾸미기: 바구니의 꽃을 끌어서 큰 그림(baseImg) 위 원하는 곳에 놓기. 놓은 것도 다시 끌어 옮기거나 밖으로 빼기.
-   baseImg(그림) 또는 base(이모지), items:[{img|e, t}], max */
+/* 꾸미기: 바구니의 것을 끌어서 큰 그림(baseImg) 위에 놓기. 놓은 것도 다시 끌어 옮기거나 밖으로 빼기.
+   baseImg(그림) 또는 base(이모지), items:[{img|e, t}], max, size(vh)
+   spots:[{x,y,s,r,for:[이름]}] 이 있으면 놓은 자리에서 가장 가까운 빈 자리(그 물건 전용 자리 먼저)에 딱 맞게 붙는다 */
 MINI.decorate = (m, api) => {
-  const max = m.max || 8, f = api.field;
-  f.innerHTML = `<div class="dz-wrap"><div class="dz" id="dz">${m.baseImg ? `<img class="dz-base" src="${IMG(m.baseImg)}" alt="" draggable="false" onerror="this.outerHTML='<div class=&quot;dz-base emo&quot;>${m.base || "👒"}</div>'">` : `<div class="dz-base emo">${m.base || "👒"}</div>`}</div>
+  const spots = m.spots || null, max = spots ? spots.length : (m.max || 8), f = api.field, used = spots ? spots.map(() => null) : null;
+  f.innerHTML = `<div class="dz-wrap"><div class="dz" id="dz">${m.baseImg ? `<img class="dz-base" src="${IMG(m.baseImg)}" alt="" draggable="false" onerror="this.outerHTML='<div class=&quot;dz-base emo&quot;>${m.base || "👒"}</div>'">` : `<div class="dz-base emo">${m.base || "👒"}</div>`}
+    ${spots ? spots.map((s, i) => `<i class="dz-spot" data-s="${i}" style="left:${s.x}%;top:${s.y}%"></i>`).join("") : ""}</div>
     <div class="dz-side"><p class="dz-q">${esc(m.q)}</p><div class="dz-tray" id="dt">${m.items.map((o, i) => `<button data-i="${i}" aria-label="${esc(o.t)}">${look(o)}<span>${esc(o.t)}</span></button>`).join("")}</div>
     <button class="bigtap" id="dd">${esc(m.btn || "다 됐어요")}</button></div></div>`;
   const dz = $("dz"); let n = 0; if(m.size) dz.style.setProperty("--dzs", m.size + "vh");
   const msg = () => api.hud(`${m.say || "꽃을 끌어다 모자 위에 놓아요"} · ${n}/${max}`); msg();
   const inZone = (x, y) => { const r = dz.getBoundingClientRect(); return x > r.left && x < r.right && y > r.top && y < r.bottom; };
+  const pct = (x, y) => { const r = dz.getBoundingClientRect(); return [(x - r.left) / r.width * 100, (y - r.top) / r.height * 100]; };
+  const pickSpot = (t, px, py) => { let best = -1, bd = 1e9;
+    for(const pass of [1, 0]) { spots.forEach((s, i) => { if(used[i] !== null) return; const mine = s.for && s.for.includes(t); if(pass && !mine) return; if(!pass && s.for && !s.for.includes(t) && spots.some((q, j) => used[j] === null && !q.for)) return;
+      const dd = Math.hypot(s.x - px, (s.y - py) * .6); if(dd < bd){ bd = dd; best = i; } }); if(best >= 0) break; }
+    return best; };
+  const setAt = (d, i) => { const s = spots[i]; used[i] = d; d.dataset.s = i; d.style.left = s.x + "%"; d.style.top = s.y + "%";
+    d.style.setProperty("--k", s.s || 1); d.style.transform = `translate(-50%,${m.anchor === "bottom" ? -86 : -50}%) rotate(${s.r || 0}deg) scale(var(--k))`; d.style.transformOrigin = m.anchor === "bottom" ? "50% 86%" : ""; d.style.zIndex = s.z || 2; };
   const drag = (ghost, x0, y0, onDrop) => {
     ghost.classList.add("dz-drag"); document.body.appendChild(ghost);
     const mv = e => { ghost.style.left = e.clientX + "px"; ghost.style.top = e.clientY + "px"; dz.classList.toggle("hot", inZone(e.clientX, e.clientY)); };
@@ -229,22 +247,24 @@ MINI.decorate = (m, api) => {
     const up = e => { removeEventListener("pointermove", mv); removeEventListener("pointerup", up); removeEventListener("pointercancel", up); dz.classList.remove("hot"); ghost.remove(); onDrop(e.clientX, e.clientY); };
     addEventListener("pointermove", mv); addEventListener("pointerup", up); addEventListener("pointercancel", up);
   };
-  const place = (o, x, y) => { const r = dz.getBoundingClientRect(), d = document.createElement("div");
-    d.className = "dz-it"; d.innerHTML = look(o); d.style.left = ((x - r.left) / r.width * 100) + "%"; d.style.top = ((y - r.top) / r.height * 100) + "%";
-    d.style.transform = `translate(-50%,-50%) rotate(${(Math.random() * 40 - 20) | 0}deg)`; d.dataset.t = o.t;
+  const place = (o, x, y) => { const d = document.createElement("div"); d.className = "dz-it" + (spots ? " fit" : ""); d.innerHTML = look(o); d.dataset.t = o.t;
+    if(spots){ const [px, py] = pct(x, y), i = pickSpot(o.t, px, py); if(i < 0){ api.hud(`이제 놓을 자리가 없어요 · ${n}/${max}`); return; } setAt(d, i); }
+    else { const [px, py] = pct(x, y); d.style.left = px + "%"; d.style.top = py + "%"; d.style.transform = `translate(-50%,-50%) rotate(${(Math.random() * 40 - 20) | 0}deg)`; }
     d.onpointerdown = e => { e.preventDefault(); const g = d.cloneNode(true); d.style.visibility = "hidden";
-      drag(g, e.clientX, e.clientY, (X, Y) => { if(inZone(X, Y)){ const r2 = dz.getBoundingClientRect(); d.style.left = ((X - r2.left) / r2.width * 100) + "%"; d.style.top = ((Y - r2.top) / r2.height * 100) + "%"; d.style.visibility = ""; }
-        else { d.remove(); n--; msg(); } }); };
+      drag(g, e.clientX, e.clientY, (X, Y) => {
+        if(inZone(X, Y)){ if(spots){ used[+d.dataset.s] = null; const [px, py] = pct(X, Y), i = pickSpot(d.dataset.t, px, py); setAt(d, i < 0 ? +d.dataset.s : i); } else { const [px, py] = pct(X, Y); d.style.left = px + "%"; d.style.top = py + "%"; } d.style.visibility = ""; }
+        else { if(spots) used[+d.dataset.s] = null; d.remove(); n--; msg(); } }); };
     dz.appendChild(d); n++; msg(); };
   f.querySelectorAll("#dt button").forEach(b => {
     b.onpointerdown = e => { e.preventDefault(); if(n >= max){ api.hud(`이제 더 놓을 자리가 없어요 · ${n}/${max}`); return; }
       const o = m.items[+b.dataset.i], g = document.createElement("div"); g.className = "dz-it"; g.innerHTML = look(o);
-      let moved = false; const sx = e.clientX, sy = e.clientY;
+      const sx = e.clientX, sy = e.clientY;
       drag(g, sx, sy, (X, Y) => { if(inZone(X, Y)) place(o, X, Y);
         else if(Math.hypot(X - sx, Y - sy) < 8){ const r = dz.getBoundingClientRect(); place(o, r.left + r.width * (.25 + Math.random() * .5), r.top + r.height * (.25 + Math.random() * .4)); } }); };
   });
   $("dd").onclick = () => { const put = [...dz.querySelectorAll(".dz-it")].map(d => d.dataset.t);
-    api.end(n >= Math.min(5, max) ? 3 : n >= 2 ? 2 : 1, n ? `${[...new Set(put)].join(", ")}(으)로 꾸몄어요.` : "아무것도 안 달았어요."); };
+    const good = m.score ? m.score(put) : null;
+    api.end(good !== null ? good : n >= Math.min(5, max) ? 3 : n >= 2 ? 2 : 1, n ? `${[...new Set(put)].join(", ")}(으)로 꾸몄어요.` : "아무것도 안 달았어요."); };
 };
 
 /* 눈길 달리기: ▲▼ 단추로 세 길을 오가며 장애물 피하기. 에너지(하트 5칸), 하트를 먹으면 회복.
@@ -267,7 +287,7 @@ MINI.run = (m, api) => {
   const stopS = every(100, () => { if(over) return; spawnT += 100 * level();
     if(spawnT < (m.every || 1100)) return; spawnT = 0;
     const good = Math.random() < (energy < 3 ? .22 : .12), L = Math.random() * 3 | 0, o = document.createElement("div");
-    o.className = "ob" + (good ? " good" : ""); o.textContent = good ? (m.goods || ["♥"])[Math.random() * (m.goods || ["♥"]).length | 0] : m.obs[Math.random() * m.obs.length | 0];
+    o.className = "ob" + (good ? " good" : ""); const it = good ? (m.goods || ["♥"])[Math.random() * (m.goods || ["♥"]).length | 0] : m.obs[Math.random() * m.obs.length | 0]; if(typeof it === "string") o.textContent = it; else o.innerHTML = look(it);
     o.style.left = "100vw"; o.style.top = `calc(${22 + L * 22 + 11}% - 24px)`; o.style.animationDuration = ((m.speed || 3.4) / level()).toFixed(2) + "s"; o.dataset.l = L; f.appendChild(o);
     o.addEventListener("animationend", () => o.remove());
     if(level() > 1.6 && !good && Math.random() < .35){ const o2 = o.cloneNode(true); o2.dataset.l = (L + 1 + (Math.random() * 2 | 0)) % 3; o2.style.top = `calc(${22 + o2.dataset.l * 22 + 11}% - 24px)`; f.appendChild(o2); o2.addEventListener("animationend", () => o2.remove()); } });
@@ -290,6 +310,9 @@ MINI.slots = (m, api) => {
   const p = panel(api, `<h3>${esc(m.q)}</h3><div class="sl-row" id="sr">${Array.from({length:n}, (_, i) => `<div class="sl-slot" data-s="${i}"><em>${i + 1}</em></div>`).join("")}</div>
     <div class="sl-hand" id="sh">${cards.map((c, j) => `<button class="sl-card" data-j="${j}">${look(c)}<span>${esc(c.t)}</span></button>`).join("")}</div>`);
   p.classList.add("sl-panel");
+  if(m.clues){ p.insertAdjacentHTML("afterbegin", `<button class="sl-hintbtn" id="shb">${esc(m.clueBtn || "앤의 기억")}</button>`);
+    const box = document.createElement("div"); box.className = "sl-clues"; box.innerHTML = `<b>${esc(m.clueTitle || "앤의 기억")}</b><ul>${shuffle(m.clues).map(c => `<li>${esc(c)}</li>`).join("")}</ul><button>알겠어요</button>`;
+    api.field.appendChild(box); const tog = v => box.classList.toggle("on", v); $("shb").onclick = () => tog(!box.classList.contains("on")); box.querySelector("button").onclick = () => tog(false); tog(true); }
   const slots = [...p.querySelectorAll(".sl-slot")], fill = Array(n).fill(null);
   const msg = () => api.hud(`${m.say || "카드를 순서대로 놓아요"} · ${fill.filter(x => x !== null).length}/${n}`); msg();
   const back = i => { const j = fill[i]; if(j === null) return; fill[i] = null; slots[i].querySelector(".sl-card")?.remove(); p.querySelector(`#sh [data-j="${j}"]`).classList.remove("used"); msg(); };
@@ -398,4 +421,128 @@ MINI.recipe = (m, api) => {
       if(cnt >= (want.n || 1)){ k++; cnt = 0; } mark(); if(k >= m.steps.length) finish(); };
     if(want.ask && m.ask && asked === null) askNow(go); else go(); });
   mark();
+};
+
+/* 따라 긋기(머리 자르기·리본 묶기): 그림 위 점선을 손가락으로 끝까지 따라가요. 선에서 벗어나면 다시 선으로.
+   img(그림), crop(그림 위쪽 몇 할만 크게), path:[[x%,y%],...](그림 상자 기준), tol(허용 px), tool(커서 그림 문자), after(끝난 뒤 그림), afterSvg(끝난 뒤 덧그림) */
+MINI.trace = (m, api) => {
+  const f = api.field, crop = m.crop || 1;
+  f.innerHTML = `<div class="tr-wrap"><div class="tr-box" id="tb" style="--crop:${crop};background-image:url(${IMG(m.img)})">
+      <svg class="tr-svg" id="ts" viewBox="0 0 100 100" preserveAspectRatio="none"><path id="tpath" class="tr-path"/><path id="tdone" class="tr-done"/><g id="tafter"></g></svg>
+      <div class="tr-tool" id="tt">${m.tool || "✂"}</div><div class="tr-start" id="tst">여기서 시작</div></div></div>`;
+  const tb = $("tb"), tt = $("tt");
+  // 점선 경로를 촘촘한 점으로
+  const P = []; for(let i = 0; i < m.path.length - 1; i++){ const [x1, y1] = m.path[i], [x2, y2] = m.path[i + 1], n = Math.max(2, Math.ceil(Math.hypot(x2 - x1, y2 - y1) / .6)); for(let k = 0; k < n; k++) P.push([x1 + (x2 - x1) * k / n, y1 + (y2 - y1) * k / n]); }
+  P.push(m.path[m.path.length - 1]);
+  const dstr = pts => pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(2) + " " + p[1].toFixed(2)).join(" ");
+  $("tpath").setAttribute("d", dstr(P));
+  const st = $("tst"); st.style.left = P[0][0] + "%"; st.style.top = P[0][1] + "%";
+  tt.style.left = P[0][0] + "%"; tt.style.top = P[0][1] + "%";
+  let prog = 0, down = false, off = 0, wasOff = false, devSum = 0, devN = 0, over = false;
+  const toPx = p => { const r = tb.getBoundingClientRect(); return [r.left + p[0] / 100 * r.width, r.top + p[1] / 100 * r.height]; };
+  const tol = () => (m.tol || 26) * Math.max(.75, Math.min(1.2, tb.getBoundingClientRect().width / 420));
+  const msg = () => api.hud(`${m.say || "점선을 따라 끝까지 그어요"} · ${Math.round(prog / (P.length - 1) * 100)}%${off ? ` · 삐뚤 ${off}번` : ""}`); msg();
+  const move = (x, y) => {
+    if(over) return; const r = tb.getBoundingClientRect(); tt.style.left = ((x - r.left) / r.width * 100) + "%"; tt.style.top = ((y - r.top) / r.height * 100) + "%";
+    if(!down) return;
+    let best = -1, bd = 1e9; for(let i = prog; i < Math.min(P.length, prog + 40); i++){ const [px, py] = toPx(P[i]), dd = Math.hypot(px - x, py - y); if(dd < bd){ bd = dd; best = i; } }
+    if(bd > tol() * 1.6){ if(!wasOff){ wasOff = true; off++; tb.classList.remove("shake"); void tb.offsetWidth; tb.classList.add("shake"); popAt(api, x - 40, y - 60, m.offSay || "앗, 선을 벗어났어요!"); msg(); } return; }
+    if(bd < tol()){ wasOff = false; devSum += bd; devN++; if(best > prog){ prog = best; $("tdone").setAttribute("d", dstr(P.slice(0, prog + 1))); msg(); } }
+    if(prog >= P.length - 2) finish();
+  };
+  tb.onpointerdown = e => { e.preventDefault(); const [sx, sy] = toPx(P[prog]); if(Math.hypot(sx - e.clientX, sy - e.clientY) > tol() * 1.8 && prog === 0){ popAt(api, e.clientX - 40, e.clientY - 60, "반짝이는 시작점에서 시작해요"); return; }
+    down = true; st.style.display = "none"; tb.setPointerCapture(e.pointerId); move(e.clientX, e.clientY); };
+  tb.onpointermove = e => move(e.clientX, e.clientY);
+  tb.onpointerup = tb.onpointercancel = () => { down = false; };
+  const finish = () => { if(over) return; over = true; tt.style.display = "none"; $("tdone").style.opacity = 0; $("tpath").style.opacity = 0;
+    if(m.after) tb.style.backgroundImage = `url(${IMG(m.after)})`;
+    if(m.afterSvg) $("tafter").innerHTML = m.afterSvg; tb.classList.add("doneflash");
+    const avg = devN ? devSum / devN / tol() : 1;
+    const st = off === 0 && avg < .45 ? 3 : off <= 2 ? 2 : 1;
+    setTimeout(() => api.end(st, off === 0 ? "한 번도 벗어나지 않았어요!" : `${off}번 벗어났지만 끝까지 해냈어요.`), 1300); };
+};
+
+/* 응원 방패(놀림 막기): 오른쪽에서 날아오는 놀림 말을 방패로 막고, 초록 응원 말은 앤에게 닿게 비켜 줘요.
+   img(앤 그림), bad:[놀림], good:[응원], time, gauge(이름) */
+MINI.shield = (m, api) => {
+  const f = api.field, T = m.time || 26; let left = T, hurt = 0, peak = 0, blocked = 0, over = false, sy = 50, last = 0, spawnT = 0, raf = 0;
+  f.innerHTML = `<div class="sh-anne" style="background-image:url(${IMG(m.img)})"></div><div class="sh-shield" id="shd"><span>♥</span></div>
+    <div class="mpanel sh-meter"><b>${esc(m.gauge || "속상함")}</b><div class="meter"><i id="shg" style="width:0"></i></div></div>`;
+  const shd = $("shd"), words = [];
+  const bar = () => { $("shg").style.width = hurt + "%"; };
+  const setY = y => { const r = f.getBoundingClientRect(); sy = Math.max(14, Math.min(88, (y - r.top) / r.height * 100)); shd.style.top = sy + "%"; };
+  f.onpointerdown = e => { setY(e.clientY); f.setPointerCapture && f.setPointerCapture(e.pointerId); };
+  f.onpointermove = e => { if(e.buttons || e.pointerType === "mouse") setY(e.clientY); };
+  const key = e => { if(e.key === "ArrowUp") { sy = Math.max(14, sy - 8); shd.style.top = sy + "%"; } if(e.key === "ArrowDown"){ sy = Math.min(88, sy + 8); shd.style.top = sy + "%"; } }; addEventListener("keydown", key);
+  shd.style.top = sy + "%";
+  const msg = () => api.hud(`${m.say || "방패를 위아래로 움직여 놀림을 막아요"} · ${left}초`); msg();
+  const spawn = () => { const good = Math.random() < .28, txt = good ? m.good[Math.random() * m.good.length | 0] : m.bad[Math.random() * m.bad.length | 0];
+    const d = document.createElement("div"); d.className = "sh-word" + (good ? " good" : ""); d.textContent = txt; f.appendChild(d);
+    const lv = 1 + (T - left) / T * .9; words.push({d, x:104, y:16 + Math.random() * 70, v:(good ? 11 : 13 + Math.random() * 6) * lv, good}); };
+  const loop = t => { if(over) return; const dt = last ? Math.min(.05, (t - last) / 1000) : 0; last = t;
+    if(!PORTRAIT.matches && dt){
+      spawnT += dt; const gap = Math.max(.75, 1.5 - (T - left) / T * .7); if(spawnT > gap){ spawnT = 0; spawn(); }
+      const fr = f.getBoundingClientRect(), shr = shd.getBoundingClientRect();
+      for(const w of [...words]){ w.x -= w.v * dt; w.d.style.left = w.x + "%"; w.d.style.top = w.y + "%";
+        const wr = w.d.getBoundingClientRect();
+        if(!w.done && wr.left < shr.right && wr.right > shr.left && wr.bottom > shr.top && wr.top < shr.bottom){
+          w.done = true; w.d.classList.add(w.good ? "lost" : "blocked");
+          if(w.good){ popAt(api, shr.left, shr.top - 30, m.goodBlock || "앗, 응원을 막았어요"); }
+          else { blocked++; popAt(api, shr.left, shr.top - 30, m.ok || "막았다!"); }
+          setTimeout(() => w.d.remove(), 400); words.splice(words.indexOf(w), 1); continue; }
+        if(w.x < 14){ w.d.remove(); words.splice(words.indexOf(w), 1);
+          if(w.good){ hurt = Math.max(0, hurt - 14); popAt(api, fr.left + fr.width * .1, fr.top + w.y / 100 * fr.height - 30, m.yum || "힘이 나!"); }
+          else { hurt = Math.min(100, hurt + 17); peak = Math.max(peak, hurt); f.classList.remove("ouch"); void f.offsetWidth; f.classList.add("ouch"); }
+          bar(); if(hurt >= 100){ end(); return; } } } }
+    raf = requestAnimationFrame(loop); };
+  raf = requestAnimationFrame(loop);
+  const stopT = every(1000, () => { if(over) return; left--; msg(); if(left <= 0) end(); });
+  const end = () => { if(over) return; over = true; cancelAnimationFrame(raf); stopT(); removeEventListener("keydown", key); words.forEach(w => w.d.remove());
+    const st = hurt >= 100 ? 1 : peak < 40 ? 3 : peak < 75 ? 2 : 1;
+    setTimeout(() => api.end(st, hurt >= 100 ? (m.boom || "속상해서 눈물이 났어요.") : `놀림 ${blocked}개를 막았어요!`), 600); };
+};
+
+/* 소 우리로 보내기(주차장 빠져나가기처럼): 소는 바라보는 쪽으로만 걸어요. 앞이 막히지 않은 소부터 눌러 모두 내보내요.
+   cols, rows, n(소 수), bg */
+MINI.herd = (m, api) => {
+  const C = m.cols || 6, R = m.rows || 4, N = m.n || 9, D = {u:[0, -1], d:[0, 1], l:[-1, 0], r:[1, 0]}, ROT = {u:0, r:90, d:180, l:270};
+  const free = (cows, c) => { let [x, y] = [c.x, c.y]; const [dx, dy] = D[c.dir]; while(true){ x += dx; y += dy; if(x < 0 || y < 0 || x >= C || y >= R) return true; if(cows.some(o => o !== c && o.x === x && o.y === y)) return false; } };
+  const solvable = cows => { let left = cows.slice(), steps = 0; while(left.length){ const k = left.find(c => free(left, c)); if(!k) return false; left = left.filter(c => c !== k); steps++; } return true; };
+  let cows;
+  for(let t = 0; t < 400; t++){ const cells = shuffle(Array.from({length:C * R}, (_, i) => [i % C, i / C | 0])).slice(0, N);
+    cows = cells.map(([x, y], i) => ({id:i, x, y, dir:"udlr"[Math.random() * 4 | 0]}));
+    if(solvable(cows) && cows.filter(c => free(cows, c)).length <= Math.ceil(N / 3)) break; }
+  const f = api.field; let miss = 0, out = 0, busy = false;
+  f.innerHTML = `<div class="hd-wrap"><div class="hd-board" id="hb" style="--c:${C};--r:${R}">${Array.from({length:C * R}, () => `<i></i>`).join("")}</div>
+    <div class="hd-side"><div class="hd-barn">🏠<b>소 우리</b></div><p>${esc(m.tip || "소는 바라보는 쪽으로만 걸어요. 앞이 막히지 않은 소부터 눌러요.")}</p><div class="hd-count" id="hc"></div></div></div>`;
+  const hb = $("hb");
+  const msg = () => { api.hud(`${m.say || "앞이 막히지 않은 소를 눌러요"} · ${out}/${N}마리`); $("hc").textContent = `우리에 들어간 소 ${out}/${N} · 부딪힘 ${miss}`; }; msg();
+  const pos = c => `left:${c.x / C * 100}%;top:${c.y / R * 100}%`;
+  cows.forEach(c => { const el = document.createElement("button"); el.className = "hd-cow"; el.style.cssText = pos(c) + `;width:${100 / C}%;height:${100 / R}%`;
+    el.innerHTML = `<span style="transform:rotate(${ROT[c.dir]}deg)">${m.img ? `<img src="${IMG(m.img)}" alt="" onerror="this.replaceWith(document.createTextNode('🐄'))">` : "🐄"}<em>▲</em></span>`;
+    c.el = el; hb.appendChild(el);
+    el.onclick = () => { if(busy || c.gone) return; busy = true; const [dx, dy] = D[c.dir];
+      if(free(cows.filter(o => !o.gone), c)){ c.gone = true; el.classList.add("go"); el.style.left = (c.x + dx * (C + 1)) / C * 100 + "%"; el.style.top = (c.y + dy * (R + 1)) / R * 100 + "%";
+        out++; msg(); setTimeout(() => { el.remove(); busy = false; if(out >= N) api.end(miss === 0 ? 3 : miss <= 2 ? 2 : 1, miss === 0 ? "한 번도 안 부딪히고 모두 들여보냈어요!" : `${miss}번 부딪혔지만 모두 우리에 들어갔어요.`); }, 650); }
+      else { miss++; msg(); el.style.left = (c.x + dx * .35) / C * 100 + "%"; el.style.top = (c.y + dy * .35) / R * 100 + "%"; el.classList.add("bump");
+        const r = el.getBoundingClientRect(); popAt(api, r.left, r.top - 30, m.ouch || "음매! 앞이 막혔어요");
+        setTimeout(() => { el.style.left = c.x / C * 100 + "%"; el.style.top = c.y / R * 100 + "%"; el.classList.remove("bump"); busy = false; }, 380); } };
+  });
+};
+
+/* 지도에서 찾기: 이름이 안 적힌 지도에서, 아이가 지은 이름의 장소를 눌러요. rounds:()=>[{key, name}] */
+MINI.mappick = (m, api) => {
+  const rounds = (typeof m.rounds === "function" ? m.rounds() : m.rounds); let r = 0, ok = 0, busy = false;
+  const season = (C() && C().season) || "spring", mapk = (typeof MAPS !== "undefined" && MAPS[season]) || "map_spring";
+  const keys = Object.keys(P).filter(k => P[k].from <= S.ch);
+  api.field.innerHTML = `<div class="mp-wrap"><div class="mp-q" id="mq"></div><div class="mp-map" id="mm" style="background-image:url(${IMG(mapk)})">
+    ${keys.map(k => `<button class="mp-dot" data-k="${k}" style="left:${P[k].x / 16}%;top:${P[k].y / 9}%"></button>`).join("")}</div></div>`;
+  const draw = () => { if(r >= rounds.length){ const n = rounds.length; api.end(ok >= n ? 3 : ok >= Math.ceil(n / 2) ? 2 : 1, `${n}곳 중 ${ok}곳을 찾았어요.`); return; }
+    $("mq").innerHTML = `<b>‘${esc(rounds[r].name)}’</b> — 지도에서 이곳을 찾아 눌러요 <span>(${r + 1}/${rounds.length})</span>`;
+    api.hud(`${m.say || "이름 붙인 곳을 지도에서 찾아요"} · ${r + 1}/${rounds.length}`); };
+  api.field.querySelectorAll(".mp-dot").forEach(b => b.onclick = e => { if(busy) return; busy = true; const want = rounds[r].key, hit = b.dataset.k === want;
+    if(hit){ ok++; b.classList.add("ok"); popAt(api, e.clientX - 40, e.clientY - 60, "맞아요!"); }
+    else { b.classList.add("no"); const t = api.field.querySelector(`.mp-dot[data-k="${want}"]`); t && t.classList.add("ok"); popAt(api, e.clientX - 40, e.clientY - 60, `여기는 ${P[b.dataset.k].name}`); }
+    setTimeout(() => { api.field.querySelectorAll(".mp-dot").forEach(x => x.classList.remove("ok", "no")); r++; busy = false; draw(); }, 1300); });
+  draw();
 };

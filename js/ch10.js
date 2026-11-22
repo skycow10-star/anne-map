@@ -1,12 +1,8 @@
 /* 10장 · 길모퉁이 (원작 36~38장) */
 const myMapRounds = () => {
-  const keys = Object.keys(S.names).filter(k => P[k]);
-  const all = Object.keys(P);
-  const rounds = keys.slice(0, 5).map(k => {
-    const wrong = all.filter(x => x !== k).sort(() => Math.random() - .5).slice(0, 2);
-    return {q:`'${S.names[k]}'(이)라고 이름 붙인 곳은 어디였을까요?`, opts:[{t:P[k].name, ok:1}, ...wrong.map(x => ({t:P[x].name}))], yes:"맞아요! 기억하고 있었네요."};
-  });
-  return rounds.length ? rounds : [{q:"앤이 처음 도착한 곳은 어디였을까요?", opts:[{t:"브라이트 리버 역", ok:1}, {t:"에이번리 학교"}, {t:"뒷목장"}]}];
+  const keys = Object.keys(S.names).filter(k => P[k]).slice(0, 6);
+  const rounds = keys.map(k => ({key:k, name:S.names[k]}));
+  return rounds.length ? rounds : [{key:"station", name:P.station.name}, {key:"home", name:P.home.name}];
 };
 CH[10] = {
   title:"길모퉁이", when:"열여섯 살의 봄부터 가을까지", season:"autumn", img:"ch10", bgm:"bgm_ch10.mp3", anne:"anne_grown", walker:"walk_grow", who:"matthew", spr:{diana:"diana_grown", gilbert:"gilbert_grown"},
@@ -30,10 +26,9 @@ CH[10] = {
   ]},
   {at:"pasture", label:"매슈 아저씨와 저녁에 소 몰기", bg:"ch10_pasture", nodes:[
     ["inner", "happy", "matthew", "노을 지는 저녁, 매슈 아저씨와 뒷목장에서 소를 몰았어.\n아저씨 걸음이 예전보다 많이 느려지셨어."],
-    {mini:{kind:"pace", id:"cows", title:"노을 속 소 몰기", how:"매슈 아저씨와 천천히 소를 몰아요. 서두르지 말고, 하트가 분홍 칸에 들어올 때 '이랴~'를 눌러요.",
-      say:"아저씨 걸음에 맞춰요", btn:"이랴~", n:4, zone:18, speed:1.1, drift:.2,
-      lines:["\"천천히 가자꾸나.\"", "\"소들도 집에 가고 싶은 게지.\"", "\"노을이 참 곱구나.\"", "\"…다 왔다.\""],
-      res:{1:"조금 서둘렀지만 괜찮아요.", 2:"아저씨 걸음에 잘 맞췄어요.", 3:"아저씨와 한마음으로 걸었어요."}}},
+    {mini:{kind:"herd", id:"cows", title:"노을 속 소 몰기", bg:"ch10_pasture", how:"매슈 아저씨와 소를 우리로 들여보내요. 소는 바라보는 쪽(▲)으로만 걸어가요. 앞에 다른 소가 있으면 부딪혀요! 길이 트인 소부터 차례로 눌러서 모두 내보내요.",
+      say:"길이 트인 소부터 눌러요", cols:6, rows:4, n:9, img:"cow_top", tip:"\"천천히, 순서대로 하자꾸나.\" 앞이 막히지 않은 소부터 눌러요.",
+      res:{1:"조금 서둘렀지만 소들이 모두 우리에 들어갔어요.", 2:"아저씨: \"글쎄다, 제법이구나.\"", 3:"아저씨와 한마음으로 소를 몰았어요."}}},
     ["anne", "sad", "matthew", "\"아저씨, 제가 남자아이였으면 아저씨 일을 많이 도와드렸을 텐데요.\""],
     ["matthew", "happy", "matthew", "\"글쎄다, 나는 남자아이 열둘보다 네가 더 좋다.\n장학금을 탄 건 남자아이가 아니라 여자아이였잖니. 내 딸 앤.\""],
     {q:"아저씨의 말씀에 앤은 어떻게 할까요?", opts:[
@@ -76,7 +71,7 @@ CH[10] = {
     ["anne", "happy", "gilbert", "\"길버트, 학교 자리를 양보해 줘서 고마워.\n그리고… 우리 이제 친구 할래?\""],
     ["gilbert", "happy", "gilbert", "\"앤, 우리는 친구가 될 운명이었어.\n오 년 동안 운명을 거스르느라 고생했지.\""],
     {eff:{h:{gilbert:2}}},
-    {mini:{kind:"pick", id:"mymap", title:"나의 지도 완성", bg:false, how:"앤이 지금까지 이름 붙인 곳들을 떠올려요. 그 이름이 원래 어디였는지 골라서 '나의 지도'를 완성해요.",
+    {mini:{kind:"mappick", id:"mymap", title:"나의 지도 완성", bg:false, how:"이름이 하나도 안 적힌 지도가 나와요. 앤이 지어 준 이름을 보고, 그곳이 지도에서 어디였는지 찾아 눌러요.",
       say:"이름 붙인 곳을 기억해요", rounds:myMapRounds,
       res:{1:"조금 헷갈려도 괜찮아요. 지도는 마음속에 있으니까요.", 2:"앤의 지도를 거의 다 기억했어요!", 3:"이름 붙인 곳을 모두 기억했어요! 완벽한 '나의 지도'예요."}}},
     ["inner", "dreamy", null, "언덕 위에서 에이번리가 한눈에 보였어.\n기차역, 가로수길, 반짝이는 연못, 그리고 초록 지붕 집."],

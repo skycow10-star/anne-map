@@ -50,9 +50,10 @@ CH[7] = {
   ]},
   {at:"church", label:"앨런 사모님의 꽃밭에 놀러 가기", bg:"ch7_garden", nodes:[
     ["allan", "happy", "allan", "\"앤, 내 꽃밭 좀 같이 가꿔 주겠니?\""],
-    {mini:{kind:"decorate", id:"garden", title:"꽃밭 가꾸기", how:"앨런 사모님과 꽃을 심어요. 바구니의 꽃을 끌어다 꽃밭 원하는 곳에 심어요. 심은 꽃도 다시 옮길 수 있어요. 최대 8송이예요.",
-      q:"사모님의 꽃밭에 꽃을 심어요", baseImg:"mini_garden", base:"🪴", max:8, size:26, say:"꽃을 끌어다 꽃밭에 심어요", btn:"다 심었어요",
-      items:[{img:"hf_daisy", e:"🌼", t:"데이지"}, {img:"gd_rose", e:"🌹", t:"장미"}, {img:"it_iris", e:"💐", t:"붓꽃"}, {img:"gd_tulip", e:"🌷", t:"튤립"}, {img:"gd_sunflower", e:"🌻", t:"해바라기"}, {img:"gd_pink", e:"🌸", t:"패랭이꽃"}],
+    {mini:{kind:"decorate", id:"garden", title:"꽃밭 가꾸기", how:"앨런 사모님과 꽃을 심어요. 바구니의 꽃을 끌어다 꽃밭에 심어요. 놓으면 가까운 구멍에 쏙 심어져요. 심은 꽃도 다시 옮길 수 있어요. 구멍은 8개예요.",
+      q:"사모님의 꽃밭에 꽃을 심어요", baseImg:"mini_garden", base:"🪴", size:26, anchor:"bottom", say:"꽃을 끌어다 꽃밭 구멍에 심어요", btn:"다 심었어요",
+      spots:[{x:24, y:36}, {x:41, y:32}, {x:59, y:32}, {x:76, y:36}, {x:20, y:62}, {x:39, y:66}, {x:61, y:66}, {x:80, y:62}],
+      items:[{img:"gd_daisy", e:"🌼", t:"데이지"}, {img:"gd_rose", e:"🌹", t:"장미"}, {img:"it_iris", e:"💐", t:"붓꽃"}, {img:"gd_tulip", e:"🌷", t:"튤립"}, {img:"gd_sunflower", e:"🌻", t:"해바라기"}, {img:"gd_pink", e:"🌸", t:"패랭이꽃"}],
       res:{1:"작고 소박한 꽃밭이에요.", 2:"알록달록 예쁜 꽃밭!", 3:"사모님: \"앤, 너는 꽃을 정말 사랑하는구나.\""}},
      good:[{eff:{get:"garden", h:{allan:1}}}]},
     ["allan", "happy", "allan", "\"앤, 내일은 아직 아무 실수도 하지 않은 새날이란다.\""],
