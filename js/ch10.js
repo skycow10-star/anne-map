@@ -42,7 +42,7 @@ CH[10] = {
       {t:"별에게 아저씨가 늘 건강하시길 비는 편지를 쓰기로 한다.", type:"imag", eff:{hid:"starLetter"}, then:[["inner", "dreamy", "matthew", "오늘 밤 첫 번째 별에게 편지를 쓸 거야.\n'매슈 아저씨가 오래오래 곁에 계시게 해 주세요.'", {dream:true}]]}
     ]}
   ]},
-  {at:"home", label:"초록 지붕 집에서 매슈 아저씨 곁에 있기", bg:"ch10_home", nodes:[
+  {at:"home", label:"초록 지붕 집에서 매슈 아저씨 곁에 있기", bg:"ch10_home", lock:{except:[], why:"오늘은 매슈 아저씨 곁에 있고 싶어요"}, nodes:[
     ["nar", null, null, "다음 날 아침, 매슈 아저씨가 쓰러지셨어.\n아저씨는 다시 일어나지 못하셨어."],
     ["inner", "sad", null, "아저씨는 이제 곁에 안 계셔.\n가로수길의 꽃도, 노을도 그대로인데."],
     ["marilla", "sad", "marilla_warm", "그날 밤, 마릴라 아주머니가 내 방에 오셨어.\n\"앤… 나는 마음을 잘 표현하지 못하지만, 너를 친자식처럼 사랑한다.\""],

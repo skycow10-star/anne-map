@@ -34,7 +34,7 @@ CH[8] = {
       {t:"\"그래도 눈은 예쁘대요…\" 하고 작게 말한다.", type:"bal", then:[["marilla", "anne_green_hair", "marilla_warm", "\"…그래, 눈은 예쁘지.\"\n아주머니가 한숨을 쉬며 살짝 웃으셨어."]]}
     ]}
   ]},
-  {at:"spring", label:"샘물에서 머리 감아 보기", bg:"ch7_spring", walker:"walk_green", nodes:[
+  {at:"spring", label:"샘물에서 머리 감아 보기", bg:"ch7_spring", walker:"walk_green", lock:{except:["home"], why:"초록 머리로는 사람들 앞에 나갈 수 없어요"}, nodes:[
     ["inner", "anne_green_hair", null, "샘물에 머리를 감으면 초록색이 빠질지도 몰라.\n나는 몰래 나무 요정의 샘으로 달려갔어."],
     ["inner", "anne_green_hair", null, "첨벙첨벙, 비누로 박박.\n…하나도 안 빠져. 오히려 더 초록색으로 반짝여!"],
     ["diana", "anne_green_hair", "diana", "\"앤? 너 머리가 왜… 초록색이야?\"\n하필 그때 다이애나가 샘가로 왔어."],
@@ -44,7 +44,7 @@ CH[8] = {
       {t:"솔직하게 행상인한테 산 염색약 이야기를 한다.", type:"bal", eff:{h:{diana:1}}, then:[["diana", "anne_green_hair", "diana", "\"그랬구나. 앤, 많이 속상하겠다.\"\n다이애나는 놀리지 않고 걱정해 주었어."]]}
     ]}
   ]},
-  {at:"home", label:"마릴라 아주머니와 머리 손질하기", bg:"ch8", walker:"walk_green", nodes:[
+  {at:"home", label:"마릴라 아주머니와 머리 손질하기", bg:"ch8", walker:"walk_green", lock:{except:["spring"], why:"초록 머리로는 사람들 앞에 나갈 수 없어요"}, nodes:[
     ["marilla", "anne_green_hair", "marilla_strict", "일주일 동안 날마다 머리를 감았지만 초록색은 빠지지 않았어.\n\"앤, 이제는 자를 수밖에 없구나.\""],
     {eff:{get:"scissors"}},
     ["inner", "sad", "marilla_warm", "싹둑, 싹둑.\n나는 울지 않았어. 아니, 아주 조금만 울었어."],
