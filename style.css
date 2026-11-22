@@ -327,16 +327,16 @@ html,body{position:fixed;inset:0;width:100%;height:100%;overscroll-behavior:none
 @media (orientation:landscape) and (max-height:520px){.dz-wrap{inset:44px 0 0}.dz-q{font-size:14px}.dz-tray button img{width:36px;height:36px}.dz-tray button{font-size:11px;padding:2px}.dz-side{padding:7px;gap:5px}}
 
 /* 박자 맞추기(소녀풍) */
-.pg{position:relative;height:46px;margin:14px 6px 8px;border-radius:999px;background:repeating-linear-gradient(90deg,#fde8ee 0 14px,#fff4f6 14px 28px);border:3px solid #f2b8c6;box-shadow:inset 0 2px 6px rgba(200,90,120,.18),0 2px 0 #e8a3b5}
-.pg::before,.pg::after{content:"❀";position:absolute;top:50%;transform:translateY(-50%);color:#e98aa3;font-size:20px}.pg::before{left:-26px}.pg::after{right:-26px}
+.pg{position:relative;height:46px;margin:14px 6px 8px;border-radius:999px;background:repeating-linear-gradient(90deg,#f6e6e2 0 14px,#fbf3ef 14px 28px);border:3px solid #dcb7b0;box-shadow:inset 0 2px 6px rgba(150,90,80,.15),0 2px 0 #cfa79f}
+.pg::before,.pg::after{content:"❀";position:absolute;top:50%;transform:translateY(-50%);color:#c98f92;font-size:20px}.pg::before{left:-26px}.pg::after{right:-26px}
 .pg.miss{animation:shake .3s}
-.pg-zone{position:absolute;top:3px;bottom:3px;border-radius:999px;background:linear-gradient(#ffc2d3,#ff8fb0);box-shadow:0 0 0 2px #fff,0 0 12px #ff9fbd;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;transition:width .25s}
+.pg-zone{position:absolute;top:3px;bottom:3px;border-radius:999px;background:linear-gradient(#eec3c0,#d99a9c);box-shadow:0 0 0 2px #fffaf3,0 0 10px rgba(217,154,156,.8);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;transition:width .25s}
 .pg-zone.hit{animation:zonehit .45s}
-@keyframes zonehit{30%{transform:scaleY(1.5);box-shadow:0 0 0 3px #fff,0 0 28px #ff6f98}}
-.pg-mk{position:absolute;top:50%;transform:translate(-50%,-56%);font-size:40px;line-height:1;color:#d6336c;text-shadow:0 2px 0 #fff,0 0 8px #fff,0 3px 6px rgba(150,30,70,.4);pointer-events:none}
-.pg-dots{display:flex;gap:6px;justify-content:center;font-size:22px;color:#e8a3b5;margin-bottom:6px}.pg-dots i{font-style:normal}.pg-dots i.on{color:#d6336c;animation:boompop .4s}
-.bigtap.pink{background:linear-gradient(#ff9fbd,#e86b93);box-shadow:0 5px 0 #b84a70}.bigtap.pink:active{box-shadow:0 2px 0 #b84a70}
-.pg-fx{position:fixed;z-index:60;pointer-events:none;color:#ff5f8f;font-size:22px;text-shadow:0 0 6px #fff;transform:translate(-50%,-50%);animation:fxfly .85s ease-out forwards}
+@keyframes zonehit{30%{transform:scaleY(1.5);box-shadow:0 0 0 3px #fffaf3,0 0 24px #d98a8f}}
+.pg-mk{position:absolute;top:50%;transform:translate(-50%,-56%);font-size:40px;line-height:1;color:#b8505f;text-shadow:0 2px 0 #fff,0 0 8px #fff,0 3px 6px rgba(110,40,50,.35);pointer-events:none}
+.pg-dots{display:flex;gap:6px;justify-content:center;font-size:22px;color:#d4aaa6;margin-bottom:6px}.pg-dots i{font-style:normal}.pg-dots i.on{color:#b8505f;animation:boompop .4s}
+.bigtap.pink{background:linear-gradient(#d99596,#bf6f75);box-shadow:0 5px 0 #94505a}.bigtap.pink:active{box-shadow:0 2px 0 #94505a}
+.pg-fx{position:fixed;z-index:60;pointer-events:none;color:#c9606f;font-size:22px;text-shadow:0 0 6px #fff;transform:translate(-50%,-50%);animation:fxfly .85s ease-out forwards}
 .pg-fx.bad{color:#a08070;font-size:16px}
 @keyframes fxfly{to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.4);opacity:0}}
 @media (orientation:landscape) and (max-height:520px){.pg{height:36px;margin:8px 22px 6px}.pg-mk{font-size:32px}.pg-dots{font-size:18px;margin-bottom:2px}}
