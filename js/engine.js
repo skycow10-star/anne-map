@@ -8,34 +8,33 @@ const PORTRAIT = matchMedia("(orientation:portrait) and (max-width:1000px)");
 
 /* ---------- 장소 (지도 그림 img/map_spring.webp 위 좌표, 1600×900 기준) ---------- */
 const P = {
-  station:{name:"브라이트 리버 역", x:290, y:735, bg:"ch1", bgW:"ch6_snow", from:1, say:["기차역이야. 여기서 매슈 아저씨를 처음 만났지."]},
-  avenue:{name:"꽃이 핀 가로수길", x:300, y:430, bg:"ch1_avenue", bgW:"ch6_snow", from:1, say:["'{avenue}'. 언제 와도 마음이 하얘져.", "꽃잎 터널 아래를 걸으면 공주가 된 기분이야."]},
-  pond:{name:"배리 씨네 연못", x:650, y:462, bg:"ch1_pond", bgW:"ch6_snow", from:1, say:["'{pond}'. 물결이 오늘도 반짝반짝해."]},
-  home:{name:"초록 지붕 집", x:1110, y:445, bg:"ch1_home", from:1, say:["초록 지붕 집. 이제 진짜 내 집이야.", "다락방 창문에서 벚나무가 손을 흔들어."]},
-  lynde:{name:"린드 부인 집", x:600, y:300, bg:"ch2_lynde", from:2, say:["린드 부인은 오늘도 창가에서 길을 지켜보고 계실 거야.", "린드 부인의 정원은 늘 반듯반듯해."]},
-  lane:{name:"연인의 오솔길", x:1245, y:330, bg:"ch2_lane", bgW:"ch6_snow", from:2, say:["'{lane}'. 나무들이 소곤소곤 이야기하는 길이야."]},
-  barry:{name:"배리 씨네 집", x:1050, y:250, bg:"ch3", from:3, say:["다이애나네 집이야. 창문에 불이 켜져 있으면 괜히 기뻐져."]},
-  spring:{name:"통나무 다리 옆 샘", x:815, y:360, bg:"ch3_bridge", bgW:"ch6_snow", from:3, say:["'{spring}'. 물속에 요정이 사는 것 같아."]},
-  church:{name:"교회와 목사관", x:790, y:610, bg:"church_out", bgW:"ch6_snow", from:3, say:["교회 종소리가 들리면 일요일이야."]},
-  birch:{name:"자작나무 길", x:1430, y:480, bg:"ch4_birch", bgW:"ch6_snow", from:4, say:["'{birch}'. 하얀 나무들이 줄지어 서 있어."]},
-  school:{name:"에이번리 학교", x:1460, y:745, bg:"ch4", from:4, say:["학교야. 칠판 냄새가 나."]},
-  pasture:{name:"뒷목장", x:1195, y:215, bg:"ch10_pasture", from:10, say:["뒷목장. 저녁이면 소들이 집으로 돌아와."]},
-  hill:{name:"길모퉁이 언덕", x:1450, y:205, bg:"ch10_hill", from:10, say:["길이 언덕을 넘어 굽어 가. 저 너머엔 뭐가 있을까?"]}
+  station:{name:"브라이트 리버 역", x:255, y:700, bg:"ch1", bgW:"ch6_snow", from:1, say:["기차역이야. 여기서 매슈 아저씨를 처음 만났지."]},
+  avenue:{name:"꽃이 핀 가로수길", x:395, y:560, bg:"ch1_avenue", bgW:"ch6_snow", from:1, say:["'{avenue}'. 언제 와도 마음이 하얘져.", "꽃잎 터널 아래를 걸으면 공주가 된 기분이야."]},
+  pond:{name:"배리 씨네 연못", x:515, y:430, bg:"ch1_pond", bgW:"ch6_snow", from:1, say:["'{pond}'. 물결이 오늘도 반짝반짝해."]},
+  home:{name:"초록 지붕 집", x:405, y:300, bg:"ch1_home", from:1, say:["초록 지붕 집. 이제 진짜 내 집이야.", "다락방 창문에서 벚나무가 손을 흔들어."]},
+  lynde:{name:"린드 부인 집", x:205, y:520, bg:"ch2_lynde", from:2, say:["린드 부인은 오늘도 창가에서 길을 지켜보고 계실 거야.", "린드 부인의 정원은 늘 반듯반듯해."]},
+  lane:{name:"연인의 오솔길", x:1090, y:430, bg:"ch2_lane", bgW:"ch6_snow", from:2, say:["'{lane}'. 나무들이 소곤소곤 이야기하는 길이야."]},
+  barry:{name:"배리 씨네 집", x:800, y:240, bg:"ch3", from:3, say:["다이애나네 집이야. 창문에 불이 켜져 있으면 괜히 기뻐져."]},
+  spring:{name:"통나무 다리 옆 샘", x:935, y:325, bg:"ch3_bridge", bgW:"ch6_snow", from:3, say:["'{spring}'. 물속에 요정이 사는 것 같아."]},
+  church:{name:"교회와 목사관", x:715, y:765, bg:"church_out", bgW:"ch6_snow", from:3, say:["교회 종소리가 들리면 일요일이야."]},
+  birch:{name:"자작나무 길", x:1225, y:555, bg:"ch4_birch", bgW:"ch6_snow", from:4, say:["'{birch}'. 하얀 나무들이 줄지어 서 있어."]},
+  school:{name:"에이번리 학교", x:1440, y:615, bg:"ch4", from:4, say:["학교야. 칠판 냄새가 나."]},
+  pasture:{name:"뒷목장", x:1330, y:330, bg:"ch10_pasture", from:10, say:["뒷목장. 저녁이면 소들이 집으로 돌아와."]},
+  hill:{name:"길모퉁이 언덕", x:1420, y:150, bg:"ch10_hill", from:10, say:["길이 언덕을 넘어 굽어 가. 저 너머엔 뭐가 있을까?"]}
 };
 
 /* ---------- 길 (지도 그림 속 실제 길을 따라 걷기) ----------
    점(x,y)은 1600×900 기준. 장소는 PLACE_NODE의 점에서 길에 올라탄다. */
 const NODES = {
-  st:[418, 770], f1:[305, 682], av1:[268, 565], av2:[282, 455], av3:[318, 345], av4:[378, 255], t1:[432, 234], t2:[565, 238],
-  ly:[640, 345], lyr:[722, 300], pn1:[705, 388], pb:[782, 418], sp:[828, 392], g1:[862, 446], g2:[962, 462], gg:[1062, 508],
-  tb1:[700, 232], br1:[822, 240], br2:[930, 214], by:[1032, 280], bb:[957, 352],
-  l1:[430, 716], l2:[600, 740], l3:[742, 756], ch:[765, 692], l4:[900, 772], l5:[992, 766], l6:[1150, 722], l7:[1250, 642], l8:[1312, 546],
-  gs1:[975, 572], gs2:[952, 652], ln1:[1182, 470], ln2:[1292, 432], ln3:[1286, 332], ln4:[1272, 238], pa:[1225, 215],
-  h1:[1380, 452], h2:[1462, 380], h5:[1487, 330], h3:[1470, 280], h4:[1422, 222], hl:[1398, 182], bi:[1425, 585], s1:[1232, 772], sc:[1398, 792]
+  st:[262, 668], g1:[350, 640], j1:[445, 612], av:[395, 560], a2:[360, 505], a3:[338, 445], pn:[480, 432], a4:[330, 385], a5:[345, 335], gg:[392, 310],
+  lyj:[300, 545], ly:[235, 525], b1:[500, 650], b2:[560, 715], b3:[620, 775], ch:[690, 772],
+  e1:[480, 268], e2:[580, 252], e3:[680, 246], br:[770, 252], b0:[825, 283], bd:[880, 292], b4:[925, 300], sp:[948, 322],
+  l1:[990, 335], l2:[1045, 382], l3:[1100, 435], l4:[1145, 495], bi:[1200, 560], s1:[1260, 590], s2:[1330, 605], sc:[1405, 612],
+  p1:[1285, 470], p2:[1262, 400], p3:[1232, 320], p4:[1240, 248], p5:[1310, 205], p6:[1375, 178], hl:[1412, 158], pa:[1290, 330]
 };
-const EDGES = "st-f1 f1-av1 av1-av2 av2-av3 av3-av4 av4-t1 t1-t2 lyr-ly lyr-pn1 tb1-lyr ly-pn1 pn1-pb pb-sp pb-g1 g1-g2 g2-gg t2-tb1 tb1-br1 br1-br2 br2-by by-bb bb-g2 " +
-  "f1-l1 l1-l2 l2-l3 l3-ch l3-l4 l4-l5 l5-l6 l6-l7 l7-l8 gg-gs1 gs1-gs2 gs2-l5 gg-ln1 ln1-ln2 ln2-ln3 ln3-ln4 ln4-pa ln2-l8 l8-h1 h1-h2 h2-h5 h5-h3 h3-h4 h4-hl l8-bi l6-s1 s1-sc";
-const PLACE_NODE = {station:"st", avenue:"av2", lynde:"ly", pond:"pn1", spring:"sp", home:"gg", barry:"by", church:"ch", birch:"bi", school:"sc", lane:"ln3", pasture:"pa", hill:"hl"};
+const EDGES = "st-g1 g1-j1 j1-av av-a2 a2-a3 a3-pn a3-a4 a4-a5 a5-gg a2-lyj lyj-ly j1-b1 b1-b2 b2-b3 b3-ch " +
+  "gg-e1 e1-e2 e2-e3 e3-br br-b0 b0-bd bd-b4 b4-sp b4-l1 l1-l2 l2-l3 l3-l4 l4-bi bi-s1 s1-s2 s2-sc l4-p1 p1-p2 p2-pa p2-p3 p3-p4 p4-p5 p5-p6 p6-hl";
+const PLACE_NODE = {station:"st", avenue:"av", lynde:"ly", pond:"pn", spring:"sp", home:"gg", barry:"br", church:"ch", birch:"bi", school:"sc", lane:"l3", pasture:"pa", hill:"hl"};
 const GRAPH = {}; EDGES.split(" ").forEach(e => { const [a, b] = e.split("-"); (GRAPH[a] = GRAPH[a] || []).push(b); (GRAPH[b] = GRAPH[b] || []).push(a); });
 const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 function route(fromK, toK){
@@ -107,7 +106,7 @@ function eff(e){ if(!e) return; if(typeof e === "function"){ e(); return; }
 
 /* ---------- 지도 ---------- */
 let busy = false;
-const MAPS = {spring:"map_spring", summer:"map_summer", autumn:"map_autumn", winter:"map_winter"};
+const MAPS = {spring:"map_spring", summer:"map_spring", autumn:"map_spring", winter:"map_spring"};   // 새 지도의 계절판을 만들면 바꾸기
 function seasonPaint(){
   const s = (C() && C().season) || "spring", r = $("season"), img = $("mapImg");
   img.setAttribute("href", IMG(MAPS[s]));
@@ -184,12 +183,15 @@ function go(k){
 
 /* ---------- 대사 엔진 ---------- */
 let Q = [], qi = 0, curBg = "", curStage = null, isQuest = false, typing = null, waitMini = false;
+const ANNE_ONE = {anne_green:"anne_green_hair", anne_grown:"anne_grown"};   // 표정이 한 장뿐인 모습
 function anneKey(f){
-  const set = (C() && C().anne) || "anne";
+  const q = quest(), set = (q && q.anne) || (C() && C().anne) || "anne";
   if(!f) return null; if(f.includes("_") || !ANNE_FACES.anne.includes(f)) return f;
+  if(ANNE_ONE[set]) return ANNE_ONE[set];
   const ok = ANNE_FACES[set] || ANNE_FACES.anne; const g = ok.includes(f) ? f : (f === "surprised" ? "happy" : f === "angry" ? "sad" : "happy");
   return `${set}_${g}`;
 }
+const sprKey = k => (k && C() && C().spr && C().spr[k]) || k;
 const norm = n => Array.isArray(n) ? Object.assign({w:n[0], f:n[1], o:n[2], t:n[3]}, n[4] || {}) : n;
 function playScene(nodes, bg, stage, quest){ Q = nodes.map(norm); qi = 0; curBg = bg; curStage = stage; isQuest = quest; setBg(bg); show("place"); step(); }
 function setBg(k){ const el = $("bg"); el.style.backgroundImage = k ? `url(${IMG(k)})` : "none"; }
@@ -208,7 +210,7 @@ function step(){
   $("place").classList.toggle("dream", !!n.dream);
   stage(curStage);
   const sp = n.w === "anne" || n.w === "inner", nar = n.w === "nar" || !n.w;
-  setSpr($("sL"), still ? null : anneKey(n.f), !sp && !nar); setSpr($("sR"), still ? null : n.o, sp);
+  setSpr($("sL"), still ? null : anneKey(n.f), !sp && !nar); setSpr($("sR"), still ? null : sprKey(n.o), sp);
   $("place").classList.toggle("solo", !still && !!n.f && !n.o && !curStage);
   const who = $("who"), nm = n.as || WHO[n.w];
   who.className = "who " + (HEARTS[n.w] || n.w === "inner" ? n.w : n.w === "anne" ? "" : "other"); who.textContent = nm == null ? n.w : nm;
@@ -278,7 +280,7 @@ function runDuel(n){
   const d = n.duel; if(!d._s) d._s = {melt:0, turn:0, used:[]};
   const s = d._s, need = d.need || 5;
   $("duel").classList.add("on"); $("duelN").textContent = `${WHO[d.who]}의 마음`; $("duelBar").style.width = (s.melt / need * 100) + "%";
-  setBg(curBg); stage(curStage); setSpr($("sL"), anneKey(d.f || "sad"), true); setSpr($("sR"), d.o, false);
+  setBg(curBg); stage(curStage); setSpr($("sL"), anneKey(d.f || "sad"), true); setSpr($("sR"), sprKey(d.o), false);
   const who = $("who"); who.className = "who " + (HEARTS[d.who] ? d.who : "other"); who.textContent = WHO[d.who]; $("nx").hidden = true;
   $("txt").textContent = fill(s.turn === 0 ? d.open : s.last);
   const left = d.cards.filter((c, i) => !s.used.includes(i));
@@ -470,7 +472,7 @@ function testMenu(){
 /* ---------- 장 데이터 모양 ----------
 CH[n] = {
   title, when:"초여름", season:"spring|summer|autumn|winter", img:"장 시작 그림", bgm:"bgm_chN.mp3", walker:"지도 위를 걷는 꼬마 앤 그림(없으면 walk_anne)",
-  anne:"anne|anne_short|anne_grow", who:"하트를 보여 줄 인물",
+  anne:"anne|anne_short|anne_grow|anne_green|anne_grown"(할 일마다 quests[].anne 로 바꿀 수 있음), spr:{diana:"diana_grown"}(장마다 다른 인물 그림), who:"하트를 보여 줄 인물",
   intro:"장 시작 카드 글", teaser:"장 끝 다음 이야기 예고",
   end:{canon:["제목","설명"], imag:[...], bal:[...]},   // 결말 그림은 img/ed_chN_canon|imag|bal.webp
   names:["이 장에서 이름 짓는 장소 key"], minis:["이 장 미니게임 id"],

@@ -1,6 +1,6 @@
 /* 9장 · 불운한 백합 아가씨 (원작 28장) */
 CH[9] = {
-  title:"불운한 백합 아가씨", when:"한여름", season:"summer", img:"ch9", bgm:"bgm_ch9.mp3", anne:"anne_grow", walker:"walk_grow", who:"gilbert",
+  title:"불운한 백합 아가씨", when:"한여름", season:"summer", img:"ch9", bgm:"bgm_ch9.mp3", anne:"anne_grow", walker:"walk_short", who:"gilbert",
   intro:"열세 살 여름. 앤과 친구들은 연못에서 시 속 '백합 아가씨 일레인' 연극을 하기로 했어요. 앤이 배에 누워 물길을 따라 흘러가는 일레인 역을 맡았대요!",
   teaser:"시간은 흘러 앤은 열다섯 살. 퀸스 학교를 마치고 초록 지붕 집으로 돌아오는 앤 앞에, 생각지 못한 길모퉁이가 기다리고 있어요.",
   end:{canon:["조금은 간직하렴", "매슈 아저씨 말처럼 낭만을 조금은 간직하기로 했어요. 원작 속 앤처럼 한 뼘 자랐어요."],
