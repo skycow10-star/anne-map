@@ -30,11 +30,12 @@ CH[1] = {
     ["inner", "happy", "matthew", "아저씨 얼굴이 조금 당황한 것 같았어. 왜일까?\n그래도 괜찮아. 이제 초록 지붕 집으로 가는 거야!"]
   ]},
   {at:"avenue", label:"마차를 타고 가로수길로 가기", lock:{except:["station"], why:"매슈 아저씨 마차를 타고 가는 길이에요. 꽃길을 따라가요"}, nodes:[
-    {mini:{kind:"catch", id:"walk", title:"꽃길 산책", roll:true, bg:false, how:"마차를 타고 가는 길이에요. 날아오는 예쁜 것을 톡 눌러 잡아요. 20초 동안 많이 잡을수록 별이 늘어요.",
-      say:"마차에서 보이는 예쁜 것을 톡!", time:20, goal:[5, 10], top:[8, 44],
+    {mini:{kind:"catch", id:"walk", title:"꽃길 산책", roll:true, bg:false, how:"마차를 타고 가는 길이에요. 날아오는 예쁜 것을 톡 눌러 잡아요. 벌은 누르면 하나 줄어요! 20초 동안 많이 잡을수록 별이 늘어요.",
+      say:"마차에서 보이는 예쁜 것을 톡!", time:20, goal:[8, 13], top:[8, 44], every:800,
       items:[{img:"fl_apple", e:"🌸", say:"하얀 레이스 같아!"}, {img:"fl_cherry", e:"🌸", say:"벚꽃잎이 춤춰요!"}, {img:"fl_daffodil", e:"🌼", say:"수선화가 인사해요!"},
              {img:"fl_rose", e:"🌹", say:"들장미 향기!"}, {img:"fl_butterfly", e:"🦋", say:"나비야, 안녕!"}, {img:"fl_bird", e:"🐦", say:"파랑새다!"},
-             {img:"fl_dandelion", e:"🌼", say:"민들레 홀씨가 날아가요!"}, {img:"fl_violet", e:"💐", say:"보랏빛 제비꽃이에요!"}],
+             {img:"fl_dandelion", e:"🌼", say:"민들레 홀씨가 날아가요!"}, {img:"fl_violet", e:"💐", say:"보랏빛 제비꽃이에요!"},
+             {img:"fl_bee", e:"🐝", bad:1, say:"앗, 벌이에요! 하나 놓쳤어요"}, {img:"fl_bee", e:"🐝", bad:1, say:"벌은 건드리지 마요!"}],
       res:{1:"매슈 아저씨: \"글쎄다, 천천히 봐도 괜찮단다.\"", 2:"매슈 아저씨: \"너는 정말 말을 잘하는구나. 실컷 말하렴.\"", 3:"매슈 아저씨: \"글쎄다… 나도 이렇게 예쁜 길인 줄 처음 알았구나.\""}},
      good:[{eff:{h:{matthew:1}}}]},
     ["matthew", "dreamy", "matthew", "\"여기는 그냥 가로수길이라고들 부르지.\"", {still:"sc_matthewTalk"}],

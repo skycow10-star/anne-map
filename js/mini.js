@@ -122,29 +122,60 @@ MINI.find = (m, api) => {
   const stop = every(1000, () => { left--; msg(); if(left === (m.time || 40) - 20 && !hintUsed){ $("hh").disabled = false; $("hh").textContent = "힌트 한 번"; } if(left <= 0) done(); });
 };
 
-/* 물 퍼내기: time, rise(초당 %) */
+/* 물 퍼내기: time, rise(처음 초당 %), grow(끝날 때 몇 배로 빨리 새는지), scoop(한 번에 퍼내는 %) */
 MINI.bail = (m, api) => {
   let lv = 20, peak = 20, left = m.time || 20, over = false; const f = api.field;
   f.innerHTML = `<div class="water" id="wt" style="height:20%"></div><div class="mpanel" style="top:30%;background:rgba(255,251,242,.85)"><h3>${esc(m.q || "물을 퍼내요!")}</h3><button class="bigtap" id="bt">${esc(m.btn || "물 퍼내기")}</button></div>`;
   const msg = () => api.hud(`${m.say || "버텨요!"} · ${left}초 · 물 ${Math.round(lv)}%`); msg();
   $("bt").onclick = e => { e.stopPropagation(); lv = Math.max(0, lv - (m.scoop || 5)); };
-  const stopW = every(100, () => { if(over) return; lv = Math.min(100, lv + (m.rise || 5) / 10); peak = Math.max(peak, lv); const w = $("wt"); if(w) w.style.height = lv + "%"; if(lv >= 100) done(); });
+  const stopW = every(100, () => { if(over) return; const T = m.time || 20; lv = Math.min(100, lv + (m.rise || 5) * (1 + (T - left) / T * ((m.grow || 1.8) - 1)) / 10); peak = Math.max(peak, lv); const w = $("wt"); if(w) w.style.height = lv + "%"; if(lv >= 100) done(); });
   const stopT = every(1000, () => { left--; msg(); if(left <= 0) done(); });
   const done = () => { if(over) return; over = true; stopW(); stopT(); api.end(lv >= 100 ? 1 : peak < 70 ? 3 : 2, lv >= 100 ? (m.sink || "앗, 물이 너무 많아요!") : "끝까지 버텼어요!"); };
 };
 
-/* 따르기: n잔, 누르고 있다가 선에서 떼기 */
+/* 따르기: 크기가 다른 갈색 찻잔 3개에 빨간 주전자로 차례로 따른다. 꾹 누르면 주전자가 기울며 졸졸,
+   손을 떼도 주둥이에 남은 몇 방울이 더 떨어진다(drip). 금빛 띠 안에서 멈추면 성공.
+   cups:[{size(0.7~1.2), lo, hi, rate(%/초)}], q, btn, drip(ms) */
 MINI.pour = (m, api) => {
-  let c = 0, good = 0, lv = 0, h = null, wait = false; const n = m.n || 3;
-  const draw = () => { lv = 0; wait = false; const p = panel(api, `<h3>${esc(m.q || "선까지 따라요")} (${c + 1}/${n})</h3><div class="cup"><div class="ln" style="bottom:${m.lo || 70}%"></div><div class="ln" style="bottom:${m.hi || 90}%"></div><i id="cu" style="height:0"></i></div>
-      <button class="bigtap" id="pb">${esc(m.btn || "꾹 눌러 따르기")}</button>`);
-    api.hud(`${m.say || "초록 선 사이에서 손을 떼요"} · ${good}잔 성공`);
-    const b = $("pb"); const start = e => { e.preventDefault(); if(h) return; if(wait) return; h = setInterval(() => { const cu = $("cu"); if(!cu){ clearInterval(h); h = null; return; } lv += m.speed || 1.6; cu.style.height = Math.min(100, lv) + "%"; if(lv >= 104) stop(); }, 40); };
-    const stop = () => { if(!h) return; clearInterval(h); h = null; wait = true; const ok = lv >= (m.lo || 70) && lv <= (m.hi || 90); if(ok) good++;
-      popAt(api, innerWidth / 2 - 50, innerHeight * .25, ok ? (m.yes || "딱 좋아요!") : lv > (m.hi || 90) ? (m.over || "넘쳤어요!") : (m.less || "조금 모자라요")); c++;
-      setTimeout(() => c >= n ? api.end(good >= n ? 3 : good >= 1 ? 2 : 1, `${n}잔 중 ${good}잔을 잘 따랐어요.`) : draw(), 900); };
-    b.onpointerdown = start; b.onpointerup = stop; b.onpointerleave = stop; };
-  draw();
+  const cups = shuffle(m.cups || [{size:.72, lo:66, hi:84, rate:58}, {size:.95, lo:70, hi:86, rate:42}, {size:1.18, lo:72, hi:86, rate:32}]);
+  const n = cups.length, lv = cups.map(() => 0); let c = 0, good = 0, pouring = false, wait = true, drip = 0, over = false;
+  const CUP = (k, cp) => `<svg viewBox="0 0 130 104" class="tp-cup"><defs><clipPath id="tc${k}"><path d="M14 22H104Q102 80 59 92Q16 80 14 22Z"/></clipPath></defs>
+    <ellipse cx="59" cy="97" rx="56" ry="6" fill="#c9a77e" stroke="#7a5638" stroke-width="2.5"/>
+    <path d="M100 34c26-2 26 34-6 36" fill="none" stroke="#7a5638" stroke-width="8" stroke-linecap="round"/><path d="M100 34c26-2 26 34-6 36" fill="none" stroke="#a87b55" stroke-width="4" stroke-linecap="round"/>
+    <g clip-path="url(#tc${k})"><rect x="0" y="0" width="130" height="104" fill="#f6ead2"/><rect id="tl${k}" x="0" y="92" width="130" height="80" fill="#a8423a"/>
+      <rect x="0" y="${92 - cp.hi * .7}" width="130" height="${(cp.hi - cp.lo) * .7}" fill="#e6c25a" fill-opacity=".28"/>
+      <line x1="0" x2="130" y1="${92 - cp.hi * .7}" y2="${92 - cp.hi * .7}" stroke="#c49a2c" stroke-width="2" stroke-dasharray="5 4"/>
+      <line x1="0" x2="130" y1="${92 - cp.lo * .7}" y2="${92 - cp.lo * .7}" stroke="#c49a2c" stroke-width="2" stroke-dasharray="5 4"/></g>
+    <path d="M14 22H104Q102 80 59 92Q16 80 14 22Z" fill="#9a6a45" fill-opacity=".38" stroke="#6e4c32" stroke-width="3.5"/>
+    <path d="M24 40Q28 70 48 82" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="5" stroke-linecap="round"/>
+    <ellipse cx="59" cy="22" rx="45" ry="5" fill="none" stroke="#6e4c32" stroke-width="3"/></svg>`;
+  const POT = `<svg viewBox="0 0 150 110" class="tp-pot"><path d="M38 58Q10 50 4 30" fill="none" stroke="#7a3328" stroke-width="13" stroke-linecap="round"/><path d="M38 58Q10 50 4 30" fill="none" stroke="#b4483c" stroke-width="8" stroke-linecap="round"/>
+    <path d="M112 42c34 0 34 44 0 44" fill="none" stroke="#7a3328" stroke-width="10"/><ellipse cx="78" cy="66" rx="44" ry="38" fill="#b4483c" stroke="#7a3328" stroke-width="4"/>
+    <path d="M36 62q42 14 84 0" fill="none" stroke="#f3dcb4" stroke-width="9" stroke-opacity=".75"/><g fill="#f7e9cf"><circle cx="66" cy="68" r="3"/><circle cx="78" cy="70" r="3.5"/><circle cx="90" cy="68" r="3"/></g><path d="M60 44q6-6 12-2" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="5" stroke-linecap="round"/>
+    <path d="M52 30h52l-6-10H58Z" fill="#9c3d33" stroke="#7a3328" stroke-width="3"/><circle cx="78" cy="15" r="7" fill="#9c3d33" stroke="#7a3328" stroke-width="3"/>
+    <path d="M58 82Q66 96 60 100" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="5" stroke-linecap="round"/></svg>`;
+  api.field.innerHTML = `<div class="tp"><h3 class="tp-q">${esc(m.q || "다이애나의 잔 세 개를 채워요")}</h3><div class="tp-row">${cups.map((cp, k) =>
+      `<div class="tp-slot" id="ts${k}" style="--s:${cp.size}"><div class="tp-potbox">${POT}</div><i class="tp-stream"></i>${CUP(k, cp)}<b class="tp-mark"></b></div>`).join("")}</div>
+    <button class="bigtap" id="pb">${esc(m.btn || "꾹 눌러 따르기")}</button></div>`;
+  const slot = k => $("ts" + k), set = k => { const el = $("tl" + k); if(el) el.setAttribute("y", 92 - Math.min(104, lv[k]) * .7); };
+  const msg = () => api.hud(`${m.say || "금빛 띠 안에서 손을 떼요"} · ${Math.min(c + 1, n)}/${n}잔 · 성공 ${good}`);
+  const go = k => { [...api.field.querySelectorAll(".tp-slot")].forEach((s, j) => s.classList.toggle("on", j === k)); wait = false; msg(); };
+  const stop = every(40, () => { if(over || wait) return;
+    const cp = cups[c]; if(!cp) return;
+    if(pouring || drip > 0){ lv[c] += cp.rate * .04 * (pouring ? 1 : .55); if(!pouring) drip -= 40; set(c);
+      if(lv[c] >= 100){ lv[c] = 100; set(c); pouring = false; drip = 0; slot(c).classList.remove("pour"); slot(c).classList.add("spill"); judge(); }
+      else if(!pouring && drip <= 0) judge(); } });
+  const start = e => { e.preventDefault(); if(wait || pouring || over || drip > 0) return; pouring = true; slot(c).classList.add("pour"); };
+  const end = () => { if(!pouring) return; pouring = false; slot(c).classList.remove("pour"); drip = m.drip || 380; };
+  const judge = () => { wait = true; const cp = cups[c], v = lv[c], ok = v >= cp.lo && v <= cp.hi; if(ok) good++;
+    const r = slot(c).getBoundingClientRect(); slot(c).querySelector(".tp-mark").textContent = ok ? "♥" : v > cp.hi ? "넘침" : "조금";
+    slot(c).classList.add(ok ? "ok" : "no"); popAt(api, r.left + r.width / 2 - 50, r.top + 10, ok ? (m.yes || "딱 좋아요!") : v > cp.hi ? (m.over || "넘쳤어요!") : (m.less || "조금 모자라요"));
+    c++; msg(); setTimeout(() => { if(c >= n){ over = true; stop(); removeEventListener("keydown", kd); removeEventListener("keyup", ku);
+      api.end(good >= n ? 3 : good >= n - 1 ? 2 : 1, `${n}잔 중 ${good}잔을 잘 따랐어요.`); } else go(c); }, 1000); };
+  const b = $("pb"); b.onpointerdown = start; b.onpointerup = end; b.onpointerleave = end; b.onpointercancel = end;
+  const kd = e => { if(e.code === "Space" && !e.repeat) start(e); }, ku = e => { if(e.code === "Space") end(); };
+  addEventListener("keydown", kd); addEventListener("keyup", ku);
+  setTimeout(() => go(0), 200);
 };
 
 /* 박자 맞추기: 하트 표시가 분홍 리본 칸(움직이고 점점 작아짐)에 들어왔을 때 누르기.
@@ -185,7 +216,7 @@ MINI.pace = (m, api) => {
    baseImg(그림) 또는 base(이모지), items:[{img|e, t}], max */
 MINI.decorate = (m, api) => {
   const max = m.max || 8, f = api.field;
-  f.innerHTML = `<div class="dz-wrap"><div class="dz" id="dz">${m.baseImg ? `<img class="dz-base" src="${IMG(m.baseImg)}" alt="" draggable="false">` : `<div class="dz-base emo">${m.base || "👒"}</div>`}</div>
+  f.innerHTML = `<div class="dz-wrap"><div class="dz" id="dz">${m.baseImg ? `<img class="dz-base" src="${IMG(m.baseImg)}" alt="" draggable="false" onerror="this.outerHTML='<div class=&quot;dz-base emo&quot;>${m.base || "👒"}</div>'">` : `<div class="dz-base emo">${m.base || "👒"}</div>`}</div>
     <div class="dz-side"><p class="dz-q">${esc(m.q)}</p><div class="dz-tray" id="dt">${m.items.map((o, i) => `<button data-i="${i}" aria-label="${esc(o.t)}">${look(o)}<span>${esc(o.t)}</span></button>`).join("")}</div>
     <button class="bigtap" id="dd">${esc(m.btn || "다 됐어요")}</button></div></div>`;
   const dz = $("dz"); let n = 0;
@@ -274,24 +305,27 @@ MINI.slots = (m, api) => {
     setTimeout(() => { wrong.forEach((w, i) => { slots[i].classList.remove("no"); if(w) back(i); }); busy2 = false; }, 1100); };
 };
 
+/* 병 그림(찬장 병 찾기·케이크 만들기): 모양 round|tall|square|jug, 색 이름 또는 #색 */
+const BOTTLE_SHAPES = {
+  round:`<path d="M26 6h12v14c10 4 16 12 16 24 0 13-9 22-22 22S10 57 10 44c0-12 6-20 16-24Z"/>`,
+  tall:`<path d="M27 2h10v18c4 3 6 7 6 12v34H21V32c0-5 2-9 6-12Z"/>`,
+  square:`<path d="M27 6h10v8h8c3 0 5 2 5 5v47H14V19c0-3 2-5 5-5h8Z"/>`,
+  jug:`<path d="M24 8h16v8c8 4 12 12 12 22v28H12V38c0-10 4-18 12-22Z"/><path d="M50 26c9 0 9 18 0 18" fill="none" stroke-width="5"/>`
+  };
+const BOTTLE_COL = {red:"#b4483c", amber:"#c99a4a", green:"#7f9c6a", blue:"#7d9fb5", plum:"#8a6a8e", cream:"#e6d8b8"};
+const bottleSvg = b => `<svg viewBox="0 0 64 70" aria-hidden="true"><g fill="${BOTTLE_COL[b.c] || b.c}" stroke="#5a4030" stroke-width="2.5" stroke-linejoin="round">${BOTTLE_SHAPES[b.s]}</g>
+    <rect x="${b.s === "tall" ? 25 : 24}" y="${b.s === "tall" ? 0 : 3}" width="${b.s === "tall" ? 14 : 16}" height="7" rx="2" fill="#a67c52" stroke="#5a4030" stroke-width="2"/>
+    <path d="M20 40c0-6 3-10 7-12" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="4" stroke-linecap="round"/></svg>`;
+
 /* 찬장 병 찾기(기억력): 문이 잠깐 열려 찬장을 보여 준 뒤 닫히고, 다시 열리면 병이 뒤섞여 있다.
    '둘째 칸(shelf)의 빨간 병'을 모양까지 기억해서 골라야 한다. 빨간 병이 여러 개 섞여 헷갈림.
    peek(초, 함수도 됨), tries(기회), per(한 칸 병 수), say1(볼 때 말풍선) */
 MINI.shelf = (m, api) => {
   const per = m.per || 5, tries = m.tries || 3, SH = m.shelf ?? 1, NM = ["첫째", "둘째", "셋째"];
   const peek = (typeof m.peek === "function" ? m.peek() : m.peek) || 3;
-  const SHAPES = {
-    round:`<path d="M26 6h12v14c10 4 16 12 16 24 0 13-9 22-22 22S10 57 10 44c0-12 6-20 16-24Z"/>`,
-    tall:`<path d="M27 2h10v18c4 3 6 7 6 12v34H21V32c0-5 2-9 6-12Z"/>`,
-    square:`<path d="M27 6h10v8h8c3 0 5 2 5 5v47H14V19c0-3 2-5 5-5h8Z"/>`,
-    jug:`<path d="M24 8h16v8c8 4 12 12 12 22v28H12V38c0-10 4-18 12-22Z"/><path d="M50 26c9 0 9 18 0 18" fill="none" stroke-width="5"/>`
-  };
-  const COL = {red:"#b4483c", amber:"#c99a4a", green:"#7f9c6a", blue:"#7d9fb5", plum:"#8a6a8e", cream:"#e6d8b8"};
+  const SHAPES = BOTTLE_SHAPES, COL = BOTTLE_COL, svg = bottleSvg;
   const others = Object.keys(COL).filter(c => c !== "red"), kinds = Object.keys(SHAPES);
   const pickO = () => others[Math.random() * others.length | 0];
-  const svg = b => `<svg viewBox="0 0 64 70" aria-hidden="true"><g fill="${COL[b.c]}" stroke="#5a4030" stroke-width="2.5" stroke-linejoin="round">${SHAPES[b.s]}</g>
-    <rect x="${b.s === "tall" ? 25 : 24}" y="${b.s === "tall" ? 0 : 3}" width="${b.s === "tall" ? 14 : 16}" height="7" rx="2" fill="#a67c52" stroke="#5a4030" stroke-width="2"/>
-    <path d="M20 40c0-6 3-10 7-12" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="4" stroke-linecap="round"/></svg>`;
   const goal = kinds[Math.random() * kinds.length | 0], alt = shuffle(kinds.filter(k => k !== goal));
   // 처음 보여 주는 찬장: 둘째 칸에는 빨간 병이 '목표' 하나뿐. 다른 칸에는 다른 모양 빨간 병.
   const filler = (n, ban) => Array.from({length:n}, () => { let s; do s = kinds[Math.random() * kinds.length | 0]; while(ban && s === ban && Math.random() < .5); return {c:pickO(), s}; });
@@ -323,4 +357,45 @@ MINI.shelf = (m, api) => {
       setTimeout(() => api.end(1, "아주머니가 말씀하신 병은 이거였어요."), 1600); }, 700); return; }
     setTimeout(() => { door(false); api.hud("한 번 더 보여 줄게요"); setTimeout(() => show(first, Math.max(1.5, peek * .6), ask), 700 / FAST); }, 900); });
   setTimeout(() => show(first, peek, ask), 300);
+};
+
+/* 케이크 만들기: 요리책 순서대로 선반의 재료를 누른다. 하얀 통들은 생김새가 같아서 이름표를 읽어야 한다.
+   steps:[{t, n(누를 횟수)}], decoys:[이름], ask:{q, ok, no} 바닐라 차례에 묻는 질문 */
+MINI.recipe = (m, api) => {
+  const JAR = `<path d="M12 16h40v5c4 2 6 5 6 9v33c0 3-2 5-5 5H11c-3 0-5-2-5-5V30c0-4 2-7 6-9Z"/><rect x="10" y="8" width="44" height="9" rx="3" fill="#a67c52"/>`;
+  const LOOK = {
+    "밀가루":["jar", "#efe6d2"], "설탕":["jar", "#efe6d2"], "소금":["jar", "#efe6d2"], "비누 가루":["jar", "#efe6d2"], "베이킹소다":["jar", "#efe6d2"],
+    "달걀":["eggs"], "버터":["butter"], "우유":["jug", "#e9eef0"], "바닐라":["tall", "#7a5638"], "식초":["tall", "#c99a4a"], "후추":["square", "#5a4a3e"]
+  };
+  const draw = name => { const [k, c] = LOOK[name] || ["jar", "#efe6d2"];
+    if(k === "eggs") return `<svg viewBox="0 0 64 70"><ellipse cx="22" cy="38" rx="9" ry="12" fill="#f6ead6" stroke="#8a6a4a" stroke-width="2"/><ellipse cx="42" cy="38" rx="9" ry="12" fill="#f3e2c6" stroke="#8a6a4a" stroke-width="2"/><ellipse cx="32" cy="32" rx="9" ry="12" fill="#faf2e2" stroke="#8a6a4a" stroke-width="2"/>
+      <path d="M4 42h56l-6 22H10Z" fill="#b98a5a" stroke="#6e4c32" stroke-width="2.5"/><path d="M8 50h48M10 57h44" stroke="#8a6440" stroke-width="2"/></svg>`;
+    if(k === "butter") return `<svg viewBox="0 0 64 70"><ellipse cx="32" cy="58" rx="28" ry="8" fill="#e9dcc4" stroke="#7a5638" stroke-width="2.5"/><path d="M14 38l30-6 8 6v14l-30 6-8-6Z" fill="#f2d27a" stroke="#a8823a" stroke-width="2.5"/><path d="M14 38l8 6 30-6" fill="none" stroke="#a8823a" stroke-width="2"/></svg>`;
+    if(k === "jar") return `<svg viewBox="0 0 64 70"><g fill="${c}" stroke="#6e4c32" stroke-width="2.5" stroke-linejoin="round">${JAR}</g></svg>`;
+    return bottleSvg({c, s:k === "square" ? "square" : k === "jug" ? "jug" : "tall"}); };
+  const names = shuffle(m.steps.map(x => x.t).concat(m.decoys || []));
+  let k = 0, cnt = 0, miss = 0, asked = null, busy = false;
+  api.field.innerHTML = `<div class="rc"><div class="rc-left"><div class="rc-book"><b>${esc(m.book || "레이어 케이크 만드는 법")}</b><ol id="rcl">${m.steps.map((x, i) =>
+      `<li id="rs${i}">${esc(x.t)}${x.n > 1 ? ` ${x.n}개` : ""}</li>`).join("")}</ol></div>
+      <svg class="rc-bowl" viewBox="0 0 120 70"><clipPath id="rbc"><path d="M8 20h104Q108 64 60 66Q12 64 8 20Z"/></clipPath><g clip-path="url(#rbc)"><rect width="120" height="70" fill="#f8efe0"/><rect id="rbf" x="0" y="66" width="120" height="60" fill="#ecd9a8"/></g>
+      <path d="M8 20h104Q108 64 60 66Q12 64 8 20Z" fill="none" stroke="#6e4c32" stroke-width="3.5"/><ellipse cx="60" cy="20" rx="52" ry="6" fill="none" stroke="#6e4c32" stroke-width="3"/></svg></div>
+    <div class="rc-shelf">${names.map((nm, i) => `<button class="rc-it" data-n="${esc(nm)}">${draw(nm)}<span>${esc(nm)}</span></button>`).join("")}</div></div>`;
+  const msg = () => api.hud(`${m.say || "요리책 순서대로 재료를 눌러요"} · ${Math.min(k + 1, m.steps.length)}/${m.steps.length}${m.steps[k] && m.steps[k].n > 1 ? ` · ${cnt}/${m.steps[k].n}개` : ""}`);
+  const mark = () => { m.steps.forEach((x, i) => { const li = $("rs" + i); li.classList.toggle("done", i < k); li.classList.toggle("now", i === k); });
+    $("rbf").setAttribute("y", 66 - k / m.steps.length * 44); msg(); };
+  const finish = () => { const st = (miss === 0 ? 3 : miss <= 2 ? 2 : 1) - (asked === false && miss === 0 ? 1 : 0);
+    setTimeout(() => api.end(Math.max(1, st), miss === 0 ? "재료를 하나도 안 틀렸어요!" : `${miss}번 헷갈렸지만 다 넣었어요.`), 700); };
+  const askNow = after => { busy = true; const box = document.createElement("div"); box.className = "mpanel rc-ask";
+    box.innerHTML = `<h3>${esc(m.ask.q)}</h3><div class="chips"><button data-a="1">${esc(m.ask.ok)}</button><button data-a="0">${esc(m.ask.no)}</button></div>`;
+    api.field.appendChild(box);
+    box.querySelectorAll("button").forEach(b => b.onclick = e => { e.stopPropagation(); asked = b.dataset.a === "1"; box.remove(); busy = false;
+      popAt(api, innerWidth / 2 - 90, innerHeight * .3, asked ? (m.ask.yes || "모를 땐 여쭤보기!") : (m.ask.nope || "이름표만 믿고 넣었어요…")); after(); }); };
+  api.field.querySelectorAll(".rc-it").forEach(b => b.onclick = e => { if(busy || k >= m.steps.length) return;
+    const nm = b.dataset.n, want = m.steps[k];
+    if(nm !== want.t){ miss++; b.classList.remove("no"); void b.offsetWidth; b.classList.add("no");
+      popAt(api, e.clientX - 60, e.clientY - 70, want.n > 1 && cnt > 0 ? `${want.t} ${want.n}개를 먼저 다 넣어요` : m.steps.some(x => x.t === nm) ? "요리책 순서가 아니에요" : "요리책에 없는 재료예요"); return; }
+    const go = () => { cnt++; b.classList.remove("ok"); void b.offsetWidth; b.classList.add("ok"); popAt(api, e.clientX - 30, e.clientY - 70, want.n > 1 ? `${cnt}개!` : "넣었어요!");
+      if(cnt >= (want.n || 1)){ k++; cnt = 0; } mark(); if(k >= m.steps.length) finish(); };
+    if(want.ask && m.ask && asked === null) askNow(go); else go(); });
+  mark();
 };
