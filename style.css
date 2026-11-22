@@ -349,6 +349,49 @@ html,body{position:fixed;inset:0;width:100%;height:100%;overscroll-behavior:none
 .tRow{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:3px 0}.tRow b{width:38px}
 .tRow button{background:#f3ecd6;border:1px solid #c9b48a;border-radius:8px;padding:3px 8px;font-size:12px;min-height:28px}
 
+/* 숨은그림 찾기 */
+.hf-board{position:absolute;inset:0 calc(min(24%,220px) + 10px) 0 0;cursor:pointer}
+.hf-it{position:absolute;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:2.4vw;filter:saturate(.8) sepia(.12);cursor:pointer}
+.hf-it img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+.hf-it.got{mix-blend-mode:normal;filter:drop-shadow(0 0 6px #fff) drop-shadow(0 0 3px #e7b84a);opacity:1!important;animation:boompop .4s}
+.hf-it.got::after{content:"";position:absolute;inset:-25%;border:3px solid #e7b84a;border-radius:50%}
+.hf-it.show:not(.got){opacity:1!important;mix-blend-mode:normal;outline:3px dashed #c8552f;border-radius:50%}
+.hf-it.hint{animation:hintblink .5s 5;mix-blend-mode:normal}
+@keyframes hintblink{50%{filter:drop-shadow(0 0 14px #fff) drop-shadow(0 0 8px #e7b84a);opacity:1}}
+.hf-it.nope{animation:shake .3s}
+.hf-miss{position:fixed;z-index:60;width:26px;height:26px;margin:-13px 0 0 -13px;border:3px solid rgba(255,255,255,.8);border-radius:50%;pointer-events:none;animation:up .5s forwards}
+.hf-list{position:absolute;right:max(8px,var(--sr));top:56px;bottom:8px;width:min(24%,220px);background:rgba(255,251,242,.95);border:2px solid var(--line);border-radius:16px;padding:8px;display:flex;flex-direction:column;gap:4px;overflow:auto}
+.hf-list>b{font-family:"Jua",sans-serif;font-weight:400;text-align:center;font-size:16px}
+.hf-row{display:flex;align-items:center;gap:6px;font-size:14px;padding:2px 4px;border-radius:8px}
+.hf-row img{width:34px;height:34px;object-fit:contain}.hf-row span{flex:1}.hf-row em{font-style:normal;font-size:12px;color:var(--ink2)}
+.hf-row.done{background:#eaf5e6;text-decoration:line-through;color:#7a9a70}
+.hf-hint{margin-top:auto;background:#fff6dc;border:2px solid #e7b84a;border-radius:999px;padding:4px;font-size:13px}.hf-hint:disabled{opacity:.45}
+@media (orientation:landscape) and (max-height:520px){.hf-list{top:44px;padding:5px;gap:1px}.hf-row{font-size:12px}.hf-row img{width:24px;height:24px}.hf-list>b{font-size:13px}}
+
+/* 눈길 달리기 */
+.rn-pad{position:absolute;z-index:9;right:max(12px,var(--sr));bottom:12px;display:flex;flex-direction:column;gap:10px}
+.rn-pad button{width:64px;height:64px;border-radius:50%;border:3px solid #fff;background:rgba(80,110,150,.55);color:#fff;font-size:26px;box-shadow:0 4px 10px rgba(0,0,0,.3);touch-action:none;user-select:none}
+.rn-pad button:active{transform:scale(.92);background:rgba(60,90,130,.9)}
+.rn-en{position:absolute;z-index:9;right:max(12px,var(--sr));top:52px;background:rgba(255,251,242,.92);border:2px solid var(--line);border-radius:999px;padding:3px 12px;display:flex;align-items:center;gap:3px;font-size:20px}
+.rn-en b{font-family:"Jua",sans-serif;font-weight:400;font-size:14px;margin-right:4px}.rn-en i{font-style:normal;color:#ddd}.rn-en i.on{color:#d9645c}
+.ob.good{color:#e0556f;font-size:40px;text-shadow:0 0 10px #fff,0 0 4px #fff;animation-name:fly,pulse}
+@keyframes pulse{50%{scale:1.2}}
+.runner.ouch{animation:shake .3s}
+@media (orientation:landscape) and (max-height:520px){.rn-pad button{width:52px;height:52px;font-size:22px}.rn-pad{gap:8px;bottom:8px}.rn-en{top:44px;font-size:16px}}
+
+/* 순서 카드 놓기 */
+.mpanel.sl-panel{width:min(900px,96%)}
+.sl-row{display:flex;gap:10px;justify-content:center;margin:6px 0 12px}
+.sl-slot{position:relative;width:min(19%,150px);aspect-ratio:3/4;border:3px dashed #c9a56f;border-radius:14px;background:#fff8ea;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s}
+.sl-slot>em{position:absolute;top:4px;left:8px;font-style:normal;font-family:"Jua",sans-serif;font-size:20px;color:#c9a56f}
+.sl-slot.ok{border-style:solid;border-color:var(--green);background:#eaf5e6}.sl-slot.no{border-style:solid;border-color:#d9645c;background:#fbe9e6;animation:shake .3s}
+.sl-hand{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.sl-card{width:min(12.5%,104px);aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:#fff;border:2px solid #e0cdb0;border-radius:12px;padding:4px;font-size:12px;line-height:1.2;word-break:keep-all;box-shadow:0 3px 0 #e0cdb0;font-size:clamp(10px,1.3vw,13px)}
+.sl-card img{width:80%;aspect-ratio:1;object-fit:contain}.sl-card{font-size:clamp(10px,1.3vw,13px)}.sl-card::first-line{font-size:min(5vw,38px)}
+.sl-card.used{visibility:hidden}
+.sl-slot .sl-card{width:88%;height:88%;box-shadow:none;border-color:#c9a56f}
+@media (orientation:landscape) and (max-height:520px){.sl-row{margin:2px 0 6px;gap:8px}.sl-slot{width:min(14%,92px)}.sl-hand{gap:5px}.sl-card{width:min(11%,78px)}.mpanel.sl-panel h3{font-size:14px}}
+
 /* 가로 모드 전용: 세로로 든 휴대폰·태블릿에서는 돌려 달라는 안내 */
 #rotate{display:none;position:fixed;inset:0;z-index:9999;background:#f6ecd6;color:#5a3d2b;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px;font-family:"Jua",sans-serif}
 #rotate .ph{width:64px;height:104px;border:5px solid #b5523b;border-radius:14px;position:relative;animation:turn 2.4s ease-in-out infinite}

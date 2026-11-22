@@ -10,9 +10,11 @@ CH[4] = {
   quests:[
   {at:"birch", label:"다이애나와 학교 가는 길 걷기", nodes:[
     ["diana", "happy", "diana", "\"앤, 이 길로 가면 학교가 금방이야.\n내가 제일 좋아하는 길이야!\""],
-    {mini:{kind:"find", id:"path", title:"숲길 등굣길", how:"하얀 자작나무 숲길에 숨은 것들을 찾아요. 제비꽃, 새, 다람쥐를 모두 찾아 톡 눌러요.",
-      say:"숲속에 숨은 것을 찾아요", time:30,
-      things:[{e:"🌸", n:3, say:"제비꽃이야!"}, {e:"🐦", n:2, say:"작은 새!"}, {e:"🐿️", n:2, say:"다람쥐다!"}, {e:"🍄", n:1, say:"버섯 집!"}],
+    {mini:{kind:"find", id:"path", title:"숲길 등굣길", bg:"ch4_birch", how:"하얀 자작나무 숲에 숲속 친구들이 숨어 있어요. 오른쪽 목록에 있는 것만 찾아 톡 눌러요. 목록에 없는 걸 누르면 3초가 줄어요! 20초가 지나면 힌트를 한 번 쓸 수 있어요.",
+      say:"숲속에 숨은 것을 찾아요", time:40, size:4.4, hide:.22,
+      things:[{img:"hf_violet", e:"🪻", name:"제비꽃", n:3, say:"제비꽃이야!"}, {img:"fl_butterfly", e:"🦋", name:"나비", n:2, say:"나비다!"},
+              {img:"fl_bird", e:"🐦", name:"파랑새", n:2, say:"파랑새!"}, {img:"hf_fern", e:"🌿", name:"고사리", n:2, say:"고사리 잎!"}, {img:"fl_dandelion", e:"🌼", name:"민들레 홀씨", n:1, say:"후— 불어 볼까?"}],
+      fakes:[{img:"hf_daisy", e:"🌼"}, {img:"hf_buttercup", e:"🌼"}, {img:"hf_forgetmenot", e:"💠"}, {img:"fl_rose", e:"🌹"}, {img:"hf_clover", e:"🌺"}],
       res:{1:"천천히 걸어도 괜찮아요. 길은 도망가지 않으니까요.", 2:"숲속 친구들을 많이 만났어요!", 3:"다이애나: \"앤, 너는 숲의 비밀을 다 아는 것 같아!\""}},
      good:[{eff:{h:{diana:1}}}]},
     ["inner", "dreamy", "diana", "하얀 자작나무가 양쪽에 줄지어 선 길이었어.\n햇빛이 잎 사이로 금가루처럼 쏟아졌어."],

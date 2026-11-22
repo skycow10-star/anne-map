@@ -94,17 +94,32 @@ MINI.pick = (m, api) => {
   draw();
 };
 
-/* 숨은 것 찾기: things:[{e|img, n:개수}], time */
+/* 숨은그림 찾기: 그림(bg) 속에 작고 흐리게 섞인 것들을 찾는다. 오른쪽에 찾을 것 목록.
+   things:[{img|e, name, n}], fakes:[{img|e}] (목록에 없는 가짜, 누르면 -3초), time, size(화면 너비 %), hide(0~1 흐림 정도) */
 MINI.find = (m, api) => {
-  let left = m.time || 30, got = 0; const total = m.things.reduce((a, t) => a + (t.n || 1), 0), f = api.field;
-  m.things.forEach(t => { for(let i = 0; i < (t.n || 1); i++){ const s = document.createElement("div"); s.className = "spot"; s.innerHTML = look(t);
-    s.style.left = rnd(4, 90) + "%"; s.style.top = rnd(22, 80) + "%"; s.style.fontSize = rnd(26, 36) + "px"; s.style.opacity = rnd(.6, .9);
-    s.querySelector("img") && (s.querySelector("img").style.cssText = "width:44px;height:44px;object-fit:contain");
-    s.onclick = e => { e.stopPropagation(); if(s.classList.contains("got")) return; s.classList.add("got"); got++; popAt(api, e.clientX, e.clientY, t.say || "찾았다!"); msg(); if(got >= total) done(); };
-    f.appendChild(s); } });
+  let left = m.time || 40, got = 0, over = false, hintUsed = false; const f = api.field;
+  const total = m.things.reduce((a, t) => a + (t.n || 1), 0), sz = m.size || 4.2, hide = m.hide ?? .35;
+  f.innerHTML = `<div class="hf-board" id="hb"></div><div class="hf-list"><b>찾을 것</b>${m.things.map((t, i) =>
+      `<div class="hf-row" id="hr${i}">${look(t)}<span>${esc(t.name)}</span><em id="hc${i}">0/${t.n || 1}</em></div>`).join("")}
+    <button class="hf-hint" id="hh" disabled>힌트 (20초 뒤)</button></div>`;
+  const hb = $("hb"), cnt = m.things.map(() => 0), used = [];
+  const spot = () => { for(let k = 0; k < 60; k++){ const x = 3 + Math.random() * 90, y = 16 + Math.random() * 74;
+      if(used.every(([a, b]) => Math.hypot(a - x, (b - y) * .55) > sz * 1.5)){ used.push([x, y]); return [x, y]; } } return [Math.random() * 90, 20 + Math.random() * 70]; };
+  const put = (t, cls) => { const [x, y] = spot(), d = document.createElement("div"); d.className = "hf-it " + cls; d.innerHTML = look(t);
+    d.style.cssText = `left:${x}%;top:${y}%;width:max(${(sz * (0.8 + Math.random() * .45)).toFixed(2)}%, ${28 + Math.random() * 8 | 0}px);transform:translate(-50%,-50%) rotate(${(Math.random() * 70 - 35) | 0}deg) scaleX(${Math.random() < .5 ? -1 : 1});opacity:${(1 - hide * (0.6 + Math.random() * .6)).toFixed(2)}`;
+    hb.appendChild(d); return d; };
+  m.things.forEach((t, i) => { for(let k = 0; k < (t.n || 1); k++){ const d = put(t, "real"); d.onclick = e => { e.stopPropagation(); if(over || d.classList.contains("got")) return;
+    d.classList.add("got"); got++; cnt[i]++; $("hc" + i).textContent = `${cnt[i]}/${t.n || 1}`; if(cnt[i] >= (t.n || 1)) $("hr" + i).classList.add("done");
+    popAt(api, e.clientX - 30, e.clientY - 60, t.say || "찾았다!"); msg(); if(got >= total) done(); }; } });
+  (m.fakes || []).forEach(t => { const d = put(t, "fake"); d.onclick = e => { e.stopPropagation(); if(over) return; left = Math.max(1, left - 3); d.classList.add("nope"); setTimeout(() => d.classList.remove("nope"), 500);
+    popAt(api, e.clientX - 30, e.clientY - 60, "목록에 없어요! -3초"); msg(); }; });
+  hb.onclick = e => { if(over) return; const r = document.createElement("span"); r.className = "hf-miss"; r.style.left = e.clientX + "px"; r.style.top = e.clientY + "px"; document.body.appendChild(r); setTimeout(() => r.remove(), 500); };
+  $("hh").onclick = () => { if(hintUsed) return; hintUsed = true; $("hh").disabled = true; $("hh").textContent = "힌트 다 썼어요";
+    const t = [...hb.querySelectorAll(".hf-it.real:not(.got)")][0]; if(t){ t.classList.add("hint"); setTimeout(() => t.classList.remove("hint"), 2500); } };
   const msg = () => api.hud(`${m.say || "숨은 것을 찾아요"} · ${left}초 · ${got}/${total}`); msg();
-  let over = false; const done = () => { if(over) return; over = true; stop(); setTimeout(() => api.end(got >= total ? 3 : got >= total / 2 ? 2 : 1, `${total}개 중 ${got}개를 찾았어요.`), 500); };
-  const stop = every(1000, () => { left--; msg(); if(left <= 0) done(); });
+  const done = () => { if(over) return; over = true; stop(); hb.querySelectorAll(".hf-it.real:not(.got)").forEach(d => d.classList.add("show"));
+    setTimeout(() => api.end(got >= total ? (hintUsed ? 2 : 3) : got >= total * .6 ? 2 : 1, `${total}개 중 ${got}개를 찾았어요.`), 1300); };
+  const stop = every(1000, () => { left--; msg(); if(left === (m.time || 40) - 20 && !hintUsed){ $("hh").disabled = false; $("hh").textContent = "힌트 한 번"; } if(left <= 0) done(); });
 };
 
 /* 물 퍼내기: time, rise(초당 %) */
@@ -201,18 +216,60 @@ MINI.decorate = (m, api) => {
     api.end(n >= Math.min(5, max) ? 3 : n >= 2 ? 2 : 1, n ? `${[...new Set(put)].join(", ")}(으)로 꾸몄어요.` : "아무것도 안 달았어요."); };
 };
 
-/* 달리기: 위·가운데·아래 길 바꾸며 피하기. time, obs:[e] */
+/* 눈길 달리기: ▲▼ 단추로 세 길을 오가며 장애물 피하기. 에너지(하트 5칸), 하트를 먹으면 회복.
+   뒤로 갈수록 빨라지고 장애물이 많아진다. time, obs:[이모지], goods:[이모지] */
 MINI.run = (m, api) => {
-  let lane = 1, hit = 0, left = m.time || 20, over = false; const f = api.field;
-  f.innerHTML = `<div class="lane" style="top:22%"></div><div class="lane" style="top:44%"></div><div class="lane" style="top:66%;border:0"></div><div class="runner" id="rn" style="background-image:url(${IMG((quest() && quest().walker) || (C() && C().walker) || "walk_anne")})"></div>
-    <div style="position:absolute;inset:22% 0 0 0;display:flex;flex-direction:column;z-index:7"><button class="zt" data-d="-1" style="flex:1;opacity:0">위로</button><button class="zt" data-d="1" style="flex:1;opacity:0">아래로</button></div>`;
+  let lane = 1, energy = 5, hit = 0, ate = 0, left = m.time || 35, over = false, t0 = 0; const f = api.field, T = m.time || 35;
+  f.innerHTML = `<div class="lane" style="top:22%"></div><div class="lane" style="top:44%"></div><div class="lane" style="top:66%;border:0"></div>
+    <div class="runner" id="rn" style="background-image:url(${IMG((quest() && quest().walker) || (C() && C().walker) || "walk_anne")})"></div>
+    <div class="rn-en" id="en"></div>
+    <div class="rn-pad"><button id="rUp" aria-label="위로">▲</button><button id="rDn" aria-label="아래로">▼</button></div>`;
   const place = () => { $("rn").style.top = `calc(${22 + lane * 22 + 11}% - 32px)`; }; place();
-  f.querySelectorAll(".zt").forEach(b => b.onclick = e => { e.stopPropagation(); lane = Math.max(0, Math.min(2, lane + +b.dataset.d)); place(); });
-  const msg = () => api.hud(`${m.say || "위·아래를 눌러 피해요"} · ${left}초 · 부딪힘 ${hit}`); msg();
-  const stopS = every(m.every || 1100, () => { const L = Math.random() * 3 | 0, o = document.createElement("div"); o.className = "ob"; o.textContent = m.obs[Math.random() * m.obs.length | 0];
-    o.style.left = "100vw"; o.style.top = `calc(${22 + L * 22 + 11}% - 24px)`; o.style.animationDuration = (m.speed || 3.2) + "s"; o.dataset.l = L; f.appendChild(o);
-    o.addEventListener("animationend", () => o.remove()); });
-  const stopC = every(60, () => { const r = $("rn"); if(!r) return; const rb = r.getBoundingClientRect();
-    f.querySelectorAll(".ob").forEach(o => { if(o.dataset.hit) return; const b = o.getBoundingClientRect(); if(+o.dataset.l === lane && b.left < rb.right - 14 && b.right > rb.left + 14){ o.dataset.hit = 1; o.style.opacity = .3; hit++; msg(); popAt(api, rb.left + 40, rb.top - 30, m.ouch || "아야!"); } }); });
-  const stopT = every(1000, () => { left--; msg(); if(left <= 0 && !over){ over = true; stopS(); stopC(); stopT(); api.end(hit === 0 ? 3 : hit <= 3 ? 2 : 1, hit === 0 ? "한 번도 안 부딪혔어요!" : `${hit}번 부딪혔지만 도착했어요.`); } });
+  const mv = d => { if(over) return; lane = Math.max(0, Math.min(2, lane + d)); place(); };
+  $("rUp").onpointerdown = e => { e.preventDefault(); e.stopPropagation(); mv(-1); };
+  $("rDn").onpointerdown = e => { e.preventDefault(); e.stopPropagation(); mv(1); };
+  const key = e => { if(e.key === "ArrowUp") mv(-1); if(e.key === "ArrowDown") mv(1); }; addEventListener("keydown", key);
+  const bar = () => { $("en").innerHTML = "<b>힘</b>" + Array.from({length:5}, (_, i) => `<i class="${i < energy ? "on" : ""}">♥</i>`).join(""); };
+  const msg = () => api.hud(`${m.say || "▲▼로 길을 바꿔요"} · ${left}초`); bar(); msg();
+  const level = () => 1 + (T - left) / T * 1.2;     // 1 → 2.2배
+  let spawnT = 0;
+  const stopS = every(100, () => { if(over) return; spawnT += 100 * level();
+    if(spawnT < (m.every || 1100)) return; spawnT = 0;
+    const good = Math.random() < (energy < 3 ? .22 : .12), L = Math.random() * 3 | 0, o = document.createElement("div");
+    o.className = "ob" + (good ? " good" : ""); o.textContent = good ? (m.goods || ["♥"])[Math.random() * (m.goods || ["♥"]).length | 0] : m.obs[Math.random() * m.obs.length | 0];
+    o.style.left = "100vw"; o.style.top = `calc(${22 + L * 22 + 11}% - 24px)`; o.style.animationDuration = ((m.speed || 3.4) / level()).toFixed(2) + "s"; o.dataset.l = L; f.appendChild(o);
+    o.addEventListener("animationend", () => o.remove());
+    if(level() > 1.6 && !good && Math.random() < .35){ const o2 = o.cloneNode(true); o2.dataset.l = (L + 1 + (Math.random() * 2 | 0)) % 3; o2.style.top = `calc(${22 + o2.dataset.l * 22 + 11}% - 24px)`; f.appendChild(o2); o2.addEventListener("animationend", () => o2.remove()); } });
+  const stopC = every(50, () => { const r = $("rn"); if(!r || over) return; const rb = r.getBoundingClientRect();
+    f.querySelectorAll(".ob").forEach(o => { if(o.dataset.hit) return; const b = o.getBoundingClientRect();
+      if(+o.dataset.l === lane && b.left < rb.right - 12 && b.right > rb.left + 12){ o.dataset.hit = 1;
+        if(o.classList.contains("good")){ o.remove(); if(energy < 5) energy++; ate++; popAt(api, rb.left + 30, rb.top - 30, m.yum || "따뜻해!"); }
+        else { o.style.opacity = .3; energy--; hit++; r.classList.remove("ouch"); void r.offsetWidth; r.classList.add("ouch"); popAt(api, rb.left + 30, rb.top - 30, m.ouch || "아야!"); }
+        bar(); if(energy <= 0) end(); } }); });
+  const stopT = every(1000, () => { if(over) return; left--; msg(); if(left <= 0) end(); });
+  const end = () => { if(over) return; over = true; stopS(); stopC(); stopT(); removeEventListener("keydown", key);
+    setTimeout(() => api.end(energy <= 0 ? 1 : energy >= 4 ? 3 : 2, energy <= 0 ? `힘이 다 떨어졌어요. 그래도 ${T - left}초나 달렸어요!` : `힘 ${energy}칸을 남기고 도착했어요! 하트 ${ate}개를 먹었어요.`), 600); };
+};
+
+/* 순서 카드 놓기: 그림 카드를 1번~N번 칸에 차례로 놓고, 다 채우면 맞는지 확인.
+   steps:[{t, img|e}] (맞는 순서), decoys:[{t, img|e}] (엉뚱한 카드). 카드를 누르면 빈 칸으로, 칸의 카드를 누르면 되돌아옴 */
+MINI.slots = (m, api) => {
+  const n = m.steps.length; let miss = 0, busy2 = false;
+  const cards = shuffle(m.steps.map((c, i) => Object.assign({k:i}, c)).concat((m.decoys || []).map(c => Object.assign({k:-1}, c))));
+  const p = panel(api, `<h3>${esc(m.q)}</h3><div class="sl-row" id="sr">${Array.from({length:n}, (_, i) => `<div class="sl-slot" data-s="${i}"><em>${i + 1}</em></div>`).join("")}</div>
+    <div class="sl-hand" id="sh">${cards.map((c, j) => `<button class="sl-card" data-j="${j}">${look(c)}<span>${esc(c.t)}</span></button>`).join("")}</div>`);
+  p.classList.add("sl-panel");
+  const slots = [...p.querySelectorAll(".sl-slot")], fill = Array(n).fill(null);
+  const msg = () => api.hud(`${m.say || "카드를 순서대로 놓아요"} · ${fill.filter(x => x !== null).length}/${n}`); msg();
+  const back = i => { const j = fill[i]; if(j === null) return; fill[i] = null; slots[i].querySelector(".sl-card")?.remove(); p.querySelector(`#sh [data-j="${j}"]`).classList.remove("used"); msg(); };
+  slots.forEach((sl, i) => sl.onclick = () => { if(!busy2) back(i); });
+  p.querySelectorAll("#sh .sl-card").forEach(b => b.onclick = () => { if(busy2 || b.classList.contains("used")) return;
+    const i = fill.indexOf(null); if(i < 0) return; const j = +b.dataset.j; fill[i] = j; b.classList.add("used");
+    const c = b.cloneNode(true); c.classList.remove("used"); slots[i].appendChild(c); msg();
+    if(fill.every(x => x !== null)) check(); });
+  const check = () => { busy2 = true; const wrong = fill.map((j, i) => cards[j].k !== i);
+    if(!wrong.some(Boolean)){ slots.forEach(s => s.classList.add("ok")); setTimeout(() => api.end(miss === 0 ? 3 : miss <= 2 ? 2 : 1, miss === 0 ? "한 번에 맞혔어요!" : `${miss}번 고쳐서 해냈어요.`), 900); return; }
+    miss++; wrong.forEach((w, i) => w && slots[i].classList.add("no"));
+    popAt(api, innerWidth / 2 - 80, innerHeight * .25, m.no || "순서가 조금 달라요. 다시 생각해 봐요");
+    setTimeout(() => { wrong.forEach((w, i) => { slots[i].classList.remove("no"); if(w) back(i); }); busy2 = false; }, 1100); };
 };
