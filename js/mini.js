@@ -27,20 +27,33 @@ MINI.catch = (m, api) => {
 
 /* 화 꾹 참기: 날아오는 말을 눌러 흘려보낸다. 앤에게 닿으면 화 게이지가 오른다. words:[] */
 MINI.calm = (m, api) => {
-  let anger = 0, peak = 0, sent = 0, left = m.words.length; const f = api.field;
+  // flood:true 이면 마지막에 말이 쏟아져 결국 "펑!" 터진다(원작대로). 별은 앞부분에서 참은 만큼.
+  let anger = 0, peak = 0, sent = 0, left = m.words.length, phase = 1; const f = api.field;
   f.innerHTML = `<div class="mpanel" style="top:auto;bottom:4%;transform:translateX(-50%);padding:8px 14px"><b>${m.gauge || "화 게이지"}</b><div class="meter"><i id="cg" style="width:0"></i></div></div>`;
-  const msg = () => api.hud(`${m.say || "말을 눌러 흘려보내요!"} · 남은 말 ${left}`); msg();
-  const words = shuffle(m.words); let i = 0, over = false;
-  const finish = () => { if(over) return; over = true; stopS(); stopD(); setTimeout(() => api.end(anger >= 100 ? 1 : peak < 45 ? 3 : 2, anger >= 100 ? (m.boom || "펑! 참지 못했어요.") : `${sent}개의 말을 흘려보냈어요.`), 600); };
-  const stopS = every(m.every || 1500, () => {
-    if(i >= words.length) return; const w = words[i++], d = document.createElement("div");
-    d.className = "thing"; d.style.cssText = `left:100vw;top:${rnd(16, 52)}%;width:auto;height:auto;font-size:18px;font-family:'Gowun Batang',serif;font-weight:700;background:#fff;border:2px solid #d9645c;border-radius:14px;padding:6px 12px;white-space:nowrap;animation-duration:${rnd(4.5, 5.5)}s`;
+  const msg = () => api.hud(phase === 2 ? (m.floodSay || "말이 쏟아져요!") : `${m.say || "말을 눌러 흘려보내요!"} · 남은 말 ${left}`); msg();
+  const words = shuffle(m.words); let i = 0, over = false, stopF = () => {};
+  const bar = () => { const cg = $("cg"); if(cg) cg.style.width = anger + "%"; };
+  const bubble = (w, dur) => { const d = document.createElement("div");
+    d.className = "thing"; d.style.cssText = `left:100vw;top:${rnd(14, 58)}%;width:auto;height:auto;font-size:18px;font-family:'Gowun Batang',serif;font-weight:700;background:#fff;border:2px solid #d9645c;border-radius:14px;padding:6px 12px;white-space:nowrap;animation-duration:${dur}s`;
     d.textContent = w;
-    d.onclick = e => { e.stopPropagation(); sent++; left--; popAt(api, e.clientX, e.clientY, m.ok || "후—"); d.remove(); msg(); if(left <= 0) finish(); };
-    d.addEventListener("animationend", () => { d.remove(); left--; anger = Math.min(100, anger + (m.hit || 30)); peak = Math.max(peak, anger); const cg = $("cg"); if(cg) cg.style.width = anger + "%"; msg(); if(anger >= 100 || left <= 0) finish(); });
-    f.appendChild(d);
-  });
-  const stopD = every(400, () => { if(over) return; anger = Math.max(0, anger - 1); const cg = $("cg"); if(cg) cg.style.width = anger + "%"; });
+    d.onclick = e => { e.stopPropagation(); popAt(api, e.clientX, e.clientY, phase === 2 ? "너무 많아!" : (m.ok || "후—")); d.remove(); if(phase === 1){ sent++; left--; msg(); if(left <= 0) next(); } };
+    d.addEventListener("animationend", () => { d.remove(); anger = Math.min(100, anger + (phase === 2 ? 14 : (m.hit || 30))); if(phase === 1){ peak = Math.max(peak, anger); left--; } bar(); msg();
+      if(anger >= 100) boom(); else if(phase === 1 && left <= 0) next(); });
+    f.appendChild(d); };
+  const stars = () => phase === 1 && anger >= 100 && !m.flood ? 1 : peak < 45 ? 3 : peak < 100 ? 2 : 1;
+  const finish = text => { if(over) return; over = true; stopS(); stopD(); stopF(); setTimeout(() => api.end(stars(), text), 900); };
+  const next = () => { if(!m.flood){ finish(`${sent}개의 말을 흘려보냈어요.`); return; }
+    if(phase === 2) return; phase = 2; stopS(); msg();
+    const flood = shuffle((m.floodWords || m.words).concat(m.floodWords || m.words)); let k = 0;
+    stopF = every(230, () => { if(k < flood.length){ bubble(flood[k++], rnd(2.2, 3)); anger = Math.min(99, anger + 4); bar(); } else if(k++ > flood.length + 6) boom(); }); };
+  const boom = () => { if(over) return;
+    if(m.flood && phase === 1){ next(); return; }
+    anger = 100; bar(); f.querySelectorAll(".thing").forEach(t => t.remove());
+    const mini = $("mini"); mini.classList.remove("boom"); void mini.offsetWidth; mini.classList.add("boom");
+    f.insertAdjacentHTML("beforeend", `<div class="boomtxt">${esc(m.boomWord || "펑!")}</div>`);
+    finish(m.flood ? `${m.boom || "결국 화가 터져 버렸어요."} 그래도 앞에서 ${sent}개의 말을 꾹 참았어요.` : (m.boom || "펑! 참지 못했어요.")); };
+  const stopS = every(m.every || 1500, () => { if(i < words.length) bubble(words[i++], rnd(4.5, 5.5)); });
+  const stopD = every(400, () => { if(over || phase === 2) return; anger = Math.max(0, anger - 1); bar(); });
 };
 
 /* 순서 맞추기: q, steps:[맞는 순서] */

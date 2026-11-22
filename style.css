@@ -76,6 +76,12 @@ button{font:inherit;cursor:pointer;color:inherit}
 .thing{position:absolute;width:74px;height:74px;cursor:pointer;animation:fly linear forwards;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25));display:flex;align-items:center;justify-content:center;font-size:54px;line-height:1;user-select:none}
 .thing img{width:100%;height:100%;object-fit:contain}
 @keyframes fly{from{transform:translateX(0)}to{transform:translateX(-130vw)}}
+#mini.boom{animation:quake .6s}
+#mini.boom::after{content:"";position:absolute;inset:0;background:rgba(230,70,50,.35);animation:flash .9s forwards;pointer-events:none;z-index:14}
+@keyframes quake{10%,50%,90%{transform:translate(-8px,3px)}30%,70%{transform:translate(8px,-3px)}}
+@keyframes flash{to{opacity:0}}
+.boomtxt{position:absolute;z-index:16;left:50%;top:40%;transform:translate(-50%,-50%);font-family:"Gowun Batang",serif;font-weight:700;font-size:min(22vh,110px);color:#c8552f;-webkit-text-stroke:3px #fff;animation:boompop .6s ease-out}
+@keyframes boompop{from{transform:translate(-50%,-50%) scale(.3);opacity:0}}
 .pop{position:absolute;z-index:15;font-family:"Gowun Batang",serif;font-weight:700;background:#fffaf1;border:2px solid var(--line);border-radius:14px;padding:4px 12px;font-size:15px;white-space:nowrap;animation:up 1.2s forwards;pointer-events:none}
 @keyframes up{to{transform:translateY(-50px);opacity:0}}
 .mpanel{position:absolute;z-index:12;left:50%;top:52%;transform:translate(-50%,-50%);width:min(760px,94%);max-height:76%;overflow:auto;background:rgba(255,251,242,.96);border:2px solid var(--line);border-radius:18px;padding:16px;text-align:center;box-shadow:0 8px 24px rgba(40,25,10,.25)}
