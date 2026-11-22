@@ -273,3 +273,54 @@ MINI.slots = (m, api) => {
     popAt(api, innerWidth / 2 - 80, innerHeight * .25, m.no || "순서가 조금 달라요. 다시 생각해 봐요");
     setTimeout(() => { wrong.forEach((w, i) => { slots[i].classList.remove("no"); if(w) back(i); }); busy2 = false; }, 1100); };
 };
+
+/* 찬장 병 찾기(기억력): 문이 잠깐 열려 찬장을 보여 준 뒤 닫히고, 다시 열리면 병이 뒤섞여 있다.
+   '둘째 칸(shelf)의 빨간 병'을 모양까지 기억해서 골라야 한다. 빨간 병이 여러 개 섞여 헷갈림.
+   peek(초, 함수도 됨), tries(기회), per(한 칸 병 수), say1(볼 때 말풍선) */
+MINI.shelf = (m, api) => {
+  const per = m.per || 5, tries = m.tries || 3, SH = m.shelf ?? 1, NM = ["첫째", "둘째", "셋째"];
+  const peek = (typeof m.peek === "function" ? m.peek() : m.peek) || 3;
+  const SHAPES = {
+    round:`<path d="M26 6h12v14c10 4 16 12 16 24 0 13-9 22-22 22S10 57 10 44c0-12 6-20 16-24Z"/>`,
+    tall:`<path d="M27 2h10v18c4 3 6 7 6 12v34H21V32c0-5 2-9 6-12Z"/>`,
+    square:`<path d="M27 6h10v8h8c3 0 5 2 5 5v47H14V19c0-3 2-5 5-5h8Z"/>`,
+    jug:`<path d="M24 8h16v8c8 4 12 12 12 22v28H12V38c0-10 4-18 12-22Z"/><path d="M50 26c9 0 9 18 0 18" fill="none" stroke-width="5"/>`
+  };
+  const COL = {red:"#b4483c", amber:"#c99a4a", green:"#7f9c6a", blue:"#7d9fb5", plum:"#8a6a8e", cream:"#e6d8b8"};
+  const others = Object.keys(COL).filter(c => c !== "red"), kinds = Object.keys(SHAPES);
+  const pickO = () => others[Math.random() * others.length | 0];
+  const svg = b => `<svg viewBox="0 0 64 70" aria-hidden="true"><g fill="${COL[b.c]}" stroke="#5a4030" stroke-width="2.5" stroke-linejoin="round">${SHAPES[b.s]}</g>
+    <rect x="${b.s === "tall" ? 25 : 24}" y="${b.s === "tall" ? 0 : 3}" width="${b.s === "tall" ? 14 : 16}" height="7" rx="2" fill="#a67c52" stroke="#5a4030" stroke-width="2"/>
+    <path d="M20 40c0-6 3-10 7-12" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="4" stroke-linecap="round"/></svg>`;
+  const goal = kinds[Math.random() * kinds.length | 0], alt = shuffle(kinds.filter(k => k !== goal));
+  // 처음 보여 주는 찬장: 둘째 칸에는 빨간 병이 '목표' 하나뿐. 다른 칸에는 다른 모양 빨간 병.
+  const filler = (n, ban) => Array.from({length:n}, () => { let s; do s = kinds[Math.random() * kinds.length | 0]; while(ban && s === ban && Math.random() < .5); return {c:pickO(), s}; });
+  const first = [0, 1, 2].map(i => shuffle(i === SH ? [{c:"red", s:goal, goal:1}].concat(filler(per - 1)) : [{c:"red", s:alt[i % alt.length]}].concat(filler(per - 1))));
+  // 다시 열면: 둘째 칸에 빨간 병 2개(목표 + 다른 모양), 다른 칸에도 목표와 같은 모양 빨간 병.
+  const mixed = () => { const fake = [0, 1, 2].filter(i => i !== SH)[Math.random() * 2 | 0];
+    return [0, 1, 2].map(i => { let row = i === SH ? [{c:"red", s:goal, goal:1}, {c:"red", s:alt[0]}] : i === fake ? [{c:"red", s:goal}] : [{c:"red", s:alt[1]}];
+      return shuffle(row.concat(filler(per - row.length))); }); };
+  const f = api.field; let miss = 0, busy = true, over = false, stopP = () => {};
+  f.innerHTML = `<div class="cb-wrap"><div class="cb-say" id="cbs">${esc(m.say1 || "거실 찬장 둘째 칸, 빨간 병이란다.")}</div>
+    <div class="cb" id="cb">${[0, 1, 2].map(i => `<div class="cb-row"><em>${NM[i]} 칸</em><div class="cb-bs" id="cr${i}"></div></div>`).join("")}
+    <div class="cb-door l"></div><div class="cb-door r"></div></div></div>`;
+  const cb = $("cb"), door = open => cb.classList.toggle("shut", !open);
+  const fillRows = rows => rows.forEach((row, i) => { $("cr" + i).innerHTML = row.map((b, j) =>
+    `<button class="cb-b" data-i="${i}" data-j="${j}" aria-label="${NM[i]} 칸 병">${svg(b)}</button>`).join(""); });
+  let cur = first;
+  const show = (rows, sec, then) => { cur = rows; fillRows(rows); door(true); $("cbs").classList.add("on"); let t = sec * 10;
+    api.hud(`잘 봐 두세요 · ${Math.ceil(t / 10)}`);
+    stopP = every(100, () => { t--; if(t > 0){ api.hud(`잘 봐 두세요 · ${Math.ceil(t / 10)}`); return; }
+      stopP(); door(false); $("cbs").classList.remove("on"); api.hud("찬장 문이 닫혀요…"); setTimeout(then, 900 / FAST); }); };
+  const ask = () => { fillRows(cur = mixed()); door(true); busy = false; api.hud(`${m.say || "아주머니가 말씀하신 병을 골라요"} · 기회 ${tries - miss}번`); };
+  f.querySelectorAll(".cb-bs").forEach(row => row.onclick = e => { const b = e.target.closest(".cb-b"); if(!b || busy || over) return;
+    const i = +b.dataset.i, o = cur[i][+b.dataset.j];
+    if(o.goal){ over = true; b.classList.add("ok"); popAt(api, e.clientX - 40, e.clientY - 80, m.yes || "이 병이에요!");
+      setTimeout(() => api.end(miss === 0 ? 3 : miss === 1 ? 2 : 1, miss === 0 ? "한 번에 찾았어요!" : `${miss}번 헷갈렸지만 찾았어요.`), 1100); return; }
+    miss++; busy = true; b.classList.add("no");
+    popAt(api, e.clientX - 60, e.clientY - 80, o.c !== "red" ? "빨간 병이 아니에요" : i !== SH ? `여긴 ${NM[i]} 칸이에요` : "아까 본 모양과 달라요");
+    if(miss >= tries){ over = true; setTimeout(() => { const g = cb.querySelector(`#cr${SH} .cb-b:nth-child(${cur[SH].findIndex(x => x.goal) + 1})`); if(g) g.classList.add("hint");
+      setTimeout(() => api.end(1, "아주머니가 말씀하신 병은 이거였어요."), 1600); }, 700); return; }
+    setTimeout(() => { door(false); api.hud("한 번 더 보여 줄게요"); setTimeout(() => show(first, Math.max(1.5, peek * .6), ask), 700 / FAST); }, 900); });
+  setTimeout(() => show(first, peek, ask), 300);
+};
