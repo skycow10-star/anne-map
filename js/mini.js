@@ -131,18 +131,38 @@ MINI.pour = (m, api) => {
   draw();
 };
 
-/* 박자 맞추기: 움직이는 표시가 초록 칸에 들어왔을 때 누르기. n번, zone 너비 % */
+/* 박자 맞추기: 하트 표시가 분홍 리본 칸(움직이고 점점 작아짐)에 들어왔을 때 누르기.
+   n번 성공, zone 처음 너비 %, speed 처음 속도. 성공할 때마다 칸이 작아지고 빨라짐 */
 MINI.pace = (m, api) => {
-  let ok = 0, miss = 0, x = 0, dir = 1, k = 0; const n = m.n || 5;
-  const lines = m.lines || [];
-  panel(api, `<h3 id="pl">${esc(lines[0] || m.q || "초록 칸에서 눌러요")}</h3><div class="meter"><div class="zone" id="pz"></div><div class="mk" id="pm"></div></div><button class="bigtap" id="pt">${esc(m.btn || "지금!")}</button>`);
-  const zone = () => { const w = m.zone || 22, s = rnd(10, 90 - w); const z = $("pz"); z.style.left = s + "%"; z.style.width = w + "%"; z.dataset.s = s; z.dataset.w = w; };
-  zone(); const msg = () => api.hud(`${m.say || "박자를 맞춰요"} · ${ok}/${n}`); msg();
-  const stop = every(30, () => { x += dir * (m.speed || 1.4); if(x >= 100){ x = 100; dir = -1; } if(x <= 0){ x = 0; dir = 1; } const pm = $("pm"); if(pm) pm.style.left = x + "%"; });
-  $("pt").onclick = e => { e.stopPropagation(); const z = $("pz"), s = +z.dataset.s, w = +z.dataset.w;
-    if(x >= s && x <= s + w){ ok++; k++; popAt(api, e.clientX, e.clientY - 60, m.yes || "좋아요!"); if(lines[k]) $("pl").textContent = lines[k]; zone(); }
-    else { miss++; popAt(api, e.clientX, e.clientY - 60, m.no || "앗, 조금만 더!"); }
-    msg(); if(ok >= n){ stop(); setTimeout(() => api.end(miss === 0 ? 3 : miss <= 3 ? 2 : 1, miss === 0 ? "한 번도 안 틀렸어요!" : `${miss}번 빗나갔지만 해냈어요.`), 500); } };
+  let ok = 0, miss = 0, x = 0, dir = 1, k = 0, zs = 0, zw = m.zone || 16, zd = 1, sp = m.speed || 1.4, lock = false;
+  const n = m.n || 5, lines = m.lines || [];
+  panel(api, `<h3 id="pl">${esc(lines[0] || m.q || "분홍 칸에서 눌러요")}</h3>
+    <div class="pg"><div class="pg-zone" id="pz"><i>♥</i></div><div class="pg-mk" id="pm">♥</div></div>
+    <div class="pg-dots" id="pd">${Array.from({length:n}, () => "<i>♡</i>").join("")}</div>
+    <button class="bigtap pink" id="pt">${esc(m.btn || "지금!")}</button>`);
+  const pz = $("pz"), pm = $("pm"), pd = $("pd");
+  const newZone = () => { zw = Math.max(m.minZone || 7, (m.zone || 16) - ok * 2.2); zs = 8 + Math.random() * (84 - zw); zd = Math.random() < .5 ? -1 : 1; };
+  newZone(); const msg = () => api.hud(`${m.say || "박자를 맞춰요"} · ${ok}/${n}`); msg();
+  const stop = every(30, () => {
+    x += dir * sp; if(x >= 100){ x = 100; dir = -1; } if(x <= 0){ x = 0; dir = 1; }
+    zs += zd * (m.drift || .25) * (1 + ok * .25); if(zs <= 2){ zs = 2; zd = 1; } if(zs + zw >= 98){ zs = 98 - zw; zd = -1; }   // 칸도 이리저리
+    if(pm) pm.style.left = x + "%"; if(pz){ pz.style.left = zs + "%"; pz.style.width = zw + "%"; }
+  });
+  const burst = (good) => { const r = (good ? pz : pm).getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const fx = good ? ["♥", "✿", "♥", "❀", "♥", "✦", "♥", "✿"] : ["·", "·", "·"];
+    fx.forEach((c, i) => { const s = document.createElement("span"); s.className = "pg-fx" + (good ? "" : " bad"); s.textContent = c;
+      const a = (i / fx.length) * Math.PI * 2, d = good ? 70 + Math.random() * 40 : 24;
+      s.style.left = cx + "px"; s.style.top = cy + "px"; s.style.setProperty("--dx", Math.cos(a) * d + "px"); s.style.setProperty("--dy", Math.sin(a) * d - (good ? 20 : 0) + "px");
+      document.body.appendChild(s); setTimeout(() => s.remove(), 900); });
+    if(good){ pz.classList.remove("hit"); void pz.offsetWidth; pz.classList.add("hit"); }
+    else { const g = pz.parentElement; g.classList.remove("miss"); void g.offsetWidth; g.classList.add("miss"); } };
+  $("pt").onclick = e => { e.stopPropagation(); if(lock) return;
+    if(x >= zs - 1 && x <= zs + zw + 1){
+      burst(true); ok++; k++; pd.children[ok - 1].textContent = "♥"; pd.children[ok - 1].classList.add("on");
+      popAt(api, e.clientX - 30, e.clientY - 80, m.yes || "딱 맞아요!"); if(lines[k]) $("pl").textContent = lines[k];
+      sp = (m.speed || 1.4) * (1 + ok * .18); lock = true; setTimeout(() => { lock = false; newZone(); }, 260);
+    } else { burst(false); miss++; popAt(api, e.clientX - 30, e.clientY - 80, m.no || "앗, 조금만 더!"); }
+    msg(); if(ok >= n){ stop(); setTimeout(() => api.end(miss === 0 ? 3 : miss <= 3 ? 2 : 1, miss === 0 ? "한 번도 안 틀렸어요!" : `${miss}번 빗나갔지만 해냈어요.`), 700); } };
 };
 
 /* 꾸미기: 바구니의 꽃을 끌어서 큰 그림(baseImg) 위 원하는 곳에 놓기. 놓은 것도 다시 끌어 옮기거나 밖으로 빼기.
