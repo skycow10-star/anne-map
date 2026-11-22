@@ -11,7 +11,7 @@ const P = {
   station:{name:"브라이트 리버 역", x:255, y:700, bg:"ch1", bgW:"ch6_snow", from:1, say:["기차역이야. 여기서 매슈 아저씨를 처음 만났지."]},
   avenue:{name:"꽃이 핀 가로수길", x:395, y:560, bg:"ch1_avenue", bgW:"ch6_snow", from:1, say:["'{avenue}'. 언제 와도 마음이 하얘져.", "꽃잎 터널 아래를 걸으면 공주가 된 기분이야."]},
   pond:{name:"배리 씨네 연못", x:515, y:430, bg:"ch1_pond", bgW:"ch6_snow", from:1, say:["'{pond}'. 물결이 오늘도 반짝반짝해."]},
-  home:{name:"초록 지붕 집", x:405, y:300, bg:"ch1_home", from:1, say:["초록 지붕 집. 이제 진짜 내 집이야.", "다락방 창문에서 벚나무가 손을 흔들어."]},
+  home:{name:"초록 지붕 집", x:405, y:300, bg:"ch1_home", bgS:{summer:"ch8_porch", autumn:"ch10_home", winter:"home_winter"}, from:1, say:["초록 지붕 집. 이제 진짜 내 집이야.", "다락방 창문에서 벚나무가 손을 흔들어."]},
   lynde:{name:"린드 부인 집", x:205, y:520, bg:"ch2_lynde", from:2, say:["린드 부인은 오늘도 창가에서 길을 지켜보고 계실 거야.", "린드 부인의 정원은 늘 반듯반듯해."]},
   lane:{name:"연인의 오솔길", x:1090, y:430, bg:"ch2_lane", bgW:"ch6_snow", from:2, say:["'{lane}'. 나무들이 소곤소곤 이야기하는 길이야."]},
   barry:{name:"배리 씨네 집", x:800, y:240, bg:"ch3", from:3, say:["다이애나네 집이야. 창문에 불이 켜져 있으면 괜히 기뻐져."]},
@@ -172,11 +172,11 @@ function go(k){
   const pts = S.at && P[S.at] && S.at !== k ? route(S.at, k) : null;
   const arrive = () => { S.at = k; saveS(); drawMap();
   setTimeout(() => { busy = false;
-    if(q && q.at === k) playScene(q.nodes, q.bg || p.bg, q.stage, true);
+    if(q && q.at === k) playScene(q.nodes, q.bg || placeBg(k), q.stage, true);
     else { const own = typeof SAY !== "undefined" && SAY[S.ch] && SAY[S.ch][k];
       const lines = p.say || ["여기도 좋은 곳이야."];
       const first = own ? own : [{w:"inner", f:"happy", t:lines[Math.random() * lines.length | 0]}];
-      playScene([...first, ...(q ? [{w:"inner", f:"dreamy", t:`이제 할 일을 하러 가 볼까?\n「${fill(q.label)}」`}] : [])], (C().season === "winter" && P[k].bgW) || p.bg, null, false); }
+      playScene([...first, ...(q ? [{w:"inner", f:"dreamy", t:`이제 할 일을 하러 가 볼까?\n「${fill(q.label)}」`}] : [])], placeBg(k), null, false); }
   }, 350); };
   if(pts) walk(pts, arrive); else arrive();
 }
@@ -254,6 +254,8 @@ function endScene(){
 }
 
 /* ---------- 미니게임 연결 ---------- */
+/* 장소 배경: 그 장의 계절 배경(bgS) > 겨울 배경(bgW) > 기본 */
+const placeBg = k => { const p = P[k], se = C() && C().season; return (p.bgS && p.bgS[se]) || (se === "winter" && p.bgW) || p.bg; };
 function runMini(n){
   const m = n.mini; show("mini"); $("hudT").textContent = "미니게임 · " + m.title;
   const mini = $("mini"); mini.style.backgroundImage = m.bg === false ? "none" : `url(${IMG(m.bg || curBg)})`; mini.classList.toggle("roll", !!m.roll);

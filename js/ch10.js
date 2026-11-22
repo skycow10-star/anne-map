@@ -63,7 +63,7 @@ CH[10] = {
     ["inner", "happy", "lynde", "린드 아주머니께 인사드리고, 다른 고마운 분들도 떠올려 봤어.", {when:() => (S.hearts.lynde || 0) >= 2}],
     ["diana", "happy", "diana", "\"앤, 네가 에이번리에 남는다니 세상에서 제일 기뻐!\n우리 다시 날마다 만날 수 있어!\"", {bg:"ch3", when:() => (S.hearts.diana || 0) >= 3}],
     ["allan", "happy", "allan", "\"앤, 네가 고른 길도 분명 아름다운 길일 거야.\"", {bg:"ch7_garden", when:() => (S.met.allan && (S.hearts.allan || 0) >= 2)}],
-    ["barry", "happy", "barry", "\"미니 메이가 앤 언니 언제 오냐고 날마다 묻는단다.\"", {bg:"ch6_barry", when:() => (S.hearts.barry || 0) >= 3}],
+    ["barry", "happy", "barry", "\"미니 메이가 앤 언니 언제 오냐고 날마다 묻는단다.\"", {bg:"ch3", when:() => (S.hearts.barry || 0) >= 3}],
     ["inner", "happy", null, "에이번리에는 고마운 사람들이 참 많아.\n처음 기차역에 혼자 앉아 있던 날엔 상상도 못 했어."]
   ]},
   {at:"hill", label:"길모퉁이 언덕에 올라가기", nodes:[
