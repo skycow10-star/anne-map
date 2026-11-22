@@ -61,7 +61,7 @@ CH[2] = {
       {t:"\"생각해 보니 저도 잘못한 게 있어요.\"", type:"bal", eff:{hid:"biggerPerson", h:{marilla:1}}, then:[["anne", "sad", "matthew", "\"화가 났어도 소리 지르면 안 됐어요.\n더 큰 사람이 되어 볼게요.\""]]}
     ]}
   ]},
-  {at:"lynde", label:"린드 부인께 사과하러 가기", nodes:[
+  {at:"lynde", label:"린드 부인께 사과하러 가기", lock:{except:["home"], why:"린드 부인께 사과하기 전에는 놀러 갈 수 없어요"}, nodes:[
     ["inner", "sad", "marilla_strict", "마릴라 아주머니와 린드 부인 댁으로 갔어.\n가는 내내 무슨 말을 할지 생각했어."],
     {duel:{id:"lynde", who:"lynde", o:"lynde", f:"sad", need:5, turns:4,
       open:"\"그래, 무슨 일로 왔니?\"\n린드 부인은 팔짱을 끼고 나를 내려다보셨어.",

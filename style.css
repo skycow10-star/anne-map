@@ -24,6 +24,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 #map .mw{position:absolute;inset:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}#map .mw::-webkit-scrollbar{display:none}
 #map svg{display:block;height:100%;width:auto;aspect-ratio:16/9;min-width:100%}
 .pin{cursor:pointer}.pin .dot{transition:transform .2s}
+.pin.unknown{opacity:.55}.pin.blocked{opacity:.8}
 .pin.new .dot{animation:bob 1s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-10px)}}
 #season{mix-blend-mode:multiply;transition:opacity .6s}

@@ -117,14 +117,18 @@ function seasonPaint(){
 function drawMap(){
   seasonPaint();
   const q = quest(), target = q ? q.at : null;
-  const open = Object.entries(P).filter(([k, p]) => p.from <= S.ch || S.over);
+  const known = (k) => P[k].from <= S.ch || S.over;
+  const open = Object.entries(P);
   $("pins").innerHTML = open.map(([k, p]) => {
-    const cur = k === target;
+    const cur = k === target, lk = !known(k) ? "unknown" : blocked(k) ? "blocked" : "";
+    if(lk) return `<g class="pin ${lk}" data-k="${k}" transform="translate(${p.x} ${p.y})" tabindex="0" role="button" aria-label="${lk === "unknown" ? "아직 모르는 곳" : "지금은 갈 수 없는 곳"}">
+      <g class="dot"><path d="M0 0C-24-28-28-44-28-55A28 28 0 0 1 28-55C28-44 24-28 0 0Z" fill="#9a8a78" stroke="#fff" stroke-width="4"/>
+      <rect x="-10" y="-58" width="20" height="16" rx="3" fill="#fff"/><path d="M-6-58v-5a6 6 0 0 1 12 0v5" stroke="#fff" stroke-width="3.5" fill="none"/></g></g>`;
     return `<g class="pin ${cur ? "new" : ""}" data-k="${k}" transform="translate(${p.x} ${p.y})" tabindex="0" role="button" aria-label="${esc(S.names[k] || p.name)}">
       <g class="dot"><path d="M0 0C-24-28-28-44-28-55A28 28 0 0 1 28-55C28-44 24-28 0 0Z" fill="${cur ? "#c8552f" : "#6b8a4e"}" stroke="#fff" stroke-width="4"/>
       <text y="-45" text-anchor="middle" font-size="28" fill="#fff" font-weight="700">${cur ? "!" : "·"}</text></g></g>`;
   }).join("");
-  $("names").innerHTML = open.map(([k, p]) => `<text x="${p.x}" y="${p.y + 36}" font-size="${k === target ? 28 : 22}">${esc(S.names[k] || p.name)}</text>`).join("");
+  $("names").innerHTML = open.map(([k, p]) => `<text x="${p.x}" y="${p.y + 36}" font-size="${k === target ? 28 : 22}" opacity="${known(k) ? (blocked(k) ? .6 : 1) : .55}">${known(k) ? esc(S.names[k] || p.name) : "???"}</text>`).join("");
   const at = P[S.at] || P.station; if(!walking){ $("me").setAttribute("transform", `translate(${at.x + 40} ${at.y + 6})`); $("meBody").setAttribute("transform", ""); }
   $("trail").setAttribute("d", "");
   $("guide").setAttribute("d", target && target !== S.at && P[S.at] ? pathD(route(S.at, target)) : "");
@@ -152,8 +156,13 @@ function walk(pts, done){
     if(f < 1) requestAnimationFrame(tick); else { walking = false; done(); } };
   requestAnimationFrame(tick);
 }
+/* 이야기 때문에 잠깐 못 가는 곳: 지금 할 일의 lock:{only:[장소], except:[장소], why:"이유"} */
+function blocked(k){ const q = quest(), L = q && q.lock; if(!L || k === q.at) return false;
+  if(L.only) return L.only.includes(k); if(L.except) return !L.except.includes(k); return false; }
 function go(k){
-  if(busy) return; const p = P[k], q = quest(); busy = true;
+  if(busy) return;
+  if(!(P[k].from <= S.ch || S.over)){ toast(`아직 가 본 적 없는 곳이에요. ${P[k].from}장에서 열려요`); return; }
+  if(blocked(k)){ toast(quest().lock.why); return; } const p = P[k], q = quest(); busy = true;
   const pts = S.at && P[S.at] && S.at !== k ? route(S.at, k) : null;
   const arrive = () => { S.at = k; saveS(); drawMap();
   setTimeout(() => { busy = false;
@@ -376,7 +385,7 @@ CH[n] = {
   intro:"장 시작 카드 글", teaser:"장 끝 다음 이야기 예고",
   end:{canon:["제목","설명"], imag:[...], bal:[...]},   // 결말 그림은 img/ed_chN_canon|imag|bal.webp
   names:["이 장에서 이름 짓는 장소 key"], minis:["이 장 미니게임 id"],
-  quests:[{at:"장소 key", label:"할 일", bg:"배경", stage:{l:[x,바닥,키], r:[...]}, nodes:[...]}]
+  quests:[{at:"장소 key", label:"할 일", bg:"배경", walker:"걷는 앤", lock:{only|except:[장소], why:"잠긴 이유"}, stage:{l:[x,바닥,키], r:[...]}, nodes:[...]}]
 }
 대사 노드: [말하는사람, 앤표정, 오른쪽인물그림, "대사", {덧붙임}]   예) ["marilla","sad","marilla_strict","앤, 방으로 올라가거라."]
   앤 표정은 happy|dreamy|surprised|sad|angry (장의 anne 그림 묶음에 맞춰 바뀜)
