@@ -416,8 +416,11 @@ const GAME = {boot(){
     $("coverMore").innerHTML = `<button id="bAlbum">나의 앨범</button><button id="bPick">장 고르기</button><button id="bNew">처음부터</button>`;
     $("bAlbum").onclick = () => album(1);
     $("bPick").onclick = chapterPick; $("bNew").onclick = () => { if(confirmNew()) restart(); }; }
-  $("bStart").onclick = () => { $("cover").classList.remove("on"); if(started) note(`${S.ch}장 · ${C().title}에서 이어서 해요`); hud();
+  $("bStart").onclick = () => { $("cover").classList.remove("on"); hud();
     if(!started){ chapterIntro(); return; }
+    // 장의 할 일을 다 끝내고 '다음 장으로'를 누르기 전에 나갔으면, 장 끝 화면부터 다시 보여 줌
+    if(!S.over && S.qi >= C().quests.length){ music(); chapterEnd(); return; }
+    note(`${S.ch}장 · ${C().title}에서 이어서 해요`);
     music(); show("map"); drawMap(); };
   if(location.hash === "#test") window.__S = () => S;
 }};
