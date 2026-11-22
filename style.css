@@ -207,7 +207,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 #ch .opts button{background:#fff;border:2.5px solid #d6bf95;color:#2a1c10;font-size:16px;box-shadow:0 2px 0 #d6bf95}
 #ch .opts button:hover,#ch .opts button:focus-visible{border-color:var(--red);background:#fff6ee}
 #txt:has(+ #ch .opts){font-family:"Gowun Batang",serif;font-weight:700;min-height:0;margin-bottom:2px}
-#mini.roll .thing{width:64px;height:64px;filter:saturate(.7) sepia(.18) brightness(1.04) drop-shadow(0 3px 5px rgba(80,40,20,.25));opacity:.93}
+#mini.roll .thing{width:72px;height:72px;filter:drop-shadow(0 2px 4px rgba(80,40,20,.25))}
 @media (orientation:landscape) and (max-height:520px){
  .txt{font-size:17px;line-height:1.55;min-height:3.1em}
  .box{padding:15px 14px 6px}
