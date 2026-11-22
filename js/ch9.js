@@ -8,7 +8,7 @@ CH[9] = {
        bal:["새 평저선을 위한 약속", "모두에게 미안하고 고마운 마음을 전했어요. 책임감 있는 선택이에요."]},
   names:[], minis:["boat", "bail"],
   quests:[
-  {at:"pond", label:"친구들과 연못에서 연극 준비하기", bg:"ch9", nodes:[
+  {at:"barry", label:"다이애나네 배터에서 연극 준비하기", bg:"ch9", nodes:[
     ["diana", "happy", "diana", "\"앤, 네가 일레인을 해. 너처럼 용감한 애가 배에 누워야 해.\""],
     ["anne", "sad", "diana", "\"하지만 일레인은 금발인데… 빨간 머리 일레인이 어디 있어?\""],
     ["diana", "happy", "diana", "\"네 머리는 이제 예전보다 훨씬 진해졌어. 적갈색이야!\""],
@@ -35,9 +35,8 @@ CH[9] = {
       {t:"이를 악물고 조용히 버티며 누가 오기를 기다린다.", type:"canon", then:[["inner", "sad", null, "팔이 아프고 무서웠어.\n일 분이 한 시간 같았지."]]},
       {t:"\"사람 살려요!\" 하고 크게 외친다.", type:"bal", then:[["anne", "surprised", null, "\"여기요! 다리 밑이에요! 도와주세요!\"\n목이 쉬도록 외쳤어."]]},
       {t:"호수의 여인이 구해 주러 오는 상상을 한다.", type:"imag", eff:{hid:"ladyOfLake"}, then:[["inner", "dreamy", null, "물속에서 호수의 여인이 나타나 나를 구해 줄 거야.\n…제발 빨리 와 주세요!", {dream:true}]]}
-    ]}
-  ]},
-  {at:"pond", label:"다리 밑에서 구조 기다리기", bg:"ch9_bridge", nodes:[
+    ]},
+    {bg:"ch9_bridge"},
     ["gilbert", "surprised", "gilbert", "그때 노 젓는 소리가 들렸어.\n길버트 블라이스가 배를 저어 다가오고 있었어!"],
     ["gilbert", "surprised", "gilbert", "\"앤 셜리! 어쩌다 거기 매달려 있는 거야? 얼른 타!\""],
     ["inner", "sad", "gilbert", "하필이면 길버트라니…\n하지만 나는 길버트의 손을 잡고 배에 올랐어."],

@@ -40,7 +40,7 @@ CH[1] = {
     ["inner", "dreamy", "matthew", "하얀 사과꽃이 지붕처럼 길을 덮고 있었어.\n저 끝에 노을이 성당의 장미창처럼 빛났어."],
     ["anne", "happy", "matthew", "\"가로수길이라니요! 그건 이름이 아니에요. 제가 더 어울리는 이름을 붙여 줄래요.\""],
     {name:"avenue", q:"꽃이 핀 가로수길에 어떤 이름을 붙일까요?", pick:["기쁨의 하얀 길", "하얀 꽃 터널", "눈꽃 지붕길"], after:() => getItem("namecard")},
-    ["matthew", "happy", "matthew", "\"'{avenue}'라… 글쎄다, 참 좋은 이름이구나.\""]
+    ["matthew", "happy", "matthew", "\"'{avenue}'… 글쎄다, 참 좋은 이름이구나.\""]
   ]},
   {at:"pond", label:"연못 쪽으로 가기", nodes:[
     ["inner", "dreamy", "matthew", "언덕을 내려가자 기다란 연못이 나타났어.\n물에 노을빛이 일렁여서 꼭 보석 같았어."],

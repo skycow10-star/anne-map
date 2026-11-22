@@ -36,9 +36,8 @@ CH[3] = {
     ]},
     ["diana", "surprised", "diana", "까만 머리에 장밋빛 뺨, 웃는 눈.\n다이애나가 나를 보고 수줍게 웃었어."],
     {eff:{met:"diana"}},
-    ["barry", "happy", "barry", "\"다이애나, 앤에게 정원을 구경시켜 주렴.\""]
-  ]},
-  {at:"barry", label:"정원에서 우정의 맹세하기", bg:"ch3_garden", nodes:[
+    ["barry", "happy", "barry", "\"다이애나, 앤에게 정원을 구경시켜 주렴.\""],
+    {bg:"ch3_garden"},
     ["inner", "dreamy", "diana", "참나리와 장미가 가득한 정원이었어.\n꿀벌들이 붕붕 노래했지."],
     ["anne", "happy", "diana", "\"다이애나, 나를 좀 좋아해 줄 수 있을까?\n내 마음의 친구가 되어 줄 만큼?\""],
     ["diana", "happy", "diana", "\"응, 그럴 것 같아!\n여기서 같이 놀 친구가 생겨서 정말 기뻐.\""],

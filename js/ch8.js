@@ -23,9 +23,8 @@ CH[8] = {
       {t:"75센트를 내고 염색약을 산다.", type:"canon", eff:{get:"dye"}, then:[["inner", "happy", null, "나는 염색약을 꼭 끌어안았어.\n드디어 까만 머리가 되는 거야!"]]},
       {t:"까마귀 물약이라고 상상하며 산다.", type:"imag", eff:{get:"dye", hid:"magicPotion"}, then:[["inner", "dreamy", null, "이건 마법의 까마귀 물약이야.\n한 방울이면 까마귀 머리 공주로 변신!", {dream:true}]]},
       {t:"머리카락 한 가닥에만 먼저 발라 보기로 한다.", type:"bal", eff:{get:"dye", hid:"testStrand"}, then:[["inner", "surprised", null, "한 가닥에 발라 봤더니… 어? 색이 좀 이상한데?\n하지만 나는 결국 머리 전체에 발라 버렸어."]]}
-    ]}
-  ]},
-  {at:"home", label:"다락방 거울 앞에 서기", bg:"ch8_mirror", nodes:[
+    ]},
+    {bg:"ch8_mirror"},
     ["inner", "surprised", null, "거울을 본 순간 나는 비명을 지를 뻔했어.\n내 머리가… 초록색이야!"],
     ["inner", "anne_green_hair", null, "빨간 머리보다 백 배는 더 끔찍한 초록 머리.\n어떡해, 어떡해!"],
     ["marilla", "anne_green_hair", "marilla_strict", "\"앤 셜리! 네 머리가 왜 그 모양이냐?\"", {bg:"ch8"}],
@@ -33,6 +32,16 @@ CH[8] = {
       {t:"행상인에게 염색약을 산 일을 솔직하게 다 말한다.", type:"canon", eff:{h:{marilla:1}}, then:[["anne", "anne_green_hair", "marilla_strict", "\"제가 나빴어요. 빨간 머리가 너무 싫어서 그만…\n허영심 때문에 벌을 받은 거예요.\""]]},
       {t:"책 속 여주인공처럼 비극적으로 한탄한다.", type:"imag", then:[["anne", "anne_green_hair", "marilla_strict", "\"오, 저는 세상에서 가장 불행한 소녀예요!\n초록 머리의 비극이여!\"", {dream:true}]]},
       {t:"\"그래도 눈은 예쁘대요…\" 하고 작게 말한다.", type:"bal", then:[["marilla", "anne_green_hair", "marilla_warm", "\"…그래, 눈은 예쁘지.\"\n아주머니가 한숨을 쉬며 살짝 웃으셨어."]]}
+    ]}
+  ]},
+  {at:"spring", label:"샘물에서 머리 감아 보기", bg:"ch7_spring", nodes:[
+    ["inner", "anne_green_hair", null, "샘물에 머리를 감으면 초록색이 빠질지도 몰라.\n나는 몰래 나무 요정의 샘으로 달려갔어."],
+    ["inner", "anne_green_hair", null, "첨벙첨벙, 비누로 박박.\n…하나도 안 빠져. 오히려 더 초록색으로 반짝여!"],
+    ["diana", "anne_green_hair", "diana", "\"앤? 너 머리가 왜… 초록색이야?\"\n하필 그때 다이애나가 샘가로 왔어."],
+    {q:"초록 머리를 다이애나에게 들켰어요. 앤은 어떻게 할까요?", opts:[
+      {t:"\"아무한테도 말하지 마!\" 하고 부탁한다.", type:"canon", then:[["diana", "anne_green_hair", "diana", "\"응, 절대 말 안 할게. 약속!\"\n다이애나가 내 손을 꼭 잡아 주었어."]]},
+      {t:"\"샘물의 요정이 마법을 건 거야\" 하고 둘러댄다.", type:"imag", eff:{hid:"spaRumor"}, then:[["inner", "anne_green_hair", "diana", "\"샘물의 요정이 장난을 친 거야!\"\n다이애나는 웃음을 꾹 참으며 고개를 끄덕였어.", {dream:true}]]},
+      {t:"솔직하게 행상인한테 산 염색약 이야기를 한다.", type:"bal", eff:{h:{diana:1}}, then:[["diana", "anne_green_hair", "diana", "\"그랬구나. 앤, 많이 속상하겠다.\"\n다이애나는 놀리지 않고 걱정해 주었어."]]}
     ]}
   ]},
   {at:"home", label:"마릴라 아주머니와 머리 손질하기", bg:"ch8", nodes:[
