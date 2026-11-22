@@ -11,9 +11,14 @@
 - `index.html` 화면 뼈대, `style.css` 모양. 빌드 과정 없음.
 - `js/engine.js` 엔진: 장소 `P`(지도 좌표는 1600×900 기준, `from`=열리는 장), 인물 `WHO`·하트 `HEARTS`, 물건 `ITEMS`, 저장(localStorage `anneMap2`),
   지도·대사·선택·이름 짓기·마음 대결·장 결말·최종 결말·가방·장 고르기. 맨 아래에 **장 데이터 모양** 설명이 있음.
-- `js/mini.js` 미니게임 10가지: catch(날아오는 것 잡기) calm(말 흘려보내기) order(순서) pick(고르기, rival 있으면 대결) find(숨은 것 찾기)
-  bail(물 퍼내기) pour(따르기) pace(박자) decorate(꾸미기) run(눈길 달리기). 주소 끝에 `#fast`를 붙이면 시험용으로 빨라짐.
+- `js/mini.js` 미니게임 11가지: catch(날아오는 것 잡기) calm(말 흘려보내기, flood면 마지막에 말이 쏟아져 원작대로 펑) order(순서, decoys=엉뚱한 조각)
+  pick(고르기, rival 있으면 대결) find(숨은그림 찾기: 목록·가짜 -3초·힌트 1번) bail(물 퍼내기) pour(따르기) pace(박자: 하트가 장밋빛 칸에, 칸이 움직이고 작아짐)
+  decorate(끌어다 놓기: baseImg 위에 꽃 배치) run(눈길 달리기: ▲▼ 단추·힘 하트 5칸·점점 빨라짐) slots(그림 카드를 1~N번 칸에 순서대로 놓기). 주소 끝에 `#fast`를 붙이면 시험용으로 빨라짐.
 - 길: `engine.js`의 `NODES`(길 위 점)·`EDGES`(이어진 길)·`PLACE_NODE`(장소가 올라타는 점). 앤은 그림 속 길을 따라 걷고, 다음 할 일까지 발자국 점선이 보임. 지도 그림을 바꾸면 이 점들도 맞춰야 함.
+- `js/nature.js` **앤의 반짝이 수첩**(자연 모으기): 계절마다 지도에 ✨가 숨어 있고, 찾으면 아이가 이름을 붙여 수첩에 담음. 32가지(계절별 8). 그림 없는 건 이모지로 대신(`na_*.webp`를 넣으면 바뀜).
+- 할 일의 `lock:{only|except:[장소], why}` = 이야기 때문에 잠깐 못 가는 곳. 아직 안 열린 장소(`from`)는 자물쇠 핀·'???'로 보임.
+- 저장 `S`: names, hearts, met, items, hidden(숨은 장면), stars(미니게임), nat(수첩), got(장별로 모은 것), seen(본 결말), tips(처음 안내).
+- 나의 앨범(결말·숨은 장면 다시 보기), 장 끝 '이번 장에서 모은 것', 처음 하는 아이 손가락 안내가 engine.js에 있음.
 - `js/say.js` 할 일이 아닌 장소를 눌렀을 때 장마다 나오는 짧은 이야기 `SAY[장][장소]`.
 - `js/ch1.js`~`ch10.js` 장마다 이야기 데이터 `CH[n]`. 같은 장소 할 일이 연달아 오지 않게 할 것. 할 일(quests) 순서대로 진행, 한 할 일 = 지도 장소 하나 + 대사 노드 목록.
 - `img/`: 그림. 지도는 `map_spring|summer|autumn|winter.webp`(장의 season에 따라), 지도 위를 걷는 꼬마 앤은 `walk_*.webp`(투명 배경, 200×400 캔버스 아래 맞춤, 오른쪽을 봄. 장의 `walker`로 고름), 꽃길 미니게임은 `mini_avenue.webp`(옆으로 흐르는 배경)·`mini_cart.webp`(마차).
