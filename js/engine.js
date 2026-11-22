@@ -85,7 +85,7 @@ function toast(m){ const t = $("toast"); t.textContent = m; t.classList.add("on"
 const toastQ = []; let toastBusy = false;
 function note(m){ if(toastQ.length > 2) toastQ.shift(); toastQ.push(m); if(!toastBusy) nextNote(); }
 function nextNote(){ const m = toastQ.shift(); if(!m){ toastBusy = false; return; } toastBusy = true; toast(m); setTimeout(nextNote, 2000); }
-function popCard(html, ok){ $("popIn").innerHTML = html; $("pop").classList.add("on"); const b = $("pOk"); if(b) b.onclick = () => { $("pop").classList.remove("on"); ok && ok(); }; }
+function popCard(html, ok, full){ $("popIn").innerHTML = html; $("pop").classList.toggle("full", !!full); $("pop").classList.add("on"); const b = $("pOk"); if(b) b.onclick = () => { $("pop").classList.remove("on"); ok && ok(); }; }
 function closeCard(){ $("pop").classList.remove("on"); }
 function hudTitle(){ $("hudT").textContent = C() ? `${S.ch}장 · ${C().title}` : "앤의 에이번리 산책"; }
 function hud(){
@@ -297,7 +297,7 @@ function runDuel(n){
 function chapterIntro(){
   const c = C(); hudTitle(); music(); toastQ.length = 0;
   popCard(`<img class="big" src="${IMG(c.img)}" alt="" onerror="this.style.visibility='hidden'"><span class="lab">${S.ch}장 · ${esc(c.when)}</span><h2>${esc(c.title)}</h2><p>${esc(c.intro)}</p>
-    <button class="big-btn" id="pOk">지도로 가기</button>`, () => { show("map"); drawMap(); setTimeout(() => note(`📒 할 일: ${fill(quest().label)}`), 500); });
+    <button class="big-btn" id="pOk">지도로 가기</button>`, () => { show("map"); drawMap(); setTimeout(() => note(`📒 할 일: ${fill(quest().label)}`), 500); }, true);
 }
 function endingOf(t){ return t.canon >= t.imag && t.canon >= t.bal ? (t.canon > t.imag && t.canon > t.bal ? "canon" : t.imag === t.canon ? "imag" : "bal") : t.imag > t.bal ? "imag" : "bal"; }
 function chapterEnd(){
@@ -317,7 +317,7 @@ function chapterEnd(){
     <p style="font-size:14px">${esc(c.teaser)}</p>
     <div class="btns"><button class="big-btn" id="pOk">${S.ch < 10 ? "다음 장으로" : "이야기를 마치며"}</button></div>`, () => {
       if(S.ch >= 10){ finale(); return; }
-      S.ch++; S.qi = 0; S.max = Math.max(S.max, S.ch); S.tally = {canon:0, imag:0, bal:0}; saveS(); chapterIntro(); });
+      S.ch++; S.qi = 0; S.max = Math.max(S.max, S.ch); S.tally = {canon:0, imag:0, bal:0}; saveS(); chapterIntro(); }, true);
 }
 function countHidden(c){ const out = []; const walk = a => (a || []).forEach(n => { if(!n || typeof n !== "object") return; if(Array.isArray(n)){ if(n[4]) walk([n[4]]); return; }
   if(n.eff && n.eff.hid) out.push(n.eff.hid); if(n.hid) out.push(n.hid); (n.opts || []).forEach(o => { if(o.eff && o.eff.hid) out.push(o.eff.hid); walk(o.then); });
@@ -333,7 +333,7 @@ function finale(){
   popCard(`<img class="big" src="${IMG("ed_ch10_" + big)}" alt="" onerror="this.style.visibility='hidden'"><span class="lab">이야기 끝</span><h2>앤과 함께한 한 해</h2>
     <p>${word}<br>"하느님은 하늘에 계시고, 세상은 모두 평안하도다."</p>
     <dl class="sum">${ends}<dt>✍️ 이름 지은 곳</dt><dd>${named || "-"}</dd><dt>⭐ 모은 별</dt><dd>${total}개</dd><dt>✨ 숨은 장면</dt><dd>${hid}/${all}</dd></dl>
-    <div class="btns"><button class="big-btn sub" id="pOk">지도에서 마음껏 놀기</button><button class="big-btn ghost" id="pRe">처음부터</button></div>`, () => { show("map"); drawMap(); });
+    <div class="btns"><button class="big-btn sub" id="pOk">지도에서 마음껏 놀기</button><button class="big-btn ghost" id="pRe">처음부터</button></div>`, () => { show("map"); drawMap(); }, true);
   $("pRe").onclick = restart;
 }
 function restart(){ S = FRESH(); saveS(); closeCard(); location.reload(); }

@@ -148,9 +148,9 @@ button{font:inherit;cursor:pointer;color:inherit}
 @media (orientation:landscape) and (max-height:520px){
 .hud .t{font-size:13px;padding:2px 10px}.hud button{height:36px;min-width:40px}.hud .heart img{width:24px;height:24px}
 .card{padding:10px}.card .in{padding:14px 16px;border-radius:16px}
-.card .in:has(>img.big){width:min(860px,100%);display:grid;grid-template-columns:44% 1fr;column-gap:18px;align-items:center;align-content:center}
-.card .in:has(>img.big)>img.big{grid-column:1;grid-row:1/span 14;height:100%;max-height:calc(100dvh - 48px);aspect-ratio:auto;align-self:stretch}
-.card .in:has(>img.big)>*:not(img.big){grid-column:2}
+.card:not(.full) .in:has(>img.big){width:min(860px,100%);display:grid;grid-template-columns:44% 1fr;column-gap:18px;align-items:center;align-content:center}
+.card:not(.full) .in:has(>img.big)>img.big{grid-column:1;grid-row:1/span 14;height:100%;max-height:calc(100dvh - 48px);aspect-ratio:auto;align-self:stretch}
+.card:not(.full) .in:has(>img.big)>*:not(img.big){grid-column:2}
 .card h1{font-size:28px}.card h2{font-size:22px}.card p{font-size:14px;margin:.3em 0}
 .box{left:2%;right:2%;bottom:calc(2% + env(safe-area-inset-bottom));padding:16px 14px 8px;border-radius:14px;font-size:15px}
 .bi{max-height:62vh}.who{font-size:13px;top:-12px}
@@ -198,7 +198,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 @media (prefers-reduced-motion:reduce){.cv-map,.cv-anne,.cv-start,.cv-petals i{animation:none}}
 
 /* 대사창 잘 보이게 (덧씌움) */
-#place::after{content:"";position:absolute;left:0;right:0;bottom:0;height:48%;background:linear-gradient(transparent,rgba(40,25,10,.45));pointer-events:none;z-index:9}
+#place::after{content:"";position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(transparent,rgba(40,25,10,.45));pointer-events:none;z-index:9}
 .box{background:#fffaf0;border:3px solid #a9814f;box-shadow:inset 0 0 0 3px #fffaf0,inset 0 0 0 4.5px #e2cfa8,0 10px 28px rgba(30,18,6,.45)}
 .txt{color:#2a1c10;font-size:clamp(17px,2.3vw,22px);line-height:1.7;letter-spacing:.01em;text-shadow:0 0 .4px #2a1c10}
 .who{font-size:16px;padding:3px 16px;border:2.5px solid #fffaf0;box-shadow:0 2px 6px rgba(0,0,0,.25)}
@@ -214,6 +214,45 @@ button{font:inherit;cursor:pointer;color:inherit}
  #ch .opts button{font-size:15px;padding:6px 10px;min-height:42px}
  .spr{height:98%;bottom:-6%}.spr.l{left:8%}.spr.r{right:8%}#place.solo .spr.l{left:34%}
  .who{font-size:14px;top:-14px}
+}
+
+/* ===== 대화창·선택지·전체 화면 카드 (새 구조) ===== */
+:root{--sl:max(10px,env(safe-area-inset-left));--sr:max(10px,env(safe-area-inset-right))}
+.hud{left:var(--sl);right:var(--sr)}
+#game:has(#pop.on) .hud{visibility:hidden}
+.box{left:var(--sl);right:var(--sr);bottom:max(8px,env(safe-area-inset-bottom));padding:12px 22px 10px;border-radius:16px;display:flex;flex-direction:column}
+.who{position:static;align-self:flex-start;margin:0 0 4px -6px;font-size:15px;padding:2px 14px;border:0;box-shadow:none}
+.who:empty{display:none}
+.txt{min-height:2.2em}
+.next{position:absolute;right:16px;bottom:6px;font-size:14px}
+#box:has(~ #ch:not(:empty)),#ch:not(:empty) ~ #box{}
+#ch{position:absolute;z-index:11;left:var(--sl);right:var(--sr);top:56px;bottom:38%;display:flex;align-items:center;justify-content:center;pointer-events:none}
+#ch:empty{display:none}
+#place:has(#ch:not(:empty)) .scene{filter:brightness(.62) saturate(.9)}
+#place:has(#ch:not(:empty)) .spr{filter:brightness(.62)}
+#ch .opts{pointer-events:auto;display:flex;flex-direction:column;gap:10px;width:min(620px,92%);margin:0}
+#ch .opts button{text-align:center;background:#fffaf0;border:3px solid #c9a56f;border-radius:999px;padding:10px 22px;min-height:50px;font-size:18px;color:#2a1c10;font-family:"Gowun Batang",serif;font-weight:700;line-height:1.35;box-shadow:0 4px 0 #a9814f,0 8px 18px rgba(0,0,0,.3);word-break:keep-all}
+#ch .opts button:hover,#ch .opts button:focus-visible{border-color:var(--red);background:#fff;transform:translateY(-1px)}
+#ch .opts button:active{transform:translateY(3px);box-shadow:0 1px 0 #a9814f}
+#ch .opts button small{font-family:"Gowun Dodum",sans-serif;font-weight:400}
+#ch .namein{pointer-events:auto;width:min(620px,92%);margin-top:10px}
+#ch:has(.namein){flex-direction:column}
+#txt:has(+ #ch .opts){}
+.box:has(.who.sys) .txt{font-family:"Gowun Batang",serif;font-weight:700}
+/* 전체 화면 카드(장 시작·장 끝·마지막) */
+.card.full{padding:0;background:#2a1d12}
+.card.full .in{position:relative;width:100%;height:100%;max-height:none;border-radius:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;padding:16px max(24px,var(--sr)) 16px calc(52% + 28px);background:var(--paper);text-align:center;overflow:auto}
+.card.full .in>img.big{position:absolute;left:0;top:0;width:52%;height:100%;border-radius:0;aspect-ratio:auto;object-fit:cover;margin:0}
+.card.full .in>.big-btn,.card.full .btns{width:min(100%,360px)}
+.card.full .sum{width:100%}
+.card.full h2{font-size:clamp(26px,4.2vw,40px)}
+.card.full .big-btn,.card.full .btns{justify-self:stretch}
+@media (orientation:landscape) and (max-height:520px){
+ .box{padding:10px 18px 8px}.who{font-size:13px;margin-bottom:2px}
+ #ch{top:46px;bottom:36%}
+ #ch .opts{gap:7px}#ch .opts button{font-size:15px;min-height:42px;padding:6px 16px}
+ .card.full .in{padding-left:calc(46% + 20px)}.card.full .in>img.big{width:46%}
+ .card.full h2{font-size:24px}.card.full p{font-size:13px}
 }
 
 /* 가로 모드 전용: 세로로 든 휴대폰·태블릿에서는 돌려 달라는 안내 */
