@@ -353,7 +353,6 @@ async function music(){
 /* ---------- 시작 ---------- */
 const GAME = {boot(){
   $("cover").querySelector(".cv-petals").innerHTML = Array.from({length:14}, () => `<i style="left:${Math.random() * 110 | 0}%;animation-duration:${7 + Math.random() * 7}s;animation-delay:-${Math.random() * 12}s"></i>`).join("");
-  const cw = (C() && C().walker) || "walk_anne"; document.querySelector(".cv-anne").src = IMG(cw);
   $("box").onclick = advance;
   $("place").onclick = e => { if(e.target === $("bg") || e.target.classList.contains("spr")) advance(); };
   $("bMusic").onclick = () => { musicOn = !musicOn; $("bMusic").style.opacity = musicOn ? 1 : .45; if(musicOn) music(); else if(bgm) bgm.pause(); };
