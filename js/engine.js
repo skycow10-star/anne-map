@@ -87,7 +87,7 @@ function toast(m){ const t = $("toast"); t.textContent = m; t.classList.add("on"
 const toastQ = []; let toastBusy = false;
 function note(m){ if(toastQ.length > 2) toastQ.shift(); toastQ.push(m); if(!toastBusy) nextNote(); }
 function nextNote(){ const m = toastQ.shift(); if(!m){ toastBusy = false; return; } toastBusy = true; toast(m); setTimeout(nextNote, 2000); }
-function popCard(html, ok, full){ $("popIn").innerHTML = html; $("pop").classList.toggle("full", !!full); $("pop").classList.add("on"); const b = $("pOk"); if(b) b.onclick = () => { $("pop").classList.remove("on"); ok && ok(); }; }
+function popCard(html, ok, full){ $("pop").classList.remove("lt"); $("pop").style.background = ""; $("popIn").innerHTML = html; $("pop").classList.toggle("full", !!full); $("pop").classList.add("on"); const b = $("pOk"); if(b) b.onclick = () => { $("pop").classList.remove("on"); ok && ok(); }; }
 function closeCard(){ $("pop").classList.remove("on"); }
 function hudTitle(){ $("hudT").textContent = C() ? `${S.ch}장 · ${C().title}` : "앤의 에이번리 산책"; }
 function hud(){
@@ -359,8 +359,9 @@ function chapterEnd(){
     ${hidAll.length ? `<dt>✨ 숨은 장면</dt><dd>${hidGot}/${hidAll.length}</dd>` : ""}</dl>
     ${got ? `<div class="gotrow"><span>이번 장에서 모은 것</span><div>${got}</div></div>` : ""}
     <p style="font-size:14px">${esc(c.teaser)}</p>
-    <div class="btns"><button class="big-btn" id="pOk">${S.ch < 10 ? "다음 장으로" : "이야기를 마치며"}</button><button class="big-btn ghost" id="pAl">앨범</button></div>`, () => {
+    <div class="btns"><button class="big-btn" id="pOk">${S.ch >= 10 ? "이야기를 마치며" : S.over ? "앤의 편지로 돌아가기" : "다음 장으로"}</button><button class="big-btn ghost" id="pAl">앨범</button></div>`, () => {
       if(S.ch >= 10){ finale(); return; }
+      if(S.over){ annLetter(); return; }
       S.ch++; S.qi = 0; S.max = Math.max(S.max, S.ch); S.tally = {canon:0, imag:0, bal:0}; saveS(); chapterIntro(); }, true);
   $("pAl").onclick = () => album(S.ch);
 }
@@ -368,18 +369,53 @@ function countHidden(c){ const out = []; const walk = a => (a || []).forEach(n =
   if(n.eff && n.eff.hid) out.push(n.eff.hid); if(n.hid) out.push(n.hid); (n.opts || []).forEach(o => { if(o.eff && o.eff.hid) out.push(o.eff.hid); walk(o.then); });
   walk(n.good); walk(n.bad); if(n.duel){ walk(n.duel.win); walk(n.duel.lose); } });
   c.quests.forEach(q => walk(q.nodes)); return [...new Set(out)]; }
+/* ---------- 이야기 끝: 앤과 함께한 한 해(장마다 아이가 받은 결말 그림) -> 앤의 편지 ---------- */
 function finale(){
-  S.over = true; saveS();
-  const ends = CH.slice(1).map((c, i) => S.res[i + 1] ? `<dt>${i + 1}장</dt><dd>${esc(S.res[i + 1].title)}</dd>` : "").join("");
-  const total = Object.values(S.stars).reduce((a, b) => a + b, 0), hid = S.hidden.length, all = CH.slice(1).reduce((a, c) => a + countHidden(c).length, 0);
-  const named = Object.entries(S.names).map(([k, v]) => `${esc(v)}`).join(", ");
-  const tl = Object.values(S.res).reduce((a, r) => (a[r.e]++, a), {canon:0, imag:0, bal:0}), big = endingOf(tl);
-  const word = {canon:"원작 속 앤의 마음을 가장 잘 읽은 친구예요.", imag:"앤처럼 상상력으로 세상을 반짝이게 만든 친구예요.", bal:"모두의 마음을 함께 생각한 따뜻한 친구예요."}[big];
-  popCard(`<img class="big" src="${IMG("ed_ch10_" + big)}" alt="" onerror="this.style.visibility='hidden'"><span class="lab">이야기 끝</span><h2>앤과 함께한 한 해</h2>
-    <p>${word}<br>"하느님은 하늘에 계시고, 세상은 모두 평안하도다."</p>
-    <dl class="sum">${ends}<dt>✍️ 이름 지은 곳</dt><dd>${named || "-"}</dd><dt>⭐ 모은 별</dt><dd>${total}개</dd><dt>✨ 숨은 장면</dt><dd>${hid}/${all}</dd><dt>📔 반짝이 수첩</dt><dd>${Object.keys(S.nat || {}).length}/${NATURE.length}</dd></dl>
-    <div class="btns"><button class="big-btn sub" id="pOk">지도에서 마음껏 놀기</button><button class="big-btn ghost" id="pRe">처음부터</button></div>`, () => { show("map"); drawMap(); }, true);
-  $("pRe").onclick = restart;
+  S.over = true; saveS(); music();
+  const slides = CH.slice(1).map((c, i) => S.res[i + 1] ? {n:i + 1, c, r:S.res[i + 1]} : null).filter(Boolean);
+  if(!slides.length){ annLetter(); return; }
+  const box = document.createElement("div"); box.id = "year"; box.innerHTML = `<div class="yr-pic" id="yrA"></div><div class="yr-pic" id="yrB"></div>
+    <div class="yr-cap" id="yrCap"></div><div class="yr-title">앤과 함께한 한 해</div><div class="yr-dots">${slides.map(() => "<i></i>").join("")}</div>
+    <button class="yr-skip" id="yrSkip">건너뛰기</button>`;
+  ($("game") || document.body).appendChild(box); let k = -1, t = 0, flip = false;
+  const done = () => { clearTimeout(t); box.classList.add("out"); setTimeout(() => { box.remove(); annLetter(); }, 700); };
+  const next = () => { clearTimeout(t); k++; if(k >= slides.length){ done(); return; }
+    const sl = slides[k], el = $(flip ? "yrA" : "yrB"), old = $(flip ? "yrB" : "yrA"); flip = !flip;
+    el.style.backgroundImage = `url(${IMG(`ed_ch${sl.n}_${sl.r.e}`)})`; el.classList.remove("on"); void el.offsetWidth; el.classList.add("on"); old.classList.remove("on");
+    $("yrCap").innerHTML = `<small>${sl.n}장 · ${esc(sl.c.title)}</small><b>${esc(sl.r.title)}</b><em>${{canon:"원작 결말", imag:"상상 결말", bal:"균형 결말"}[sl.r.e]}</em>`;
+    $("yrCap").classList.remove("on"); void $("yrCap").offsetWidth; $("yrCap").classList.add("on");
+    box.querySelectorAll(".yr-dots i").forEach((d, j) => d.classList.toggle("on", j <= k)); SFX.page();
+    t = setTimeout(next, 3600 / FAST); };
+  box.onclick = e => { if(e.target.id === "yrSkip"){ done(); return; } next(); };
+  setTimeout(next, 300);
+}
+/* 앤의 편지: 아이가 가장 많이 고른 길에 따라 내용이 달라지고, 아이가 지은 이름이 들어가요(이름 뒤엔 조사를 붙이지 않음) */
+const LETTER = {
+  canon:["너는 나와 같은 길을 참 많이 골랐지. 꼭 내 마음속을 들여다본 것처럼!", "석판을 두 동강 낸 날도, 머리가 초록색이 된 날도 너는 내 곁에 있었어. 실수투성이 앤이라도 괜찮다고 말해 주는 것 같아서 정말 고마웠어."],
+  imag:["너는 나처럼 상상의 날개를 활짝 펼쳤지.", "우리가 함께 본 탑이 일곱 개인 성과 별빛 아래의 코델리아는 지금도 내 마음속에서 반짝여. 상상할 거리가 많은 세상은 정말 멋져, 그렇지?"],
+  bal:["너는 늘 다른 사람의 마음까지 함께 생각했어.", "마릴라 아주머니도, 다이애나도, 매슈 아저씨도 네 덕분에 조금 더 따뜻해졌을 거야. 나도 너에게서 정말 많이 배웠어."]};
+function annLetter(){
+  const tl = Object.values(S.res).reduce((a, r) => (a[r.e]++, a), {canon:0, imag:0, bal:0}), big = endingOf(tl), L = LETTER[big];
+  const nm = ["avenue", "pond", "lane", "spring", "birch"].filter(k => S.names[k]).map(k => `'${esc(S.names[k])}'`);
+  // 아직 못 본 것: 결말·숨은 장면·가방·반짝이 수첩, 그리고 못 본 것이 가장 많은 장 두 개
+  const per = CH.slice(1).map((c, i) => { const n = i + 1, e = ["canon", "imag", "bal"].filter(x => !S.seen[n + "_" + x]).length, hs = countHidden(c), h = hs.filter(x => !S.hidden.includes(x)).length;
+    return {n, c, e, h, all:hs.length}; });
+  const eSeen = per.reduce((a, x) => a + 3 - x.e, 0), hAll = per.reduce((a, x) => a + x.all, 0), hSeen = per.reduce((a, x) => a + x.all - x.h, 0);
+  const tips = per.filter(x => x.e + x.h > 0).sort((a, b) => (b.e * 2 + b.h) - (a.e * 2 + a.h)).slice(0, 2)
+    .map(x => `<li>${x.n}장 「${esc(x.c.title)}」에는 ${[x.e ? `못 본 결말 ${x.e}개` : "", x.h ? `숨은 장면 ${x.h}개` : ""].filter(Boolean).join(", ")}가 남아 있어요.</li>`).join("");
+  popCard(`<div class="letter"><div class="lt-paper">
+      <p class="lt-to">내 마음의 친구에게</p>
+      <p>${L[0]} ${L[1]}</p>
+      ${nm.length ? `<p>${nm.join(", ")}… 네가 붙여 준 이름들 덕분에 에이번리는 이제 우리 둘만의 마을이 되었어.</p>` : `<p>함께 걸은 길 하나하나가 이제 우리 둘만의 길이 되었어.</p>`}
+      <p>길은 이제 모퉁이를 돌아. 하지만 그 너머에도 분명 좋은 것이 기다리고 있을 거야. 언제든 초록 지붕 집에 놀러 와.</p>
+      <p class="lt-from">초록 지붕 집에서, 끝에 e가 붙는 앤 셜리가</p></div>
+    <div class="lt-more"><b>다른 길도 궁금하다면</b>
+      <span>결말 그림 ${eSeen}/${per.length * 3} · 숨은 장면 ${hSeen}/${hAll} · 가방 ${S.items.length}/${Object.keys(ITEMS).length} · 반짝이 수첩 ${Object.keys(S.nat || {}).length}/${NATURE.length}</span>
+      ${tips ? `<ul>${tips}</ul><span class="lt-hint">'장 고르기'로 그 장만 다시 해 볼 수 있어요. 이름과 가방은 그대로예요.</span>` : `<span>모든 결말과 숨은 장면을 다 찾았어요. 정말 대단해요!</span>`}</div>
+    <div class="btns"><button class="big-btn ghost" id="ltAl">나의 앨범</button><button class="big-btn sub" id="ltPick">다른 길 가 보기</button><button class="big-btn ghost" id="pRe">처음부터</button></div>
+    <p class="lt-maker">만든이 하늘소</p></div>`, null);
+  $("pop").classList.add("lt"); $("pop").style.background = `linear-gradient(rgba(40,25,12,.45),rgba(40,25,12,.45)),url(${IMG("ed_ch10_" + big)}) center/cover`;
+  $("ltAl").onclick = () => album(); $("ltPick").onclick = () => { $("pop").classList.remove("lt"); chapterPick(); }; $("pRe").onclick = restart;
 }
 function restart(){ S = FRESH(); saveS(); closeCard(); location.reload(); }
 
@@ -464,6 +500,7 @@ const GAME = {boot(){
     if(!started){ chapterIntro(); return; }
     // 장의 할 일을 다 끝내고 '다음 장으로'를 누르기 전에 나갔으면, 장 끝 화면부터 다시 보여 줌
     if(!S.over && S.qi >= C().quests.length){ music(); chapterEnd(); return; }
+    if(S.over && (S.qi >= C().quests.length || S.ch >= 10)){ annLetter(); return; }
     note(`${S.ch}장 · ${C().title}에서 이어서 해요`);
     music(); show("map"); drawMap(); };
   if(/test/.test(location.hash)) testMenu();
