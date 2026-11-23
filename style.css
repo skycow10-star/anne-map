@@ -554,3 +554,8 @@ html,body{position:fixed;inset:0;width:100%;height:100%;overscroll-behavior:none
 .fx-spark{position:fixed;z-index:120;pointer-events:none;font-style:normal;line-height:1;transform:translate(-50%,-50%);text-shadow:0 0 4px rgba(255,255,255,.9);animation:fxspark .7s ease-out forwards}
 @keyframes fxspark{to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.3) rotate(90deg);opacity:0}}
 @media (prefers-reduced-motion:reduce){.scene.camin,.dream .scene.camin{animation:none}#place.cam-shake .scene,#place.cam-shake .spr,#place.cam-punch .scene{animation:none}}
+
+/* 응원 방패 그림(제미나이) */
+.sh-shield.img{background:none;border:0;border-radius:0;box-shadow:none;width:69px;height:96px;filter:drop-shadow(0 4px 6px rgba(60,40,20,.35))}
+.sh-shield.img img{width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none}
+@media (orientation:landscape) and (max-height:520px){.sh-shield.img{width:53px;height:74px}}

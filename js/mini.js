@@ -163,8 +163,14 @@ MINI.bail = (m, api) => {
   const scoop = (x, y, k = 1) => { if(over) return; taps++; if(taps % 2) SFX.splash(); lv = Math.max(0, lv - (m.scoop || 2.6) * k); const b = $("bk"); if(b){ b.classList.remove("dip"); void b.offsetWidth; b.classList.add("dip"); }
     if(x !== undefined && taps % 3 === 0){ const s = document.createElement("span"); s.className = "bl-splash"; s.style.left = x + "px"; s.style.top = y + "px"; document.body.appendChild(s); setTimeout(() => s.remove(), 450); } };
   f.onpointerdown = e => { e.preventDefault(); scoop(e.clientX, e.clientY); };
-  const shake = e => { const a = e.accelerationIncludingGravity || e.acceleration; if(!a) return; const g = Math.hypot(a.x || 0, a.y || 0, a.z || 0); const now = Date.now();
-    if(g > 17 && now - lastShake > 140){ lastShake = now; scoop(undefined, undefined, 1.4); } };
+  /* 흔들기: 중력을 뺀 가속도(acceleration)가 있으면 그것으로, 없으면 직전 값과 얼마나 달라졌는지로 알아채요 */
+  let prev = null;
+  const shake = e => { const now = Date.now(), A = e.acceleration, G = e.accelerationIncludingGravity; let s = 0;
+    if(A && A.x != null) s = Math.hypot(A.x || 0, A.y || 0, A.z || 0);
+    if(G && G.x != null){ const v = [G.x || 0, G.y || 0, G.z || 0]; if(prev) s = Math.max(s, Math.hypot(v[0] - prev[0], v[1] - prev[1], v[2] - prev[2])); prev = v; }
+    if(s > 9 && now - lastShake > 130){ lastShake = now; scoop(undefined, undefined, 1.4); } };
+  /* 아이폰은 흔들기를 쓰기 전에 허락을 받아야 해요('시작!'을 누른 바로 그때만 물어볼 수 있음) */
+  try{ if(window.DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === "function") DeviceMotionEvent.requestPermission().catch(() => {}); }catch(e){}
   addEventListener("devicemotion", shake);
   const stopW = every(100, () => { if(over) return; const g = 1 + (T - left) / T * ((m.grow || 2) - 1); lv = Math.min(100, lv + (m.rise || 8) * g / 10); peak = Math.max(peak, lv); const w = $("wt"); if(w) w.style.height = lv + "%"; if(lv >= 100) done(); });
   const stopV = every(4200, () => { if(over) return; lv = Math.min(100, lv + (m.wave || 9)); f.classList.remove("wave"); void f.offsetWidth; f.classList.add("wave"); popAt(api, innerWidth / 2 - 60, innerHeight * .3, "철썩! 물이 더 들어와요"); });
@@ -518,7 +524,7 @@ MINI.trace = (m, api) => {
    img(앤 그림), bad:[놀림], good:[응원], time, gauge(이름) */
 MINI.shield = (m, api) => {
   const f = api.field, T = m.time || 26; let left = T, hurt = 0, peak = 0, blocked = 0, over = false, sy = 50, last = 0, spawnT = 0, raf = 0;
-  f.innerHTML = `<div class="sh-anne" style="background-image:url(${IMG(m.img)})"></div><div class="sh-shield" id="shd"><span>♥</span></div>
+  f.innerHTML = `<div class="sh-anne" style="background-image:url(${IMG(m.img)})"></div><div class="sh-shield img" id="shd"><img src="${IMG(m.shieldImg || "sh_shield")}" alt="" draggable="false" onerror="this.parentNode.classList.remove('img');this.outerHTML='<span>♥</span>'"></div>
     <div class="mpanel sh-meter"><b>${esc(m.gauge || "속상함")}</b><div class="meter"><i id="shg" style="width:0"></i></div></div>`;
   const shd = $("shd"), words = [];
   const bar = () => { $("shg").style.width = hurt + "%"; };
