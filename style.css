@@ -559,3 +559,7 @@ html,body{position:fixed;inset:0;width:100%;height:100%;overscroll-behavior:none
 .sh-shield.img{background:none;border:0;border-radius:0;box-shadow:none;width:69px;height:96px;filter:drop-shadow(0 4px 6px rgba(60,40,20,.35))}
 .sh-shield.img img{width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none}
 @media (orientation:landscape) and (max-height:520px){.sh-shield.img{width:53px;height:74px}}
+
+/* 나의 지도 완성: 점을 누르기 쉽게(보이는 점보다 넓게 눌림), 지도 밖은 흐린 지도 */
+.mp-wrap{background:#e8dcc8}
+.mp-dot::after{content:"";position:absolute;inset:-12px;border-radius:50%}

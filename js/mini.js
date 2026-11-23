@@ -609,11 +609,24 @@ MINI.mappick = (m, api) => {
   const rounds = (typeof m.rounds === "function" ? m.rounds() : m.rounds); let r = 0, ok = 0, busy = false;
   const season = (C() && C().season) || "spring", mapk = (typeof MAPS !== "undefined" && MAPS[season]) || "map_spring";
   const keys = Object.keys(P).filter(k => P[k].from <= S.ch);
-  api.field.innerHTML = `<div class="mp-wrap"><div class="mp-q" id="mq"></div><div class="mp-map" id="mm" style="background-image:url(${IMG(mapk)})">
+  api.field.innerHTML = `<div class="mp-wrap" style="background:linear-gradient(rgba(240,230,212,.6),rgba(240,230,212,.6)),url(${IMG(mapk)}) center/cover"><div class="mp-q" id="mq"></div><div class="mp-map" id="mm" style="background-image:url(${IMG(mapk)})">
     ${keys.map(k => `<button class="mp-dot" data-k="${k}" style="left:${P[k].x / 16}%;top:${P[k].y / 9}%"></button>`).join("")}</div></div>`;
-  const draw = () => { if(r >= rounds.length){ const n = rounds.length; api.end(ok >= n ? 3 : ok >= Math.ceil(n / 2) ? 2 : 1, `${n}곳 중 ${ok}곳을 찾았어요.`); return; }
+  /* 지도 맞추기: 되도록 화면을 꽉 채우되, 모든 점이 위 단추 줄(56px) 아래·화면 안에 들어오게 크기와 자리를 정해요 */
+  const mm = $("mm"), xs = keys.map(k => P[k].x), ys = keys.map(k => P[k].y);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const fit = () => { const W = api.field.clientWidth, H = api.field.clientHeight; if(!W || !H) return;
+    const TOP = 62, BOT = 22, SIDE = 22;
+    let mw = Math.max(W, H * 16 / 9);                                             // 꽉 채우기
+    mw = Math.min(mw, (H - TOP - BOT) / ((y1 - y0) / 900) * 16 / 9, (W - SIDE * 2) / ((x1 - x0) / 1600));   // 점이 다 들어오게
+    const mh = mw * 9 / 16;
+    let left = (W - mw) / 2, top = (H - mh) / 2;
+    const py0 = top + y0 / 900 * mh, py1 = top + y1 / 900 * mh; if(py0 < TOP) top += TOP - py0; else if(py1 > H - BOT) top -= py1 - (H - BOT);
+    const px0 = left + x0 / 1600 * mw, px1 = left + x1 / 1600 * mw; if(px0 < SIDE) left += SIDE - px0; else if(px1 > W - SIDE) left -= px1 - (W - SIDE);
+    Object.assign(mm.style, {width:mw + "px", height:mh + "px", left:left + "px", top:top + "px", transform:"none"}); };
+  fit(); addEventListener("resize", fit); const stopFit = () => removeEventListener("resize", fit);
+  const draw = () => { if(r >= rounds.length){ const n = rounds.length; stopFit(); api.end(ok >= n ? 3 : ok >= Math.ceil(n / 2) ? 2 : 1, `${n}곳 중 ${ok}곳을 찾았어요.`); return; }
     $("mq").innerHTML = `<b>‘${esc(rounds[r].name)}’</b> — 지도에서 이곳을 찾아 눌러요 <span>(${r + 1}/${rounds.length})</span>`;
-    api.hud(`${m.say || "이름 붙인 곳을 지도에서 찾아요"} · ${r + 1}/${rounds.length}`); };
+    api.hud(""); };
   api.field.querySelectorAll(".mp-dot").forEach(b => b.onclick = e => { if(busy) return; busy = true; const want = rounds[r].key, hit = b.dataset.k === want;
     if(hit){ ok++; b.classList.add("ok"); popAt(api, e.clientX - 40, e.clientY - 60, "맞아요!"); }
     else { b.classList.add("no"); const t = api.field.querySelector(`.mp-dot[data-k="${want}"]`); t && t.classList.add("ok"); popAt(api, e.clientX - 40, e.clientY - 60, `여기는 ${P[b.dataset.k].name}`); }
