@@ -116,6 +116,20 @@ function seasonPaint(){
   const sn = $("snow"); if(s === "winter" && !sn.innerHTML){ let h = ""; for(let i = 0; i < 70; i++) h += `<circle cx="${Math.random() * 1600 | 0}" cy="${Math.random() * 900 | 0}" r="${2 + Math.random() * 3 | 0}" fill="#fff" opacity=".75"/>`; sn.innerHTML = h; }
   if(s !== "winter") sn.innerHTML = "";
 }
+/* 지도 맨 위 핀이 화면 위로 나가거나 위쪽 단추(수첩·가방·♪) 밑에 깔리면, 핀을 거꾸로(장소 점 아래로) 매달고 이름도 그 아래로 내려요.
+   휴대폰 가로 화면은 지도 위아래가 조금 잘려서 길모퉁이 언덕 핀이 단추 밑에 깔렸어요. */
+function pinFlip(){ if(!$("map").classList.contains("on")) return;
+  const bars = [...document.querySelectorAll(".hud button, .hud .t")].filter(e => e.offsetParent).map(e => e.getBoundingClientRect());
+  const barBot = Math.max(0, ...bars.map(b => b.bottom));
+  document.querySelectorAll("#pins .pin").forEach(g => { const dot = g.querySelector(".dot"); if(!dot) return;
+    [...dot.children].forEach(c => c.removeAttribute("transform")); const r = dot.getBoundingClientRect();
+    const under = bars.some(b => r.right > b.left - 4 && r.left < b.right + 4 && r.top < b.bottom + 4);
+    const flip = r.top < 0 || (under && r.top < barBot + 4);
+    const nm = [...$("names").children][[...$("pins").children].indexOf(g)], k = g.dataset.k;
+    /* .dot에는 통통 튀는 CSS 애니메이션이 있어서, 뒤집기는 안쪽 그림마다 따로 */
+    if(flip){ [...dot.children].forEach(c => c.setAttribute("transform", c.tagName === "text" ? "translate(0 92)" : "scale(1 -1)")); if(nm) nm.setAttribute("y", P[k].y + 92); }
+    else if(nm) nm.setAttribute("y", P[k].y + 36); }); }
+addEventListener("resize", () => setTimeout(pinFlip, 120));
 function drawMap(){
   seasonPaint();
   const q = quest(), target = q ? q.at : null;
@@ -139,6 +153,7 @@ function drawMap(){
   requestAnimationFrame(() => { const sc = sv.clientWidth / 1600; mw.scrollTo({left:Math.max(0, focus.x * sc - mw.clientWidth / 2), behavior:"smooth"}); });
   $("quest").innerHTML = q ? `<b>📒 할 일 ${S.qi + 1}/${C().quests.length}</b> · ${esc(fill(q.label))}` : S.over ? `<b>📒 이야기 끝!</b> 마을을 마음껏 돌아다녀 보세요` : "";
   document.querySelectorAll(".pin").forEach(g => { g.onclick = () => go(g.dataset.k); g.onkeydown = e => { if(e.key === "Enter") go(g.dataset.k); }; });
+  requestAnimationFrame(pinFlip);
   hudTitle(); hud(); natureDraw();
   // 처음 하는 아이 안내: 다음 장소 핀 아래 손가락
   const hand = $("hand"), tp = P[target];
