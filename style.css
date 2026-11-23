@@ -563,3 +563,12 @@ html,body{position:fixed;inset:0;width:100%;height:100%;overscroll-behavior:none
 /* 나의 지도 완성: 점을 누르기 쉽게(보이는 점보다 넓게 눌림), 지도 밖은 흐린 지도 */
 .mp-wrap{background:#e8dcc8}
 .mp-dot::after{content:"";position:absolute;inset:-12px;border-radius:50%}
+
+/* 한국어 낱말이 줄 끝에서 쪼개지지 않게("있어
+요" 막기) */
+body{word-break:keep-all;overflow-wrap:break-word}
+
+/* '할 일' 띠: 누르는 것이 아니라서 아래 핀을 누를 수 있게, 핀을 가리면 옆으로(engine.js pinFlip) */
+.quest{pointer-events:none}
+.quest[data-pos="right"]{left:auto;right:max(12px,var(--sr,0px));transform:none}
+.quest[data-pos="left"]{left:max(90px,var(--sl,0px));transform:none}

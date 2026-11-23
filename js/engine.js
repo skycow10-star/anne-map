@@ -64,7 +64,7 @@ const ITEMS = {
   jamKey:{name:"잼 찬장 열쇠", img:"it_jamKey"}, ipecac:{name:"토근 시럽 약병", img:"it_ipecac"}, star:{name:"겨울 저녁 별", img:"it_star"},
   bottle:{name:"'최고급 바닐라' 병", img:"it_bottle"}, garden:{name:"앤의 작은 꽃밭", img:"it_garden"}, rainbow:{name:"샘 위의 무지개", img:"it_rainbow"},
   dye:{name:"빈 염색약 병", img:"it_dye"}, scissors:{name:"마릴라의 가위", img:"it_scissors"}, ribbon:{name:"검은 벨벳 리본", img:"it_ribbon"},
-  shawl:{name:"검은 숄", img:"it_shawl"}, iris:{name:"파란 붓꽃", img:"it_iris"}, pile:{name:"다리 기둥의 그루터기", img:"it_pile"}, oar:{name:"길버트의 노", img:"it_oar"},
+  shawl:{name:"검은 숄", img:"it_shawl"}, iris:{name:"파란 붓꽃", img:"it_iris"}, pile:{name:"매달렸던 다리 기둥", img:"it_pile"}, oar:{name:"길버트의 노", img:"it_oar"},
   avery:{name:"에이버리 장학금", img:"it_avery"}, maple:{name:"단풍나무 가지", img:"it_maple"}, bend:{name:"길모퉁이", img:"it_bend"}
 };
 
@@ -128,8 +128,15 @@ function pinFlip(){ if(!$("map").classList.contains("on")) return;
     const nm = [...$("names").children][[...$("pins").children].indexOf(g)], k = g.dataset.k;
     /* .dot에는 통통 튀는 CSS 애니메이션이 있어서, 뒤집기는 안쪽 그림마다 따로 */
     if(flip){ [...dot.children].forEach(c => c.setAttribute("transform", c.tagName === "text" ? "translate(0 92)" : "scale(1 -1)")); if(nm) nm.setAttribute("y", P[k].y + 92); }
-    else if(nm) nm.setAttribute("y", P[k].y + 36); }); }
+    else if(nm) nm.setAttribute("y", P[k].y + 36); });
+  /* 아래 '할 일' 띠가 핀이나 장소 이름을 가리면 가운데 -> 오른쪽 -> 왼쪽 중 안 가리는 자리로 옮겨요 */
+  const qb = $("quest"); if(!qb || !qb.textContent) return;
+  const things = [...document.querySelectorAll("#pins .pin .dot, #names text")].map(e => e.getBoundingClientRect()).filter(r => r.width);
+  const hits = () => { const q = qb.getBoundingClientRect(); return things.some(r => r.right > q.left - 2 && r.left < q.right + 2 && r.bottom > q.top - 2 && r.top < q.bottom + 2); };
+  for(const pos of ["mid", "right", "left"]){ qb.dataset.pos = pos; if(!hits()) break; }
+  if(hits()) qb.dataset.pos = "mid"; }
 addEventListener("resize", () => setTimeout(pinFlip, 120));
+let pinT = 0; document.addEventListener("scroll", e => { if(e.target && e.target.id === "mw"){ clearTimeout(pinT); pinT = setTimeout(pinFlip, 150); } }, true);   /* 지도를 옆으로 밀면 다시 */
 function drawMap(){
   seasonPaint();
   const q = quest(), target = q ? q.at : null;
