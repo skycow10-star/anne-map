@@ -5,3 +5,4 @@
 
 - 플레이: https://skycow10-star.github.io/anne-map/
 - 설계: 설계서.md · 작업 안내: CLAUDE.md
+- 관리 인수인계: docs/관리_인수인계.md · 다음 작품 만들기 안내: docs/다음작품_만들기_안내.md

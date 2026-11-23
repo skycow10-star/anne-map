@@ -1,0 +1,4 @@
+tools/*.jpg
+tools/orig_*
+tools/trees/
+tools/__pycache__/
