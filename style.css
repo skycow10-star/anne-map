@@ -9,6 +9,10 @@ html{font-synthesis:none}
 html,body{margin:0;height:100%;background:#2f2418;color:var(--ink);font:16px/1.6 "NanumSquareRound",system-ui,sans-serif;overflow:hidden}
 button{font:inherit;cursor:pointer;color:inherit}
 html,body{position:fixed;inset:0;width:100%;height:100%;overscroll-behavior:none;touch-action:manipulation}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+img{-webkit-user-drag:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+#pb{touch-action:none}
 #game{position:fixed;left:0;right:0;top:0;height:var(--vh,100dvh);max-width:1280px;margin:0 auto;background:var(--paper);overflow:hidden}
 
 /* 위쪽 줄 */

@@ -5,6 +5,11 @@ const $ = id => document.getElementById(id);
 const IMG = k => `img/${k}.webp`;
 const esc = s => String(s).replace(/[&<>"]/g, m => ({"&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;"}[m]));
 const PORTRAIT = matchMedia("(orientation:portrait) and (max-width:1000px)");
+/* 크롬북·태블릿: 화면을 길게 누르면 오른쪽 클릭 메뉴·글자 선택·그림 끌기가 떠서 놀이가 끊기던 것 막기 (이름 적는 칸은 그대로) */
+const TYPING = e => e.target.closest && e.target.closest("input,textarea");
+addEventListener("contextmenu", e => { if(!TYPING(e)) e.preventDefault(); }, true);
+addEventListener("selectstart", e => { if(!TYPING(e)) e.preventDefault(); }, true);
+addEventListener("dragstart", e => { if(!TYPING(e)) e.preventDefault(); }, true);
 
 /* ---------- 장소 (지도 그림 img/map_spring.webp 위 좌표, 1600×900 기준) ---------- */
 const P = {
